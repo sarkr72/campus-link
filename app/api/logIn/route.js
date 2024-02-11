@@ -1,31 +1,51 @@
-// pages/api/auth/login.js
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
+// Import the necessary modules
+import { NextResponse } from "next/server";
+import connection from "../../../utils/db";
 
 export async function POST(request) {
   try {
-    const { email } = await request.json();
+    const formData = await request.formData();
+    const email = formData.get("email");
+    const password = formData.get("password");
 
-    if (!email) {
-        // If the email does not exist, return an error response
-        return NextResponse.json( { error: 'Input data not found' } );
-      }
+    if (!email || !password) {
+      // If the email or password is missing, return an error response
+      return NextResponse.json({ error: "Email or password not provided" });
+    }
 
-    // Check if the email exists in the database
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Execute SQL query to fetch user by email from Student table
+    const query = `
+        SELECT * FROM Student
+        WHERE email = ?
+      `;
+    const values = [email];
+
+    const user = await new Promise((resolve, reject) => {
+      connection.query(query, values, (error, results) => {
+        if (error) {
+          console.error("Error executing SQL query:", error);
+          reject(error);
+        } else {
+          resolve(results[0]); // Assuming there is only one user with the given email
+        }
+      });
     });
 
     if (!user) {
-      // If the email does not exist, return an error response
-      return NextResponse.json({ error: 'Email not found' });
+      // If the user with the provided email does not exist, return an error response
+      return NextResponse.json({ error: "User not found" });
     }
-    
-    return NextResponse.json({ message: 'Email found. Proceed with login.' });
+
+    // Compare the provided password with the password retrieved from the database
+    if (user.password !== password) {
+      // If the passwords do not match, return an error response
+      return NextResponse.json({ error: "Incorrect password" });
+    }
+
+    // If the email and password match, return a success response
+    return NextResponse.json({ message: "Login successful" });
   } catch (error) {
-    console.error('Error during login:', error);
-    return NextResponse.json({ error: error.message });
+    console.error("Error during login:", error);
+    return NextResponse.json({ error: "Internal Server Error" });
   }
 }
