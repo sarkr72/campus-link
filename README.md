@@ -1,41 +1,8 @@
 After cloning the projrct:
 
-install laragon software:
-
-In lagagon: 
-1. go to database
-2. bottom left corner: press "new"
-3. network type: mariadb or mysql (tcp/ip) its default
-4. hostname/ Ip: get rds endpoint
-5. user: 
-6. password: 
-7. databases:
-
-
-
 in project directory: 
 1. npm install
-2. npm install @prisma/client prisma
-3. npm install prisma --save-dev
-4. npx prisma init --datasource-provider mysql
-
-5. in the .env file: 
-DATABASE_URL=""
-
-6. npx prisma generate
-7. start working on the project.
-
-(if you want to create table, go to prisma->prisma file)
-
-8. if you create new table or add new column then run these: 
-
-npx prisma migrate dev --name migrate_name
-
-npx prisma migrate deploy
-
-npx prisma generate
-
-9. npm install react-bootstrap
+2. npm install react-bootstrap
 
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
