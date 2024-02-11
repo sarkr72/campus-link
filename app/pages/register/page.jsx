@@ -10,7 +10,7 @@ const CreateUserPage = () => {
       <RegisterForm />
 
       <p></p>
-      <Link href="/pages/logIn">go to login</Link>
+      {/* <Link href="/pages/logIn">go to login</Link> */}
 
     </div>
   );
