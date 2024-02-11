@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campus Link</title>
+    <!--Bootstrap CSS-->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet"  href="./authentification.css" />
+  </head>
+  <body>
+    <!--Login Container-->
+    <div class="container">
+      <div class="row border rounded-5 p-3 bg-white shadow box-area">
+        <!--Left-->
+        <div class="col-md-6 rounded-4 left-box" style="background: #103cbe">
+          <div class="featured-image mb-3">
+            <img
+              src="./images/person.svg"
+              class="img-fluid"
+              style="width: 200px"
+            />
+          </div>
+          <h1 >Campus Link</h1>
+          <small class="welcome-msg">Your learning adventure begins here!</small>
+          <small class="welcome-msg">Please log in to get started.</small>
+        </div>
+        <!--Right-->
+        <div class="col-md-6 right-box">
+          <div class="row">
+            <div class="header-text mb-4"></div>
+            <p id="welcome">Welcome back to Campus Link</p>
+          </div>
+          <!--Enter email and password-->
+          <div class="input-group">
+            <input
+              type="email"
+              class="form-control"
+              placeholder="Enter email"
+            />
+          </div>
+          <div class="input-group">
+            <input
+              type="password"
+              class="form-control"
+              placeholder="Password"
+            />
+          </div>
+          <!--Remember me, does not work yet-->
+          <div class="input-group remember-box">
+            <div class="remember-check">
+              <input
+                type="checkbox"
+                class="remember-check-input"
+                id="rememberCheck"
+              />
+              <label for="formCheck" class="form-check-label"
+                ><small>Remember Me</small></label
+              >
+            </div>
+            <!--Forgot password, does not work yet-->
+            <div class="forgot">
+              <small
+                ><a href="./recoverPassword.html">Forgot Password?</a></small
+              >
+            </div>
+          </div>
+          <!--Login button-->
+          <div class="input-group">
+            <button class="btn btn-lg btn-primary w-100 fs-6">Login</button>
+          </div>
+          <div class="row">
+            <small
+              >Don't have account? <a href="./signup.html">Sign Up</a></small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--Bootstrap SCRIPT-->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
