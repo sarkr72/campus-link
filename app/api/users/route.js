@@ -9,10 +9,6 @@ const prisma = new PrismaClient();
 
 export async function POST(request) {
   try {
-    // Extract data from request body
-    // const data = await request.json();
-    // console.log("Received data:", data);
-    // const { firstName, lastName, email, password, age, major } = data;
     const formData  = await request.formData();
     const email = formData.get('email');
     const password = formData.get('password');
