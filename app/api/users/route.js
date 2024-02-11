@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
+//create user
 export async function POST(request) {
     try {
         const data = await request.json();
