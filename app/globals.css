@@ -105,3 +105,7 @@ a {
     color-scheme: dark;
   }
 }
+
+.navbar-custom {
+  background-color: lightblue;
+}
