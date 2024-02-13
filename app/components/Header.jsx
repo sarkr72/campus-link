@@ -8,7 +8,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 
 function Header() {
   return (
-    <Navbar expand="lg" className="bg-body-tertiary">
+    <Navbar style={{ backgroundImage: 'linear-gradient(to right, #16abff33, #0885ff33, #54d6ff33, #0071ff33)'}} expand="lg">
       <Container>
         <Navbar.Brand href="/pages/home">
             <img
