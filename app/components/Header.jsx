@@ -12,7 +12,7 @@ function Header() {
       <Container>
         <Navbar.Brand href="/pages/home">
             <img
-              src="/app/favicon.ico"
+              src= "test"
               width="30"
               height="30"
               className="d-inline-block align-top"
