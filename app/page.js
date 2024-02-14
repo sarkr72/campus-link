@@ -15,7 +15,8 @@ export default function Home() {
       {console.log("ssss", users)}
       {/* <Button variant="primary">Primary Button</Button> */}
       <p></p>
-      <Link href="/pages/logIn">go to login</Link>
+      {<Link href="/pages/logIn">go to login</Link>}
+      <Link href="/pages/home">go to homepage</Link>
     </div>
   );
 }
