@@ -5,19 +5,20 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import Image from "next/image";
 
 function Header() {
   return (
     <Navbar style={{ backgroundImage: 'linear-gradient(to right, #16abff33, #0885ff33, #54d6ff33, #0071ff33)'}} expand="lg">
       <Container>
-        <Navbar.Brand href="/pages/home">
-            <img
-              src= "test"
+        {/* <Navbar.Brand href="/pages/home">
+            <Image
+              src= ""
               width="30"
               height="30"
               className="d-inline-block align-top"
-              alt="React Bootstrap logo"
-            />Campus Link</Navbar.Brand>
+              alt='ss'
+            />Campus Link</Navbar.Brand> */}
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
