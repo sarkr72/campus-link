@@ -45,6 +45,18 @@ body {
     justify-content: center; 
 }
 
+.btn:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: aliceblue;
+  color: #103cbe;
+}
+input:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: gray;
+}
+
 @media only screen and (max-width: 768px) {
   .box-area {
     margin: 0 10px;
