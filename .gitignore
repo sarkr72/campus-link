@@ -13,7 +13,6 @@
 /.next/
 /out/
 
-utils/db.js
 
 # production
 /build
