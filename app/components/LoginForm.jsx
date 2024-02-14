@@ -28,11 +28,20 @@ const LoginForm = () => {
         body: formData,
       });
 
-      if (response.ok) {
-        router.push("/pages/register");
-        console.log("Data inserted successfully");
-      } else {
+      if (!response.ok) {
+        // router.push("/pages/register");
+        toast.error("Email or password not provided");
         console.error("Error inserting data:");
+      }
+      const data = await response.json();
+
+      if (data && data.message === "Login successful") {
+        router.push("/pages/register");
+      } else if (data && data.error === "Email or password not provided") {
+        toast.error("Email or password not provided");
+      } else {
+        console.log("Login failed or unexpected response:", data);
+        toast.error("LogIn failed!");
       }
     } catch (error) {
       console.error("Error inserting data:", error);
