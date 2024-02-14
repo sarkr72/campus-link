@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
 import connection from '../../../../utils/db'; 
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 
 

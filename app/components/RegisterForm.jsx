@@ -13,6 +13,8 @@ const RegisterForm = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    age: "",
+    major: ""
   });
   const [error, setError] = useState("");
 
@@ -75,12 +77,12 @@ const RegisterForm = () => {
           style={{ background: "#103cbe" }}
         >
           <div className="mb-4">
-            <Image
+            {/* <Image
               src="/images/person.svg"
               alt="Person"
               width={250}
               height={250}
-            />
+            /> */}
           </div>
           <h1 className="text-light">Campus Link</h1>
           <p className="text-light fs-5 mb-0">
@@ -129,6 +131,26 @@ const RegisterForm = () => {
                 name="email"
                 placeholder="Enter your email"
                 value={data.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="age"
+                className="form-control"
+                name="age"
+                placeholder="Enter your age"
+                value={data.age}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="major"
+                className="form-control"
+                name="major"
+                placeholder="Enter your major"
+                value={data.major}
                 onChange={handleChange}
               />
             </div>
