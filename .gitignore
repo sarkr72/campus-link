@@ -18,7 +18,7 @@
 /build
 
 amplify
-aws-exports
+
 prisma
 # misc
 .DS_Store
@@ -51,7 +51,7 @@ amplify/backend/.temp
 build/
 dist/
 node_modules/
-aws-exports.js
+# aws-exports.js
 awsconfiguration.json
 amplifyconfiguration.json
 amplifyconfiguration.dart
