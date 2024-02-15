@@ -4,9 +4,16 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Auth } from "aws-amplify";
+import { signUp } from "aws-amplify/auth";
+import "../../utils/configureAmplify";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import  GrowSpinner  from "./Spinner";
 
 const RegisterForm = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({
     firstName: "",
     lastName: "",
@@ -14,7 +21,7 @@ const RegisterForm = () => {
     password: "",
     confirmPassword: "",
     age: "",
-    major: ""
+    major: "",
   });
   const [error, setError] = useState("");
 
@@ -22,7 +29,7 @@ const RegisterForm = () => {
     const { name, value } = e.target;
 
     if (name === "confirmPassword") {
-      if (value !== data.password) {
+      if (value !== data?.password) {
         setError("Passwords do not match");
       } else {
         setError("");
@@ -35,16 +42,22 @@ const RegisterForm = () => {
     }));
   };
 
+  if (isLoading) {
+    return <GrowSpinner />;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
       const formDataObj = {
-        email: data.email,
-        password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        age: data.age,
-        major: data.major,
+        email: data?.email,
+        password: data?.password,
+        firstName: data?.firstName,
+        lastName: data?.lastName,
+        age: data?.age,
+        major: data?.major,
       };
 
       const formData = new FormData();
@@ -57,15 +70,39 @@ const RegisterForm = () => {
         body: formData,
       });
 
+      let data2 = "";
       if (response.ok) {
-        router.push("/pages/logIn");
+        data2 = await response?.json();
+        // router.push("/pages/logIn");
         console.log("Data inserted successfully");
+      }
+
+      if (data2 && data2?.message === "Data inserted successfully") {
+        signUp({
+          username: data.email,
+          password: data.password,
+          attributes: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+          },
+        })
+          .then(() => {
+            router.push("/pages/logIn");
+            console.log("User signed up successfully");
+            // Optionally, you can redirect the user to a confirmation page or display a success message
+          })
+          .catch((error) => {
+            console.error("Error signing up user:", error);
+            // Handle sign-up error, such as displaying an error message to the user
+          });
       } else {
-        console.error("Error inserting data:");
+        toast.error("Information not provided!");
       }
     } catch (error) {
-      console.error("Error inserting data:", error);
+      console.error("er signing up user:", error);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -93,6 +130,7 @@ const RegisterForm = () => {
         {/* Right */}
         <div className="col-md-6 right-box">
           <h2 className="text-center mb-4">Sign Up</h2>
+         
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <input
@@ -102,6 +140,7 @@ const RegisterForm = () => {
                 placeholder="Enter your first name"
                 value={data.firstName}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="mb-3">
@@ -112,6 +151,7 @@ const RegisterForm = () => {
                 placeholder="Enter your last name"
                 value={data.lastName}
                 onChange={handleChange}
+                required
               />
             </div>
             {/* <div className="mb-3">
@@ -132,6 +172,7 @@ const RegisterForm = () => {
                 placeholder="Enter your email"
                 value={data.email}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="mb-3">
@@ -142,6 +183,7 @@ const RegisterForm = () => {
                 placeholder="Enter your age"
                 value={data.age}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="mb-3">
@@ -152,6 +194,7 @@ const RegisterForm = () => {
                 placeholder="Enter your major"
                 value={data.major}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="mb-3">
@@ -162,6 +205,7 @@ const RegisterForm = () => {
                 placeholder="Enter password"
                 value={data.password}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="mb-3">
@@ -172,6 +216,7 @@ const RegisterForm = () => {
                 placeholder="Confirm password"
                 value={data.confirmPassword}
                 onChange={handleChange}
+                required
               />
               {error && (
                 <p className="alert alert-danger py-1" role="alert">
@@ -179,6 +224,7 @@ const RegisterForm = () => {
                 </p>
               )}
             </div>
+
             <div className="mb-3 form-check">
               <input
                 type="checkbox"
@@ -194,8 +240,7 @@ const RegisterForm = () => {
             </button>
             <div className="text-center mt-3">
               <small>
-                Already Have an Account?{" "}
-                <Link href="/pages/logIn">Log In</Link>
+                Already Have an Account? <Link href="/pages/logIn">Log In</Link>
               </small>
             </div>
           </form>

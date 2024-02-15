@@ -41,7 +41,7 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Data inserted successfully' });
   } catch (error) {
     console.error("Error processing request:", error);
-    return NextResponse.error({ status: 500, message: 'Internal Server Error' });
+    return NextResponse.error({ message: 'Internal Server Error' });
   }
 }
 
@@ -68,7 +68,7 @@ export async function GET(request) {
     return NextResponse.json(users);
   } catch (error) {
     console.error("Error processing request:", error);
-    return NextResponse.error({ status: 500, message: 'Internal Server Error' });
+    return NextResponse.error({ message: 'Internal Server Error' });
   }
 }
 

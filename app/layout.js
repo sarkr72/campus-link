@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import { Amplify } from "aws-amplify";
 import awsExports from "../aws-exports";
-
+import '../utils/configureAmplify'
 import "@aws-amplify/ui-react/styles.css";
 
 Amplify.configure({ ...awsExports, ssr: true });

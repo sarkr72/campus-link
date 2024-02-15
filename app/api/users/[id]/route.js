@@ -52,6 +52,7 @@ export async function DELETE(req, { params }) {
 
     if (!id) {
       // If the student ID is missing, return an error response
+      console.log("not found")
       return NextResponse.json({ error: 'Student ID not provided' });
     }
 

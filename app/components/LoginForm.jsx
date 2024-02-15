@@ -4,7 +4,10 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import { Auth } from "aws-amplify";
+import { signIn } from "aws-amplify/auth";
+import '../../utils/configureAmplify'
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -13,40 +16,52 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const formDataObj = {
-        email: email,
-        password: password,
-      };
+    // try {
+    //   const formDataObj = {
+    //     email: email,
+    //     password: password,
+    //   };
 
-      const formData = new FormData();
-      Object.entries(formDataObj).forEach(([key, value]) => {
-        formData.append(key, value);
+    //   const formData = new FormData();
+    //   Object.entries(formDataObj).forEach(([key, value]) => {
+    //     formData.append(key, value);
+    //   });
+
+    //   const response = await fetch(`/api/logIn`, {
+    //     method: "POST",
+    //     body: formData,
+    //   });
+
+    //   if (!response.ok) {
+    //     // router.push("/pages/register");
+    //     toast.error("Email or password not provided");
+    //     console.error("Error inserting data:");
+    //   }
+    //   const data = await response.json();
+
+    //   if (data && data.message === "Login successful") {
+
+    //     router.push("/pages/register");
+    //   } else if (data && data.error === "Email or password not provided") {
+    //     toast.error("Email or password not provided");
+    //   } else {
+    //     console.log("Login failed or unexpected response:", data);
+    //     toast.error("LogIn failed!");
+    //   }
+    // } catch (error) {
+    //   console.error("Error inserting data:", error);
+    // }
+
+    signIn({ username: email, password })
+      .then((user) => {
+        console.log("User signed in successfully:", user);
+        router.push("/pages/home");
+        // Handle successful sign-in, such as redirecting to another page
+      })
+      .catch((error) => {
+        console.error("Error signing in:", error);
+        // Handle sign-in error, such as displaying an error message
       });
-
-      const response = await fetch(`/api/logIn`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        // router.push("/pages/register");
-        toast.error("Email or password not provided");
-        console.error("Error inserting data:");
-      }
-      const data = await response.json();
-
-      if (data && data.message === "Login successful") {
-        router.push("/pages/register");
-      } else if (data && data.error === "Email or password not provided") {
-        toast.error("Email or password not provided");
-      } else {
-        console.log("Login failed or unexpected response:", data);
-        toast.error("LogIn failed!");
-      }
-    } catch (error) {
-      console.error("Error inserting data:", error);
-    }
   };
 
   return (
@@ -128,7 +143,8 @@ const LoginForm = () => {
             </div>
             <div className="text-center">
               <small>
-                Don&apos;t have an account? <Link href="/pages/register">Sign Up</Link>
+                Don&apos;t have an account?{" "}
+                <Link href="/pages/register">Sign Up</Link>
               </small>
             </div>
           </form>
