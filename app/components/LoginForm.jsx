@@ -7,7 +7,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Auth } from "aws-amplify";
 import { signIn } from "aws-amplify/auth";
-import '../../utils/configureAmplify'
+import "../../utils/configureAmplify";
+import styles from "/styles/authentification.css";
+import img from "next/image";
+import logoImage from "../resources/images/logo.png";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -65,38 +68,38 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="container-fluid" style={{ minHeight: "100vh" }}>
-      <div
-        className="row justify-content-center align-items-center"
-        style={{ height: "100%" }}
-      >
+    <div
+      className={`auth-container ${styles.footer}`}
+      style={{ minHeight: "100vh" }}
+    >
+      <div className="row border rounded-5 p-3 bg-white shadow box-area">
         {/* Left */}
-        <div
-          className="col-md-6 col-lg-5 rounded-4 left-box p-4"
-          style={{ background: "#103cbe", color: "white" }}
-        >
-          <div className="text-center mb-3">
+        <div class="col-md-6 rounded-4 left-box">
+          {/* Logo of our site goes here */}
+          <div>
             <Image
-              src="/images/person.svg"
-              alt="Person"
-              width={200}
-              height={200}
+              className="featured-image"
+              src={logoImage} // path to your logo file
+              alt="Logo"
+              width={250}
+              height={250}
             />
           </div>
-          <h1 className="text-center">Campus Link</h1>
-          <p className="text-center mb-2">
+          <h1>Campus Link</h1>
+          <small class="welcome-msg">
             Your learning adventure begins here!
-          </p>
-          <p className="text-center mb-4">Please log in to get started.</p>
+          </small>
+          <small class="welcome-msg">Please log in to get started.</small>
         </div>
         {/* Right */}
-        <div className="col-md-6 col-lg-4 right-box p-4">
-          <div className="text-center mb-3">
-            <h2>Welcome back to Campus Link</h2>
+        <div className="col-md-6 right-box">
+          <div class="row">
+            <div class="header-text mb-4"></div>
+            <p id="welcome">Welcome back to Campus Link</p>
           </div>
           {/* Enter email and password */}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
+          <form onSubmit={handleSubmit} className="input-group">
+            <div className="input-group">
               <input
                 type="email"
                 className="form-control"
@@ -106,7 +109,7 @@ const LoginForm = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="mb-3">
+            <div className="input-group">
               <input
                 type="password"
                 className="form-control"
@@ -117,7 +120,7 @@ const LoginForm = () => {
               />
             </div>
             {/* Remember me, does not work yet */}
-            <div className="mb-3 d-flex justify-content-between align-items-center">
+            <div className="input-group form-check remember-box">
               <div className="form-check">
                 <input
                   type="checkbox"
@@ -136,12 +139,12 @@ const LoginForm = () => {
               </div>
             </div>
             {/* Login button */}
-            <div className="mb-3">
+            <div className="input-group">
               <button type="submit" className="btn btn-primary w-100">
                 Login
               </button>
             </div>
-            <div className="text-center">
+            <div className="input-group d-flex align-items-center justify-content-center">
               <small>
                 Don&apos;t have an account?{" "}
                 <Link href="/pages/register">Sign Up</Link>

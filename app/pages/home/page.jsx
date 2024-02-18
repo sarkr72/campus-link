@@ -1,5 +1,7 @@
 // Import necessary dependencies
 "use client";
+import Header from "../../components/Header"
+import Footer from "../../components/Footer"
 
 
 import React, { useState, useEffect } from "react";
@@ -19,11 +21,12 @@ const HomePage = () => {
 
 
     return (
-        <>
-        <p>Homeee</p>
-        {console.log("ssss2ss", users)}
-        </>
-    )
+        <div>
+          <Header />
+          <h1 className="d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>Home Page for Campus Link</h1>
+          <Footer />
+        </div>
+      );
 };
 
 export default HomePage;
