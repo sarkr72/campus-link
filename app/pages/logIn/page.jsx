@@ -6,6 +6,8 @@ import {withAuthenticator} from '@aws-amplify/ui-react'
 // import '../../../utils/configureAmplify'
 // import "@aws-amplify/ui-react/styles.css";
 import LoginForm from '../../components/LoginForm'
+import Header from "../../components/Header"
+import Footer from "../../components/Footer"
 
 // Amplify.configure({ ...awsExports, ssr: true });
 
@@ -13,11 +15,13 @@ import LoginForm from '../../components/LoginForm'
 const LoginPage = () => {
 
   return (
-    <>
-    <LoginForm />
-    </>
+    <div>
+      <Header />
+      <LoginForm />
+      <Footer />
+    </div>
   );
-};
+}
 
 // export default withAuthenticator(LoginPage);
 export default LoginPage

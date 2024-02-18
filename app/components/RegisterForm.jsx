@@ -9,7 +9,10 @@ import { signUp } from "aws-amplify/auth";
 import "../../utils/configureAmplify";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import  GrowSpinner  from "./Spinner";
+import GrowSpinner from "./Spinner";
+import styles from "/styles/authentification.css";
+import img from "next/image";
+import logoImage from "../resources/images/logo.png";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -106,33 +109,38 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="container py-5">
+    <div
+      className={`auth-container ${styles.footer}`}
+      style={{ minHeight: "100vh" }}
+    >
       <div className="row border rounded-5 p-3 bg-white shadow box-area">
         {/* Left */}
-        <div
-          className="col-md-6 rounded-4 left-box d-flex flex-column justify-content-center align-items-center"
-          style={{ background: "#103cbe" }}
-        >
-          <div className="mb-4">
-            {/* <Image
-              src="/images/person.svg"
-              alt="Person"
+        <div className="col-md-6 rounded-4 left-box">
+         {/* Logo of our site goes here */}
+          <div>
+            <Image
+              className="featured-image"
+              src={logoImage} // path to your logo file
+              alt="Logo"
               width={250}
               height={250}
-            /> */}
+            />
           </div>
-          <h1 className="text-light">Campus Link</h1>
-          <p className="text-light fs-5 mb-0">
+          <h1>Campus Link</h1>
+          <small class="welcome-msg">
             Your learning adventure begins here!
-          </p>
-          <p className="text-light fs-5">Please sign up to get started.</p>
+          </small>
+          <small class="welcome-msg">Please signup to get started.</small>
         </div>
         {/* Right */}
         <div className="col-md-6 right-box">
-          <h2 className="text-center mb-4">Sign Up</h2>
-         
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
+          <div class="row">
+            <div class="header-text">
+              <p id="welcome">Welcome to Campus Link</p>
+            </div>
+          </div>
+          <form onSubmit={handleSubmit} className="input-group">
+            <div className="input-group">
               <input
                 type="text"
                 className="form-control"
@@ -143,7 +151,7 @@ const RegisterForm = () => {
                 required
               />
             </div>
-            <div className="mb-3">
+            <div className="input-group">
               <input
                 type="text"
                 className="form-control"
@@ -164,7 +172,7 @@ const RegisterForm = () => {
                 onChange={handleChange}
               />
             </div> */}
-            <div className="mb-3">
+            <div className="input-group">
               <input
                 type="email"
                 className="form-control"
@@ -175,7 +183,7 @@ const RegisterForm = () => {
                 required
               />
             </div>
-            <div className="mb-3">
+            <div className="input-group">
               <input
                 type="age"
                 className="form-control"
@@ -186,7 +194,7 @@ const RegisterForm = () => {
                 required
               />
             </div>
-            <div className="mb-3">
+            <div className="input-group">
               <input
                 type="major"
                 className="form-control"
@@ -197,7 +205,7 @@ const RegisterForm = () => {
                 required
               />
             </div>
-            <div className="mb-3">
+            <div className="mb3 input-group">
               <input
                 type="password"
                 className="form-control"
@@ -208,7 +216,7 @@ const RegisterForm = () => {
                 required
               />
             </div>
-            <div className="mb-3">
+            <div className="mb3 input-group">
               <input
                 type="password"
                 className="form-control"
@@ -224,21 +232,26 @@ const RegisterForm = () => {
                 </p>
               )}
             </div>
-
-            <div className="mb-3 form-check">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                id="rememberCheck"
-              />
-              <label htmlFor="rememberCheck" className="form-check-label">
-                Remember Me
-              </label>
+            {/* Remember me, does not work yet */}
+            <div className="input-group form-check remember-box">
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="rememberCheck"
+                />
+                <label htmlFor="rememberCheck" className="form-check-label">
+                  Remember Me
+                </label>
+              </div>
             </div>
-            <button type="submit" className="btn btn-lg btn-primary w-100">
-              Signup
-            </button>
-            <div className="text-center mt-3">
+            {/* Signup button */}
+            <div className="input-group">
+              <button type="submit" className="btn btn-primary w-100">
+                Signup
+              </button>
+            </div>
+            <div className="input-group d-flex align-items-center justify-content-center">
               <small>
                 Already Have an Account? <Link href="/pages/logIn">Log In</Link>
               </small>
