@@ -148,7 +148,8 @@ const RegisterForm = () => {
         });
         if (isSignUpComplete) {
           setIsLoading(false);
-          router.push("/pages/home");
+          // router.push("/pages/home/");
+          router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
         } else {
           toast.error("Wrong credential");
         }
@@ -329,7 +330,7 @@ const RegisterForm = () => {
         </div>
       )}
       {showConfirmationModal && (
-        <div  style={{ height: "100vh" }}>
+        <div  style={{ minHeight: "100vh" }}>
           <div className=" top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
             <div  className="container position-relative">
               <div className="d-flex flex-column justify-content-center align-items-center confirmation-box bg-light p-4 rounded shadow">
