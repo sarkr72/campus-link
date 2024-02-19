@@ -1,4 +1,3 @@
-
 .auth-container {
   display: flex;
   justify-content: center;
@@ -29,23 +28,23 @@
 }
 
 .remember-box {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 0px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0px;
 }
 
 .input-group {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 #welcome {
-    font-size: 1.4rem;
-    display: flex;
-    justify-content: center; 
+  font-size: 1.4rem;
+  display: flex;
+  justify-content: center;
 }
 .btn {
-background: #3586ff;
+  background: #3586ff;
 }
 .btn:hover {
   transition: transform 0.4s ease-in-out;
@@ -56,7 +55,7 @@ background: #3586ff;
 input:hover {
   transition: transform 0.4s ease-in-out;
   transform: scale(1.025);
-  background-color: #B4D4FF;
+  background-color: #b4d4ff;
 }
 @media only screen and (max-width: 760px) {
   .box-area {

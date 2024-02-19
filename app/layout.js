@@ -1,12 +1,14 @@
 import { Inter } from "next/font/google";
 // import "./globals.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import { Amplify } from "aws-amplify";
 import awsExports from "../aws-exports";
-import '../utils/configureAmplify'
+import "../utils/configureAmplify";
 import "@aws-amplify/ui-react/styles.css";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 Amplify.configure({ ...awsExports, ssr: true });
 
@@ -20,10 +22,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}
-      <ToastContainer />
+      <body className={inter.className}>
+        <Header />
+        {children}
+        <Footer />
+        <ToastContainer />
       </body>
-      
     </html>
   );
 }

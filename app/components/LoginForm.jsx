@@ -55,18 +55,18 @@ const LoginForm = () => {
     //   console.error("Error inserting data:", error);
     // }
 
-    signIn({ username: email, password })
+    await signIn({ username: email, password })
       .then((user) => {
-        console.log("User signed in successfully:", user);
-        router.push("/pages/home");
-        // Handle successful sign-in, such as redirecting to another page
+        console.log("User signed in successfully2:", user);
+        router.push('/pages/home/[slug]', `/pages/home/${email}`);
       })
       .catch((error) => {
         console.error("Error signing in:", error);
-        // Handle sign-in error, such as displaying an error message
       });
   };
 
+
+  
   return (
     <div
       className={`auth-container ${styles.footer}`}
@@ -74,7 +74,7 @@ const LoginForm = () => {
     >
       <div className="row border rounded-5 p-3 bg-white shadow box-area">
         {/* Left */}
-        <div class="col-md-6 rounded-4 left-box">
+        <div className="col-md-6 rounded-4 left-box">
           {/* Logo of our site goes here */}
           <div>
             <Image
@@ -86,15 +86,15 @@ const LoginForm = () => {
             />
           </div>
           <h1>Campus Link</h1>
-          <small class="welcome-msg">
+          <small className="welcome-msg">
             Your learning adventure begins here!
           </small>
-          <small class="welcome-msg">Please log in to get started.</small>
+          <small className="welcome-msg">Please log in to get started.</small>
         </div>
         {/* Right */}
         <div className="col-md-6 right-box">
-          <div class="row">
-            <div class="header-text mb-4"></div>
+          <div className="row">
+            <div className="header-text mb-4"></div>
             <p id="welcome">Welcome back to Campus Link</p>
           </div>
           {/* Enter email and password */}

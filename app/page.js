@@ -2,12 +2,16 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Authenticator } from "@aws-amplify/ui-react";
-import { listUsers } from "../utils/server";
-import { Table } from "react-bootstrap";
 import { deleteUser } from "../utils/server";
 import { toast } from "react-toastify";
 import { Modal, Button } from "react-bootstrap";
 import  GrowSpinner  from "./components/Spinner";
+
+import { Amplify } from "aws-amplify";
+import awsExports from "../aws-exports";
+import '../utils/configureAmplify'
+import "@aws-amplify/ui-react/styles.css";
+Amplify.configure({ ...awsExports, ssr: true });
 
 export default function Home() {
   const [users, setUsers] = useState([]);

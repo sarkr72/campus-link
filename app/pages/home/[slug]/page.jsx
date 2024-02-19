@@ -1,26 +1,45 @@
 // Import necessary dependencies
 "use client";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+
 // import '../../../utils/configureAmplify';
 import { Amplify } from "aws-amplify";
-import awsExports from "../../../aws-exports";
+import awsExports from "../../../../aws-exports";
 import "@aws-amplify/ui-react/styles.css";
 Amplify.configure({ ...awsExports, ssr: true });
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { getCurrentUserEmail } from "../../../utils/server";
+import { getCurrentUserEmail } from "../../../../utils/server";
+
 // import { getCurrentUser } from 'aws-amplify/auth';
 
-const HomePage = () => {
-  const [users, setUsers] = useState([]);
+const HomePage2 = () => {
+  const router = useRouter();
+  // const { slug } = router.query;
   // const router = useRouter();
   const [role, setRole] = useState("");
   const [signed, setSigned] = useState(false);
   const [user, setUser] = useState("");
 
-  // useEffect declaration
+  // useEffect( () => {
+  //   const fetchuser = async () => {
+  //     if (slug) {
+  //       const response = fetch(`/api/users/${slug}`, {
+  //         method: "GET",
+  //       });
+  //       let data = "";
+  //       if (response.ok) {
+  //         data = await response?.json();
+  //         setUser(data);
+  //         console.log("data:", data)
+  //         console.log("user:", user)
+  //       }
+  //     }
+  //   };
+
+  //   fetchuser();
+  // }, []);
+
   // useEffect(() => {
   //   fetch(`/api/users/${id}`, {
   //     method: "GET",
@@ -44,7 +63,7 @@ const HomePage = () => {
   //   const authenticateSignin = () => {
   //     let getCurrentEmail = '';
   //     getCurrentUserEmail().then((email) => {
-  //       getCurrentEmail = email; 
+  //       getCurrentEmail = email;
   //       console.log('ema', email)
   //     }).catch((error) => {
   //       console.error(error);
@@ -74,7 +93,6 @@ const HomePage = () => {
   //   authenticateSignin();
   // }, [user, role, signed]);
 
-
   // useEffect(() => {
   //   const authenticateSignin = () => {
   //     currentAuthenticatedUser();
@@ -84,21 +102,21 @@ const HomePage = () => {
   //   authenticateSignin();
   // }, [user, role, signed]);
 
-  async function currentAuthenticatedUser() {
-    try {
-      const user = await getCurrentUser();
-      if (user) {
-        console.log("User is signed in:", user);
-        setSigned(true);
-      } else {
-        console.log("User is not signed in");
-        setSigned(false);
-      }
-    } catch (error) {
-      console.error("Error getting current user:", error);
-      setSigned(false);
-    }
-  }
+  // async function currentAuthenticatedUser() {
+  //   try {
+  //     const user = await getCurrentUser();
+  //     if (user) {
+  //       console.log("User is signed in:", user);
+  //       setSigned(true);
+  //     } else {
+  //       console.log("User is not signed in");
+  //       setSigned(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error getting current user:", error);
+  //     setSigned(false);
+  //   }
+  // }
 
   return (
     <div>
@@ -115,4 +133,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomePage2;
