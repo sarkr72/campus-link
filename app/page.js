@@ -16,7 +16,7 @@ export default function Home() {
           <p className="lead">
             Connect with classmates, discuss course information, and schedule tutoring sessions to help you succeed.
           </p>
-          <Button variant="primary" size="lg" href="/pages/register">Get Started</Button>
+          <Button style={{ backgroundColor: '#176B87'}} variant="primary" size="lg" href="/pages/register">Get Started</Button>
         </Col>
         <Col md={6} className="text-center">
           <Image src="app/resources/images/person.jpeg" rounded />
@@ -54,7 +54,7 @@ export default function Home() {
           <p>
             Take your education to the next level. Sign up now and start connecting!
           </p>
-          <Button variant="primary" size="lg" href="/pages/register">Sign Up</Button>
+          <Button style={{ backgroundColor: '#176B87'}} variant="primary" size="lg" href="/pages/register">Sign Up</Button>
         </Col>
       </Row>
     </Container>
