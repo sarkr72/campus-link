@@ -1,6 +1,6 @@
 // Import necessary dependencies
 "use client";
-import {withAuthenticator} from '@aws-amplify/ui-react'
+// import {withAuthenticator} from '@aws-amplify/ui-react'
 // import { Amplify } from "aws-amplify";
 // import awsExports from "../../../aws-exports";
 // import '../../../utils/configureAmplify'
@@ -16,9 +16,9 @@ const LoginPage = () => {
 
   return (
     <div>
-      <Header />
+      {/* <Header /> */}
       <LoginForm />
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

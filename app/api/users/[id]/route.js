@@ -1,24 +1,21 @@
 // import { PrismaClient } from "@prisma/client";
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
-import connection from '../../../../utils/db'; 
+import connection from "../../../../utils/db";
 
 // const prisma = new PrismaClient();
-
-
-
 
 export async function GET(req, { params }) {
   try {
     // Extract user ID from request parameters
-    const id = parseInt(params.id);
+    const email = parseInt(params.email);
 
     // Execute SQL query to fetch user by ID from Student table
     const query = `
       SELECT * FROM Student
-      WHERE id = ?
+      WHERE email = ?
     `;
-    const values = [id];
+    const values = [email];
 
     const user = await new Promise((resolve, reject) => {
       connection.query(query, values, (error, results) => {
@@ -31,17 +28,18 @@ export async function GET(req, { params }) {
         }
       });
     });
-
     // Check if user was found
     if (!user) {
-      return NextResponse.error({ status: 404, message: 'User not found' });
+      return NextResponse.error({message: "User not found" });
     }
 
-    // Return success response with fetched user
     return NextResponse.json(user);
+
   } catch (error) {
     console.error("Error fetching user:", error);
-    return NextResponse.error({ status: 500, message: 'Internal Server Error' });
+    return NextResponse.error({
+      message: "Internal Server Error",
+    });
   }
 }
 
@@ -52,8 +50,8 @@ export async function DELETE(req, { params }) {
 
     if (!id) {
       // If the student ID is missing, return an error response
-      console.log("not found")
-      return NextResponse.json({ error: 'Student ID not provided' });
+      console.log("not found");
+      return NextResponse.json({ error: "Student ID not provided" });
     }
 
     // Execute SQL query to delete the student from the Student table
@@ -76,10 +74,10 @@ export async function DELETE(req, { params }) {
     });
 
     // Return success response
-    return NextResponse.json({ message: 'Student deleted successfully' });
+    return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
-    console.error('Error deleting student:', error);
-    return NextResponse.json({ error: 'Internal Server Error' });
+    console.error("Error deleting student:", error);
+    return NextResponse.json({ error: "Internal Server Error" });
   }
 }
 
@@ -90,12 +88,12 @@ export async function PUT(request, { params }) {
     const formData = await request.formData();
 
     // Extract data from form fields
-    const firstName = formData.get('firstName');
-    const lastName = formData.get('lastName');
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const age = formData.get('age');
-    const major = formData.get('major');
+    const firstName = formData.get("firstName");
+    const lastName = formData.get("lastName");
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const age = formData.get("age");
+    const major = formData.get("major");
 
     // Execute SQL query to update the student in the Student table
     const query = `
@@ -118,20 +116,18 @@ export async function PUT(request, { params }) {
     });
 
     // Return success response
-    return NextResponse.json({ message: 'Student updated successfully' });
+    return NextResponse.json({ message: "Student updated successfully" });
   } catch (error) {
-    console.error('Error updating student:', error);
-    return NextResponse.json({ error: 'Internal Server Error' });
+    console.error("Error updating student:", error);
+    return NextResponse.json({ error: "Internal Server Error" });
   }
 }
-
-
 
 // export async function GET(req, { params }) {
 //     try {
 //       // const allUsers = await prisma.user.findMany();
 //       // return NextResponse.json(allUsers);
-  
+
 //       const id = parseInt(params.id);
 //       const users = await prisma.student.findUnique({
 //         where: {

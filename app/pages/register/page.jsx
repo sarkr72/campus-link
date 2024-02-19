@@ -8,9 +8,9 @@ import Footer from "../../components/Footer";
 const CreateUserPage = () => {
   return (
     <div>
-    <Header />
+    {/* <Header /> */}
     <RegisterForm />
-    <Footer />
+    {/* <Footer /> */}
     </div>
   );
 };
