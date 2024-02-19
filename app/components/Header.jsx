@@ -8,27 +8,20 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 
 function Header() {
   return (
-    <Navbar style={{ backgroundImage: 'linear-gradient(to right, #16abff33, #0885ff33, #54d6ff33, #0071ff33)'}} expand="lg">
+    <Navbar style={{ backgroundImage: 'linear-gradient(to right, #EEF5FF, #B4D4FF, #86B6F6, #176B87)'}} expand="lg">
       <Container>
-        <Navbar.Brand href="/pages/home">
-            <img
-              src= "test"
-              width="30"
-              height="30"
-              className="d-inline-block align-top"
-              alt="React Bootstrap logo"
-            />Campus Link</Navbar.Brand>
+        <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link href="/pages/home">Home</Nav.Link>
-            <NavDropdown title="Users" id="basic-nav-dropdown">
-              <NavDropdown.Item href="/pages/students">Students</NavDropdown.Item>
-              <NavDropdown.Item href="/pages/professors">Professors</NavDropdown.Item>
+        <Navbar.Collapse style={{ justifyContent: 'flex-end' }} id="basic-navbar-nav">
+          <Nav className="justify-content-end">
+            <Nav.Link href="/">Home</Nav.Link>
+            <NavDropdown title="User" id="basic-nav-dropdown">
+              <NavDropdown.Item href="/pages/profile">View Profile</NavDropdown.Item>
+              <NavDropdown.Item href="/pages/settings">Settings</NavDropdown.Item>
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.4">
-                Separated link
+              <NavDropdown.Item href="#blankForNow">
+                Logout
               </NavDropdown.Item>
             </NavDropdown>
             <Nav.Link href="/pages/logIn">Log In</Nav.Link>
