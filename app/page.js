@@ -1,4 +1,5 @@
 "use client";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import Image from 'react-bootstrap/Image';
