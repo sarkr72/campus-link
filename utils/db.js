@@ -1,10 +1,11 @@
 import { createConnection } from 'mysql';
 
 const connection = createConnection({
-  host: "seniorprojectsql.cru0e6m8wvz4.us-east-2.rds.amazonaws.com",
-  user: "admin",
-  password: "Spring_2024",
-  database: "seniorprojectsql"
+  host: process.env.NEXT_PUBLIC_DB_HOST,
+  user: process.env.NEXT_PUBLIC_DB_USER,
+  password: process.env.NEXT_PUBLIC_DB_PASSWORD,
+  database: process.env.NEXT_PUBLIC_DB_DATABASE,
+  region: 'us-east-2c'
 });
 
 export default connection;
