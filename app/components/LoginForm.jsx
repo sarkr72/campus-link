@@ -11,14 +11,17 @@ import "../../utils/configureAmplify";
 import styles from "/styles/authentification.css";
 import img from "next/image";
 import logoImage from "../resources/images/logo.png";
+import GrowSpinner from "./Spinner";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     // try {
     //   const formDataObj = {
     //     email: email,
@@ -63,9 +66,12 @@ const LoginForm = () => {
       .catch((error) => {
         console.error("Error signing in:", error);
       });
+      setIsLoading(false);
   };
 
-
+  if (isLoading) {
+    return <GrowSpinner />;
+  }
   
   return (
     <div
