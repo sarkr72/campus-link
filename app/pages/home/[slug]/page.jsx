@@ -3,25 +3,26 @@
 
 // import '../../../utils/configureAmplify';
 import { Amplify } from "aws-amplify";
-import awsExports from "../../../../aws-exports";
+import config from "../../../../aws-exports";
 import "@aws-amplify/ui-react/styles.css";
-Amplify.configure({ ...awsExports, ssr: true });
+Amplify.configure(config);
+import GrowSpinner from "../../../components/Spinner";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { getCurrentUserEmail } from "../../../../utils/server";
 
-// import { getCurrentUser } from 'aws-amplify/auth';
+// import { getCurrentUser } from "aws-amplify/auth";
+import currentUser from "../../../../utils/checkSignIn";
 
 const HomePage2 = () => {
   const router = useRouter();
-  // const { slug } = router.query;
-  // const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  // const slug = router.query.slug;
   const [role, setRole] = useState("");
   const [signed, setSigned] = useState(false);
   const [user, setUser] = useState("");
-
-  // useEffect( () => {
+  const [currnetEmail, setCurrentEmail] = useState("");
+  // useEffect(() => {
   //   const fetchuser = async () => {
   //     if (slug) {
   //       const response = fetch(`/api/users/${slug}`, {
@@ -38,7 +39,7 @@ const HomePage2 = () => {
   //   };
 
   //   fetchuser();
-  // }, []);
+  // }, [user, slug]);
 
   // useEffect(() => {
   //   fetch(`/api/users/${id}`, {
@@ -93,30 +94,47 @@ const HomePage2 = () => {
   //   authenticateSignin();
   // }, [user, role, signed]);
 
-  // useEffect(() => {
-  //   const authenticateSignin = () => {
-  //     currentAuthenticatedUser();
+ 
 
-  //   };
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      setIsLoading(true)
+      try {
+        currentUser()
+          .then((email) => {
+            setCurrentEmail(email);
+          })
+          .catch((error) => {
+            console.error("Error getting user email:", error);
+          });
 
-  //   authenticateSignin();
-  // }, [user, role, signed]);
+        if (currnetEmail) {
+          const response = await fetch(`/api/users/${email}`, {
+            method: "GET",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data);
+            // console.log("User data:", data);
+          } else {
+            console.log("Failed to fetch user data:", response.statusText);
+          }
+        } else {
+          console.log("User is not signed in");
+        }
+       
+      } catch (error) {
+        console.error("Error getting current user:", error);
+      }
+    };
+    fetchCurrentUser();
+    setIsLoading(false)
+  }, []);
 
-  // async function currentAuthenticatedUser() {
-  //   try {
-  //     const user = await getCurrentUser();
-  //     if (user) {
-  //       console.log("User is signed in:", user);
-  //       setSigned(true);
-  //     } else {
-  //       console.log("User is not signed in");
-  //       setSigned(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error getting current user:", error);
-  //     setSigned(false);
-  //   }
-  // }
+  if (isLoading) {
+    // window.location.reload();
+    return <GrowSpinner />;
+  }
 
   return (
     <div>

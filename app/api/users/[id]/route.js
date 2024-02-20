@@ -1,16 +1,11 @@
-// import { PrismaClient } from "@prisma/client";
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
 import connection from "../../../../utils/db";
 
-// const prisma = new PrismaClient();
-
 export async function GET(req, { params }) {
   try {
-    // Extract user ID from request parameters
-    const email = parseInt(params.email);
+    const email = params.id;
 
-    // Execute SQL query to fetch user by ID from Student table
     const query = `
       SELECT * FROM Student
       WHERE email = ?
@@ -23,18 +18,16 @@ export async function GET(req, { params }) {
           console.error("Error executing SQL query:", error);
           reject(error);
         } else {
-          console.log("User fetched successfully:", results[0]);
-          resolve(results[0]); // Assuming there is only one user with the given ID
+          console.log("User fetched successfully:", results);
+          resolve(results[0]); // Resolve with the first result
         }
       });
     });
-    // Check if user was found
+
     if (!user) {
-      return NextResponse.error({message: "User not found" });
+      return NextResponse.error({ message: "User not found", status: 404 });
     }
-
     return NextResponse.json(user);
-
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.error({
@@ -46,20 +39,19 @@ export async function GET(req, { params }) {
 // Function to delete a student
 export async function DELETE(req, { params }) {
   try {
-    const id = parseInt(params.id);
+    const email = params.id;
 
-    if (!id) {
-      // If the student ID is missing, return an error response
+    if (!email) {
       console.log("not found");
-      return NextResponse.json({ error: "Student ID not provided" });
+      return NextResponse.json({ error: "Student email not provided" });
     }
 
     // Execute SQL query to delete the student from the Student table
     const query = `
       DELETE FROM Student
-      WHERE id = ?
+      WHERE email = ?
     `;
-    const values = [id];
+    const values = [email];
 
     await new Promise((resolve, reject) => {
       connection.query(query, values, (error, results) => {
@@ -84,24 +76,45 @@ export async function DELETE(req, { params }) {
 // Function to update a student
 export async function PUT(request, { params }) {
   try {
-    const id = parseInt(params.id);
+    const email = params.id;
     const formData = await request.formData();
-
-    // Extract data from form fields
+    const password = formData.get("password");
     const firstName = formData.get("firstName");
     const lastName = formData.get("lastName");
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const age = formData.get("age");
     const major = formData.get("major");
+    const phone = formData.get("phone");
+    // Handle file upload separately
+    const profilePictureFile = formData.get("profilePicture");
+    const profilePicture = profilePictureFile ? '/uploads/' + profilePictureFile.name : null;
+    const bio = formData.get("bio");
+    const minor = formData.get("minor");
+    const isTutor = formData.get("isTutor") === "true"; // Convert to boolean
+    const role = formData.get("role");
+    const updatedAt = new Date().toISOString(); // Format updatedAt date
 
+    
     // Execute SQL query to update the student in the Student table
     const query = `
-      UPDATE Student
-      SET firstName = ?, lastName = ?, email = ?, password = ?, age = ?, major = ?
-      WHERE id = ?
-    `;
-    const values = [firstName, lastName, email, password, age, major, id];
+    UPDATE Student
+    SET firstName = ?, lastName = ?, email = ?, password = ?, phone = ?, role = ?, 
+        profilePicture = ?, bio = ?, major = ?, minor = ?, isTutor = ?, updatedAt = ?
+    WHERE email = ?`; 
+
+    const values = [
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      role,
+      profilePicture,
+      bio,
+      major,
+      minor,
+      isTutor,
+      updatedAt,
+      email,
+    ];
 
     await new Promise((resolve, reject) => {
       connection.query(query, values, (error, results) => {
@@ -122,6 +135,7 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Internal Server Error" });
   }
 }
+
 
 // export async function GET(req, { params }) {
 //     try {
