@@ -103,7 +103,7 @@ const RegisterForm = () => {
         isTutor: data?.isTutor,
       };
 
-      const formData = new FormData();
+      const formData = new URLSearchParams();
       Object.entries(formDataObj).forEach(([key, value]) => {
         formData.append(key, value);
       });
@@ -113,20 +113,25 @@ const RegisterForm = () => {
         body: formData,
       });
 
+      const queryParams = new URLSearchParams();
+      queryParams.append("username", data.email);
+      queryParams.append("password", data.password);
+      queryParams.append(
+        "attributes",
+        JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone_number: data.phone,
+        })
+      );
+
       if (response.ok) {
-        await signUp({
-          username: data.email,
-          password: data.password,
-          attributes: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            phone_number: data.phone,
-          },
+        await signUp(queryParams).then(() => {
+          setIsLoading(false);
+          console.log("called");
+          setShowConfirmationModal(true);
         });
-      setIsLoading(false);
-      console.log("called");
-      setShowConfirmationModal(true);
       }
     } catch (error) {
       console.error("Error signing up user:", error);
@@ -140,21 +145,22 @@ const RegisterForm = () => {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-      try {
-        console.log('email', data.email)
-        const { isSignUpComplete, nextStep } = await confirmSignUp({
-          username: data.email,
-          confirmationCode,
-        });
-        if (isSignUpComplete) {
-          setIsLoading(false);
-          // router.push("/pages/home/");
-          router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
-        } else {
-          toast.error("Wrong credential");
-        }
-      } catch (error) {}
+    // setIsLoading(true);
+    try {
+      console.log("email", data.email);
+      const { isSignUpComplete, nextStep } = await confirmSignUp({
+        username: data.email,
+        confirmationCode,
+      });
+      if (isSignUpComplete) {
+        setIsLoading(false);
+        router.push("/pages/logIn");
+        // router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
+      } else {
+        setIsLoading(false);
+        toast.error("Wrong credential");
+      }
+    } catch (error) {}
   };
 
   return (
@@ -331,17 +337,28 @@ const RegisterForm = () => {
         </div>
       )}
       {showConfirmationModal && (
-        <div  style={{ minHeight: "100vh" }}>
+        <div style={{ minHeight: "100vh" }}>
           <div className=" top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
-            <div  className="container position-relative">
+            <div className="container position-relative">
               <div className="d-flex flex-column justify-content-center align-items-center confirmation-box bg-light p-4 rounded shadow">
                 <h1 className="text-center">Confirmation Page</h1>
                 <p className="text-center">Are you sure you want to proceed?</p>
                 <div className="mb-3">
-                <label htmlFor="confirmationCode" className="form-label"> <span style={{marginLeft: "30px"}} >Confirmation Code</span>
-                <input type="text" style={{width: "200px"}}className="form-control" id="confirmationCode" value={confirmationCode} onChange={handleChangeConfirmationCode} />
-                </label>
-              </div>
+                  <label htmlFor="confirmationCode" className="form-label">
+                    {" "}
+                    <span style={{ marginLeft: "30px" }}>
+                      Confirmation Code
+                    </span>
+                    <input
+                      type="text"
+                      style={{ width: "200px" }}
+                      className="form-control"
+                      id="confirmationCode"
+                      value={confirmationCode}
+                      onChange={handleChangeConfirmationCode}
+                    />
+                  </label>
+                </div>
                 <div className="d-flex justify-content-center">
                   <Button
                     variant="primary"
@@ -350,7 +367,11 @@ const RegisterForm = () => {
                   >
                     Confirm
                   </Button>
-                  <Button variant="danger" onClick={(e) => setShowConfirmationModal(false)} className="mx-2">
+                  <Button
+                    variant="danger"
+                    onClick={(e) => setShowConfirmationModal(false)}
+                    className="mx-2"
+                  >
                     Cancel
                   </Button>
                 </div>

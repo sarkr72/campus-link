@@ -10,7 +10,7 @@ import "../utils/configureAmplify";
 import "@aws-amplify/ui-react/styles.css";
 import Footer from "./components/Footer";
 // Amplify.configure({ ...awsExports, ssr: true });
-import config from '../amplifyconfiguration.json';
+import config from "../aws-exports";
 // import awsExports from "../aws-exports";
 import '../utils/configureAmplify'
 import "@aws-amplify/ui-react/styles.css";
