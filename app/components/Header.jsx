@@ -158,8 +158,12 @@ function Header() {
                 </NavDropdown.Item>
               )}
             </NavDropdown>
-            {!isEmailSet && <Nav.Link href="/pages/logIn">Log In</Nav.Link>}
+            {!isEmailSet &&
+            <>
+            <Nav.Link href="/pages/logIn">Log In</Nav.Link>
             <Nav.Link href="/pages/register">Register</Nav.Link>
+            </>
+            }
           </Nav>
         </Navbar.Collapse>
       </Container>
