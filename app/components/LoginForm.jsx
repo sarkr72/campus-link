@@ -57,11 +57,8 @@ const LoginForm = () => {
     // } catch (error) {
     //   console.error("Error inserting data:", error);
     // }
-    const queryParams = new URLSearchParams();
-    queryParams.append('username', email);
-    queryParams.append('password', password);
 
-    await signIn(queryParams)
+    await signIn({ username: email, password })
       .then((user) => {
         console.log("User signed in successfully2:", user);
         router.push('/pages/home/[slug]', `/pages/home/${email}`);
