@@ -103,7 +103,7 @@ const RegisterForm = () => {
         isTutor: data?.isTutor,
       };
 
-      const formData = new URLSearchParams();
+      const formData = new FormData();
       Object.entries(formDataObj).forEach(([key, value]) => {
         formData.append(key, value);
       });
@@ -113,7 +113,6 @@ const RegisterForm = () => {
         body: formData,
       });
 
-      
       if (response.ok) {
         await signUp({
           username: data.email,

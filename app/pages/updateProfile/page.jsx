@@ -137,7 +137,7 @@ const UpdateProfilePage = () => {
         isTutor: data?.isTutor,
       };
 
-      const formData = new URLSearchParams();
+      const formData = new FormData ();
       Object.entries(formDataObj).forEach(([key, value]) => {
         formData.append(key, value);
       });
