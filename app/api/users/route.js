@@ -1,30 +1,37 @@
 // import { NestResponse } from "next";
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
-import connection from '../../../utils/db'; 
+import connection from "../../../utils/db";
 
-
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 export async function POST(request) {
   try {
-    const formData  = await request.formData();
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const firstName  = formData.get('firstName');
-    const lastName = formData.get('lastName');
-    const age = formData.get('age');
-    const major  = formData.get('major');
-
-
+    const formData = await request.formData();
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const firstName = formData.get("firstName");
+    const lastName = formData.get("lastName");
+    const major = formData.get("major");
+    const phone = formData.get("phone");
+    const profilePicture = formData.get("profilePicture"); // Handle file upload separately
+    const bio = formData.get("bio");
+    const minor = formData.get("minor");
+    const isTutor = formData.get("isTutor") === "true"; // Convert to boolean
+    const role = formData.get("role");
+    const createdAt = new Date().toISOString(); // Format createdAt date
+    const updatedAt = createdAt; // Assuming createdAt and updatedAt are the same initially
+    
     // Execute SQL query to insert data into database
     const query = `
-      INSERT INTO Student (firstName, lastName, email, password, age, major)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [firstName, lastName, email, password, age, major];
+  INSERT INTO Student (firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
+const values = [firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt];
+
+    
     await new Promise((resolve, reject) => {
       connection.query(query, values, (error, results) => {
         if (error) {
@@ -38,13 +45,12 @@ export async function POST(request) {
     });
 
     // Return success response
-    return NextResponse.json({ message: 'Data inserted successfully' });
+    return NextResponse.json({ message: "Data inserted successfully" });
   } catch (error) {
     console.error("Error processing request:", error);
-    return NextResponse.error({ status: 500, message: 'Internal Server Error' });
+    return NextResponse.error({ message: "Internal Server Error" });
   }
 }
-
 
 export async function GET(request) {
   try {
@@ -68,12 +74,9 @@ export async function GET(request) {
     return NextResponse.json(users);
   } catch (error) {
     console.error("Error processing request:", error);
-    return NextResponse.error({ status: 500, message: 'Internal Server Error' });
+    return NextResponse.error({ message: "Internal Server Error" });
   }
 }
-
-
-
 
 // export async function POST(request) {
 //     try {
@@ -86,7 +89,7 @@ export async function GET(request) {
 //           email: email,
 //         },
 //       });
-  
+
 //       if (existingUser) {
 //         // If the email address already exists, return an error response
 //         return NextResponse.error({
@@ -107,7 +110,7 @@ export async function GET(request) {
 //               updatedAt: new Date(),
 //           },
 //       });
-  
+
 //         // Return the newly created user
 //         return NextResponse.json(newUser);
 //       }
@@ -120,7 +123,7 @@ export async function GET(request) {
 //       });
 //     }
 //   }
-  
+
 // get all users
 // export async function GET(req, res) {
 //   try {

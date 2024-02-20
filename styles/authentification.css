@@ -1,7 +1,4 @@
-body {
-  font-family: Helvetica;
-}
-.container {
+.auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,15 +6,16 @@ body {
 }
 
 .box-area {
-  width: 900px;
+  width: 800px;
 }
 
 .left-box {
   padding: 15px;
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-direction: column;
-  background-color: #103cbe;
+  background: #3586ff;
   color: white;
 }
 
@@ -30,22 +28,36 @@ body {
 }
 
 .remember-box {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0px;
 }
 
 .input-group {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 #welcome {
-    font-size: 1.4rem;
-    display: flex;
-    justify-content: center; 
+  font-size: 1.4rem;
+  display: flex;
+  justify-content: center;
 }
-
-@media only screen and (max-width: 768px) {
+.btn {
+  background: #3586ff;
+}
+.btn:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: white;
+  color: #3586ff;
+}
+input:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: #b4d4ff;
+}
+@media only screen and (max-width: 760px) {
   .box-area {
     margin: 0 10px;
   }
@@ -60,11 +72,11 @@ body {
     padding: 20px;
   }
   .featured-image {
- 
-    width: 50px;
+    width: 100px;
+    height: 100px;
   }
-  small {
-    display: non;
+  h1 {
+    margin-bottom: 0px;
   }
   .welcome-msg {
     display: none;
