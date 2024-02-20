@@ -121,6 +121,7 @@ const RegisterForm = () => {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
+            phone_number: data.phone,
           },
         });
       setIsLoading(false);

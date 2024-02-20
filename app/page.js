@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Image from "react-bootstrap/Image";
+import image from './resources/images/person.jpeg'
+
 
 export default function Home() {
   const [users, setUsers] = useState([]);
@@ -26,7 +28,7 @@ export default function Home() {
           </Button>
         </Col>
         <Col md={6} className="text-center">
-          <Image src="app/resources/images/person.jpeg"  rounded />
+          <Image src={image} alt='person' rounded style={{width: "200px", height: "100px"}}/>
         </Col>
       </Row>
 
