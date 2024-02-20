@@ -6,6 +6,7 @@ import { Amplify } from "aws-amplify";
 import config from "../../../../aws-exports";
 import "@aws-amplify/ui-react/styles.css";
 Amplify.configure(config);
+
 import GrowSpinner from "../../../components/Spinner";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";

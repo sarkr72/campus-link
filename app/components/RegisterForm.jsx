@@ -103,7 +103,7 @@ const RegisterForm = () => {
         isTutor: data?.isTutor,
       };
 
-      const formData = new FormData();
+      const formData = new URLSearchParams();
       Object.entries(formDataObj).forEach(([key, value]) => {
         formData.append(key, value);
       });
@@ -140,7 +140,7 @@ const RegisterForm = () => {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    // setIsLoading(true);
       try {
         console.log('email', data.email)
         const { isSignUpComplete, nextStep } = await confirmSignUp({
@@ -149,9 +149,10 @@ const RegisterForm = () => {
         });
         if (isSignUpComplete) {
           setIsLoading(false);
-          // router.push("/pages/home/");
-          router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
+          router.push("/pages/logIn");
+          // router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
         } else {
+          setIsLoading(false);
           toast.error("Wrong credential");
         }
       } catch (error) {}
