@@ -1,11 +1,13 @@
 // Import necessary dependencies
 "use client";
 
-// import '../../../utils/configureAmplify';
+/*
+import '../../../utils/configureAmplify';
 import { Amplify } from "aws-amplify";
 import config from "../../../aws-exports";
 import "@aws-amplify/ui-react/styles.css";
 Amplify.configure(config);
+*/
 
 import GrowSpinner from "../../components/Spinner";
 import { useRouter } from "next/navigation";

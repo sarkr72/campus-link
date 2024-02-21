@@ -2,12 +2,69 @@
 import { Inter } from "next/font/google";
 import Image from "next/image";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React from 'react';
+import { useEffect } from "react";
+import React, { useState } from 'react';
 import { Container, Row, Breadcrumb, Card, ListGroup, CardBody, CardText, Col} from 'react-bootstrap';
 import personLogo from "../resources/images/person.jpeg";
 
 
-function ViewProfile() {
+const ViewProfile = () => {
+    const [currnetEmail, setCurrentEmail] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [user, setUser] = useState("");
+    const [data, setData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        phone: "",
+        profilePicture: "",
+        bio: "",
+        major: "",
+        minor: "",
+        isTutor: false,
+        role: "",
+    });
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        // setIsLoading(true);
+        const fetchCurrentUser = async () => {
+          try {
+            const response = await fetch(`/api/users`);
+            if (response.ok) {
+              const data2 = await response.json();
+              const extractedData = data2.map(user => ({
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                password: user.password,
+                phone: user.phone,
+                profilePicture: user.profilePicture,
+                bio: user.bio,
+                major: user.major,
+                minor: user.minor,
+                isTutor: user.isTutor,
+                role: user.role
+              }));
+              
+              setData(extractedData[0]);
+              setUser(data);
+              console.log("ssss", data);
+              setIsLoading(false);
+              console.log("User data:", data);
+            } else {
+              console.log("Failed to fetch user data:", response.statusText);
+            }
+          } catch (error) {
+            console.error("Error getting current user:", error);
+          } finally {
+          }
+        };
+    
+        fetchCurrentUser();
+    }, []);
+
     return(
         <Container>
             <br/>
@@ -33,16 +90,17 @@ function ViewProfile() {
                     />
                     <Card.Body className="text-center">
                         <Card.Text style={{justifyContent: 'center'}}>
-                        Test Student
+                        {data.firstName}
                         </Card.Text>
                     </Card.Body>
                     <ListGroup className="list-group-flush">
-                        <ListGroup.Item className="text-muted mb-1 text-center">Major: Computer Science</ListGroup.Item>
-                        <ListGroup.Item className="text-muted mb-1 text-center">Year: Senior</ListGroup.Item>
-                        <ListGroup.Item className="text-muted mb-1 text-center">Tutor: Yes</ListGroup.Item>
+                        <ListGroup.Item className="text-muted mb-1 text-center">Major: {data.major}</ListGroup.Item>
+                        <ListGroup.Item className="text-muted mb-1 text-center">Bio: {data.bio}</ListGroup.Item>
+                        <ListGroup.Item className="text-muted mb-1 text-center">Tutor: {data.isTutor}</ListGroup.Item>
                     </ListGroup>
                     <Card.Body>
                         <Card.Link className="text-center" href="/">Home</Card.Link>
+                        <Card.Link href="/pages/updateProfile">Update</Card.Link>
                         <Card.Link href="#">Tutoring Center</Card.Link>
                     </Card.Body>
                 </Card>
@@ -55,7 +113,7 @@ function ViewProfile() {
                                 <CardText>Full Name</CardText>
                             </Col>
                             <Col sm="9">
-                                <CardText className="text-muted">Test Student</CardText>
+                                <CardText className="text-muted">{data.firstName} {data.lastName}</CardText>
                             </Col>
                         </Row>
                         <hr />
@@ -64,7 +122,7 @@ function ViewProfile() {
                                 <CardText>Email</CardText>
                             </Col>
                             <Col sm="9">
-                                <CardText className="text-muted">teststudent@gmail.com</CardText>
+                                <CardText className="text-muted">{data.email}</CardText>
                             </Col>
                         </Row>
                         <hr />
@@ -73,7 +131,7 @@ function ViewProfile() {
                                 <CardText>Password</CardText>
                             </Col>
                             <Col sm="9">
-                                <CardText className="text-muted">private</CardText>
+                                <CardText className="text-muted">{data.password}</CardText>
                             </Col>
                         </Row>
                         <hr />
@@ -82,7 +140,7 @@ function ViewProfile() {
                                 <CardText>Phone Number</CardText>
                             </Col>
                             <Col sm="9">
-                                <CardText className="text-muted">123-456-7890</CardText>
+                                <CardText className="text-muted">{data.phone}</CardText>
                             </Col>
                         </Row>
                         <hr />
@@ -91,7 +149,7 @@ function ViewProfile() {
                                 <CardText>Role</CardText>
                             </Col>
                             <Col sm="9">
-                                <CardText className="text-muted">Tutor</CardText>
+                                <CardText className="text-muted">{data.role}</CardText>
                             </Col>
                         </Row>
                         <hr />

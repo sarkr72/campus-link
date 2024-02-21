@@ -183,6 +183,9 @@ function Header() {
                   <NavDropdown.Item href="/pages/updateProfile">
                     Update Profile
                   </NavDropdown.Item>
+                  <NavDropdown.Item href="/pages/schedule">
+                    View Schedule
+                  </NavDropdown.Item>
                 </>
               )}
               <NavDropdown.Item href="/pages/settings">
