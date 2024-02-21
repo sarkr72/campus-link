@@ -8,7 +8,8 @@ import Image from "next/image";
 import GrowSpinner from "../../components/Spinner";
 import styles from "../../../styles/authentification.css";
 import { fetchUserData } from "../../../utils/fetchUserData";
-import currentUser from "../../../utils/checkSignIn";
+import { toast } from "react-toastify";
+// import currentUser from "../../../utils/checkSignIn";
 
 const UpdateProfilePage = () => {
   const [currnetEmail, setCurrentEmail] = useState("");
@@ -29,47 +30,85 @@ const UpdateProfilePage = () => {
   });
   const [error, setError] = useState("");
 
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const email = await currentUser();
+  //       setCurrentEmail(email);
+
+  //       if (email) {
+  //         const response = await fetch(`/api/users/${email}`, {
+  //           method: "GET",
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setData((prevData) => ({
+  //             ...prevData,
+  //             firstName: data.firstName,
+  //             lastName: data.lastName,
+  //             email: data.email,
+  //             password: data.password,
+  //             phone: data.phone,
+  //             profilePicture: data.profilePicture,
+  //             bio: data.bio,
+  //             major: data.major,
+  //             minor: data.minor,
+  //             isTutor: data.isTutor,
+  //             role: data.role,
+  //           }));
+
+  //           setUser(data);
+  //           console.log("User data:", data);
+  //         } else {
+  //           console.log("Failed to fetch user data:", response.statusText);
+  //         }
+  //       } else {
+  //         console.log("User is not signed in");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //       // setIsEmailSet(true);
+  //     }
+  //   };
+
+  //   fetchCurrentUser();
+  // }, []);
+
   useEffect(() => {
-    setIsLoading(true);
+    // setIsLoading(true);
     const fetchCurrentUser = async () => {
       try {
-        const email = await currentUser();
-        setCurrentEmail(email);
-
-        if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            method: "GET",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setData((prevData) => ({
-              ...prevData,
-              firstName: data.firstName,
-              lastName: data.lastName,
-              email: data.email,
-              password: data.password,
-              phone: data.phone,
-              profilePicture: data.profilePicture,
-              bio: data.bio,
-              major: data.major,
-              minor: data.minor,
-              isTutor: data.isTutor,
-              role: data.role,
-            }));
-
-            setUser(data);
-            console.log("User data:", data);
-          } else {
-            console.log("Failed to fetch user data:", response.statusText);
-          }
+        const response = await fetch(`/api/users`);
+        if (response.ok) {
+          const data2 = await response.json();
+          const extractedData = data2.map(user => ({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            password: user.password,
+            phone: user.phone,
+            profilePicture: user.profilePicture,
+            bio: user.bio,
+            major: user.major,
+            minor: user.minor,
+            isTutor: user.isTutor,
+            role: user.role
+          }));
+          
+          setData(extractedData[0]);
+          setUser(data);
+          console.log("ssss", data);
+          setIsLoading(false);
+          console.log("User data:", data);
         } else {
-          console.log("User is not signed in");
+          console.log("Failed to fetch user data:", response.statusText);
         }
       } catch (error) {
         console.error("Error getting current user:", error);
       } finally {
-        setIsLoading(false);
-        // setIsEmailSet(true);
       }
     };
 
@@ -137,19 +176,20 @@ const UpdateProfilePage = () => {
         isTutor: data?.isTutor,
       };
 
-      const formData = new FormData ();
+      const formData = new FormData();
       Object.entries(formDataObj).forEach(([key, value]) => {
         formData.append(key, value);
       });
 
-      const response = await fetch(`/api/users/${currnetEmail}`, {
+      const response = await fetch(`/api/users/${data?.email}`, {
         method: "PUT",
         body: formData,
       });
 
       if (response.ok) {
-        window.location.reload();
         setIsLoading(false);
+        window.location.reload();
+        toast.success('Profile updated!')
       }
     } catch (error) {
       console.error("Error signing up user:", error);
