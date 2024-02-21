@@ -23,17 +23,35 @@ export async function POST(request) {
     const createdAt = new Date().toISOString(); // Format createdAt date
     const updatedAt = createdAt; // Assuming createdAt and updatedAt are the same initially
     
-    // Execute SQL query to insert data into database
-    const query = `
-  INSERT INTO Student (firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`;
+    // Check if the email already exists in the database
+    const emailExistsQuery = `
+      SELECT COUNT(*) AS count FROM Student WHERE email = ?
+    `;
+    const emailExistsValues = [email];
+    const emailExistsResult = await new Promise((resolve, reject) => {
+      connection.query(emailExistsQuery, emailExistsValues, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results[0].count);
+        }
+      });
+    });
 
-const values = [firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt];
+    if (emailExistsResult > 0) {
+      // If the email already exists, return an error response
+      return NextResponse.json({ message: "Email already exists" });
+    }
 
-    
+    // If the email does not exist, insert the data into the database
+    const insertQuery = `
+      INSERT INTO Student (firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const insertValues = [firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt];
+
     await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results) => {
+      connection.query(insertQuery, insertValues, (error, results) => {
         if (error) {
           console.error("Error executing SQL query:", error);
           reject(error);
@@ -52,31 +70,63 @@ const values = [firstName, lastName, email, password, phone, role, profilePictur
   }
 }
 
+
+
+
 export async function GET(request) {
   try {
     const query = `
       SELECT * FROM Student
+      WHERE isSignedIn = true
     `;
-
-    const users = await new Promise((resolve, reject) => {
+    console.log("i am called: ");
+    const signedInUsers = await new Promise((resolve, reject) => {
       connection.query(query, (error, results) => {
         if (error) {
           console.error("Error executing SQL query:", error);
           reject(error);
         } else {
-          console.log("Users fetched successfully:", results);
+          console.log("Signed-in users fetched successfully:", results);
           resolve(results);
         }
       });
     });
 
-    // Return success response with fetched users
-    return NextResponse.json(users);
+    // Return success response with fetched signed-in users
+    return NextResponse.json(signedInUsers);
   } catch (error) {
     console.error("Error processing request:", error);
     return NextResponse.error({ message: "Internal Server Error" });
   }
 }
+
+
+// export async function GET(request) {
+//   try {
+//     const query = `
+//       SELECT * FROM Student
+//     `;
+
+//     const users = await new Promise((resolve, reject) => {
+//       connection.query(query, (error, results) => {
+//         if (error) {
+//           console.error("Error executing SQL query:", error);
+//           reject(error);
+//         } else {
+//           console.log("Users fetched successfully:", results);
+//           resolve(results);
+//         }
+//       });
+//     });
+
+//     // Return success response with fetched users
+//     return NextResponse.json(users);
+//   } catch (error) {
+//     console.error("Error processing request:", error);
+//     return NextResponse.error({ message: "Internal Server Error" });
+//   }
+// }
+
 
 // export async function POST(request) {
 //     try {
