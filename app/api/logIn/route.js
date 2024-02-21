@@ -42,6 +42,26 @@ export async function POST(request) {
       return NextResponse.json({ error: "Incorrect password" });
     }
 
+    // Update the isSignedIn column to true for the logged-in user
+    // If the email and password match, update the isSignedIn column to true
+    const updateQuery = `
+        UPDATE Student
+        SET isSignedIn = true
+        WHERE email = ?
+      `;
+    const updateValues = [email];
+
+    await new Promise((resolve, reject) => {
+      connection.query(updateQuery, updateValues, (error, results) => {
+        if (error) {
+          console.error("Error updating isSignedIn column:", error);
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+
     // If the email and password match, return a success response
     return NextResponse.json({ message: "Login successful" });
   } catch (error) {

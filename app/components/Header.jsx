@@ -5,9 +5,9 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { signOut } from "aws-amplify/auth";
+// import { signOut } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
-import currentUser from "../../utils/checkSignIn";
+// import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
@@ -35,30 +35,54 @@ function Header() {
     };
   }, []);
 
+  // useEffect(() => {
+  //   // setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const email = await currentUser();
+  //       setCurrentEmail(email);
+  //       if (email) {
+  //         console.log("emaaaa", email);
+  //         setIsEmailSet(true);
+  //       }
+  //       if (email) {
+  //         const response = await fetch(`/api/users/${email}`, {
+  //           method: "GET",
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setUser(data);
+  //           setIsLoading(false);
+  //           console.log("User data:", data);
+  //         } else {
+  //           console.log("Failed to fetch user data:", response.statusText);
+  //         }
+  //       } else {
+  //         console.log("User is not signed in");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //     }
+  //   };
+
+  //   fetchCurrentUser();
+  // }, [toggle]);
+
   useEffect(() => {
     // setIsLoading(true);
     const fetchCurrentUser = async () => {
       try {
-        const email = await currentUser();
-        setCurrentEmail(email);
-        if (email) {
-          console.log("emaaaa", email);
-          setIsEmailSet(true);
-        }
-        if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            method: "GET",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data);
-            setIsLoading(false);
-            console.log("User data:", data);
-          } else {
-            console.log("Failed to fetch user data:", response.statusText);
-          }
+        const response = await fetch(`/api/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsEmailSet( data.some(user => user.isSignedIn));
+          setUser(data);
+          // console.log("ssss", data);
+          setIsLoading(false);
+          console.log("User data:", data);
         } else {
-          console.log("User is not signed in");
+          console.log("Failed to fetch user data:", response.statusText);
         }
       } catch (error) {
         console.error("Error getting current user:", error);
@@ -72,7 +96,6 @@ function Header() {
   const handleToggleNavbar = () => {
     setIsNavbarCollapsed(!isNavbarCollapsed);
   };
-
 
   const handleDropdownSelect = () => {
     setDropdownOpen(false);
@@ -88,15 +111,30 @@ function Header() {
 
   async function handleSignOut() {
     try {
-      await signOut()
-        .then(() => {
-          router.push("/pages/logIn");
-          setIsEmailSet(false);
-          toast.success("You are logged out!");
-        })
-        .catch((error) => {
-          console.error("Error signing out:", error);
-        });
+      const response = await fetch(`/api/logOut`);
+      if (response.ok) {
+        
+        const data = await response.json();
+        const { isSignedIn } = data;
+        setIsEmailSet( isSignedIn);
+        router.push("/pages/logIn")
+        setUser(data);
+        console.log("ssss",  isEmailSet);
+        setIsLoading(false);
+        console.log("User data:", data);
+      } else {
+        console.log("Failed to fetch user data:", response.statusText);
+      }
+
+      // await signOut()
+      //   .then(() => {
+      //     router.push("/pages/logIn");
+      //     setIsEmailSet(false);
+      //     toast.success("You are logged out!");
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error signing out:", error);
+      //   });
     } catch (error) {
       console.log("error signing out: ", error);
     }
@@ -110,7 +148,7 @@ function Header() {
 
   return (
     <Navbar
-    ref={navbarRef}
+      ref={navbarRef}
       style={{
         backgroundImage:
           "linear-gradient(to right, #EEF5FF, #B4D4FF, #86B6F6, #176B87)",
@@ -158,8 +196,12 @@ function Header() {
                 </NavDropdown.Item>
               )}
             </NavDropdown>
-            {!isEmailSet && <Nav.Link href="/pages/logIn">Log In</Nav.Link>}
-            <Nav.Link href="/pages/register">Register</Nav.Link>
+            {!isEmailSet && (
+              <>
+                <Nav.Link href="/pages/logIn">Log In</Nav.Link>
+                <Nav.Link href="/pages/register">Register</Nav.Link>
+              </>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>
