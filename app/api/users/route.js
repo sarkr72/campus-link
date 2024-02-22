@@ -77,7 +77,6 @@ export async function GET(request) {
   try {
     const query = `
       SELECT * FROM Student
-      WHERE isSignedIn = true
     `;
     console.log("i am called: ");
     const signedInUsers = await new Promise((resolve, reject) => {

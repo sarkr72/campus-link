@@ -5,8 +5,8 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-// import { signUp } from "aws-amplify/auth";
-// import "../../utils/configureAmplify";
+import { signUp } from "aws-amplify/auth";
+import "../../utils/configureAmplify";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Modal, Button } from "react-bootstrap";
@@ -15,7 +15,7 @@ import styles from "/styles/authentification.css";
 import img from "next/image";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
-// import { confirmSignUp } from "aws-amplify/auth";
+import { confirmSignUp } from "aws-amplify/auth";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -132,27 +132,27 @@ const RegisterForm = () => {
 
         if (response.ok) {
           console.log("caled")
-          // await signUp({
-          //   username: data.email,
-          //   password: data.password,
-          //   attributes: {
-          //     firstName: data.firstName,
-          //     lastName: data.lastName,
-          //     email: data.email,
-          //     phone_number: data.phone,
-          //   },
-          // });
+          await signUp({
+            username: data.email,
+            password: data.password,
+            attributes: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              phone_number: data.phone,
+            },
+          });
           const responseData = await response.json();
           if (responseData.message === "Email already exists") {
             setIsLoading(false);
             toast.error("Email already exists!");
           } else {
             setIsLoading(false);
-            router.push("/pages/logIn");
+            setShowConfirmationModal(true);
             console.log("called");
           }
 
-          // setShowConfirmationModal(true);
+          
         }
       } catch (error) {
         console.error("Error signing up user:", error);
@@ -189,7 +189,7 @@ const RegisterForm = () => {
 
   return (
     <div>
-      {/* {!showConfirmationModal && ( */}
+      {!showConfirmationModal && (
       <div
         className={`auth-container ${styles.footer}`}
         style={{ minHeight: "100vh" }}
@@ -357,7 +357,7 @@ const RegisterForm = () => {
           </div>
         </div>
       </div>
-      {/* )} */}
+       )}
       {showConfirmationModal && (
         <div style={{ minHeight: "100vh" }}>
           <div className=" top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">

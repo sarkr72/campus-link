@@ -5,9 +5,9 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-// import { signOut } from "aws-amplify/auth";
+import { signOut } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
-// import currentUser from "../../utils/checkSignIn";
+import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
@@ -35,54 +35,30 @@ function Header() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   // setIsLoading(true);
-  //   const fetchCurrentUser = async () => {
-  //     try {
-  //       const email = await currentUser();
-  //       setCurrentEmail(email);
-  //       if (email) {
-  //         console.log("emaaaa", email);
-  //         setIsEmailSet(true);
-  //       }
-  //       if (email) {
-  //         const response = await fetch(`/api/users/${email}`, {
-  //           method: "GET",
-  //         });
-  //         if (response.ok) {
-  //           const data = await response.json();
-  //           setUser(data);
-  //           setIsLoading(false);
-  //           console.log("User data:", data);
-  //         } else {
-  //           console.log("Failed to fetch user data:", response.statusText);
-  //         }
-  //       } else {
-  //         console.log("User is not signed in");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error getting current user:", error);
-  //     } finally {
-  //     }
-  //   };
-
-  //   fetchCurrentUser();
-  // }, [toggle]);
-
   useEffect(() => {
     // setIsLoading(true);
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch(`/api/users`);
-        if (response.ok) {
-          const data = await response.json();
-          setIsEmailSet( data.some(user => user.isSignedIn));
-          setUser(data);
-          // console.log("ssss", data);
-          setIsLoading(false);
-          console.log("User data:", data);
+        const email = await currentUser();
+        setCurrentEmail(email);
+        if (email) {
+          console.log("emaaaa", email);
+          setIsEmailSet(true);
+        }
+        if (email) {
+          const response = await fetch(`/api/users/${email}`, {
+            method: "GET",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data);
+            setIsLoading(false);
+            console.log("User data:", data);
+          } else {
+            console.log("Failed to fetch user data:", response.statusText);
+          }
         } else {
-          console.log("Failed to fetch user data:", response.statusText);
+          console.log("User is not signed in");
         }
       } catch (error) {
         console.error("Error getting current user:", error);
@@ -111,30 +87,15 @@ function Header() {
 
   async function handleSignOut() {
     try {
-      const response = await fetch(`/api/logOut`);
-      if (response.ok) {
-        
-        const data = await response.json();
-        const { isSignedIn } = data;
-        setIsEmailSet( isSignedIn);
-        router.push("/pages/logIn")
-        setUser(data);
-        console.log("ssss",  isEmailSet);
-        setIsLoading(false);
-        console.log("User data:", data);
-      } else {
-        console.log("Failed to fetch user data:", response.statusText);
-      }
-
-      // await signOut()
-      //   .then(() => {
-      //     router.push("/pages/logIn");
-      //     setIsEmailSet(false);
-      //     toast.success("You are logged out!");
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error signing out:", error);
-      //   });
+      await signOut()
+        .then(() => {
+          router.push("/pages/logIn");
+          setIsEmailSet(false);
+          toast.success("You are logged out!");
+        })
+        .catch((error) => {
+          console.error("Error signing out:", error);
+        });
     } catch (error) {
       console.log("error signing out: ", error);
     }
