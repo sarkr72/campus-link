@@ -11,7 +11,7 @@ export async function GET(req, { params }) {
       WHERE email = ?
     `;
     const values = [email];
-
+    console.log("i am calledddddd");
     const user = await new Promise((resolve, reject) => {
       connection.query(query, values, (error, results) => {
         if (error) {
@@ -27,7 +27,21 @@ export async function GET(req, { params }) {
     if (!user) {
       return NextResponse.error({ message: "User not found", status: 404 });
     }
-    return NextResponse.json(user);
+
+    // Add CORS headers to allow requests from specific origins
+    const allowedOrigins = ["https://rinku2.d26pbs75zpbvmr.amplifyapp.com"];
+    const origin = req.headers.get("Origin");
+    if (allowedOrigins.includes(origin)) {
+      return NextResponse.json(user, {
+        headers: {
+          "Access-Control-Allow-Origin": origin,
+          "Access-Control-Allow-Methods": "GET",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
+    } else {
+      return NextResponse.error({ message: "Not allowed by CORS", status: 403 });
+    }
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.error({
@@ -35,6 +49,7 @@ export async function GET(req, { params }) {
     });
   }
 }
+
 
 // Function to delete a student
 export async function DELETE(req, { params }) {
@@ -85,20 +100,21 @@ export async function PUT(request, { params }) {
     const phone = formData.get("phone");
     // Handle file upload separately
     const profilePictureFile = formData.get("profilePicture");
-    const profilePicture = profilePictureFile ? '/uploads/' + profilePictureFile.name : null;
+    const profilePicture = profilePictureFile
+      ? "/uploads/" + profilePictureFile.name
+      : null;
     const bio = formData.get("bio");
     const minor = formData.get("minor");
     const isTutor = formData.get("isTutor") === "true"; // Convert to boolean
     const role = formData.get("role");
     const updatedAt = new Date().toISOString(); // Format updatedAt date
 
-    
     // Execute SQL query to update the student in the Student table
     const query = `
     UPDATE Student
     SET firstName = ?, lastName = ?, email = ?, password = ?, phone = ?, role = ?, 
         profilePicture = ?, bio = ?, major = ?, minor = ?, isTutor = ?, updatedAt = ?
-    WHERE email = ?`; 
+    WHERE email = ?`;
 
     const values = [
       firstName,
@@ -135,7 +151,6 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Internal Server Error" });
   }
 }
-
 
 // export async function GET(req, { params }) {
 //     try {

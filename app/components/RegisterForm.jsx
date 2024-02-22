@@ -181,6 +181,7 @@ const RegisterForm = () => {
         router.push("/pages/logIn");
         // router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
       } else {
+
         setIsLoading(false);
         toast.error("Wrong credential");
       }
@@ -389,9 +390,9 @@ const RegisterForm = () => {
                   >
                     Confirm
                   </Button>
-                  {/* <Button variant="danger" onClick={(e) => setShowConfirmationModal(false)} className="mx-2">
+                  <Button variant="danger" onClick={(e) => setShowConfirmationModal(false)} className="mx-2">
                     Cancel
-                  </Button> */}
+                  </Button>
                 </div>
               </div>
             </div>
