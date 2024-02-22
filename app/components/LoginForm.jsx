@@ -67,6 +67,7 @@ const LoginForm = () => {
         console.error("Error signing in:", error);
       });
       setIsLoading(false);
+      console.log('signin')
   };
 
   if (isLoading) {
