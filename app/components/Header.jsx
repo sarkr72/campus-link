@@ -45,9 +45,9 @@ function Header() {
           console.log("emaaaa", email);
           setIsEmailSet(true);
         }
-        if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            method: "GET",
+        // if (email) {
+          const response = await fetch(`/api/users/${'jdjsb234@gmail.com'}`, {
+            cache: "no-store",
           });
           if (response.ok) {
             const data = await response.json();
@@ -57,9 +57,9 @@ function Header() {
           } else {
             console.log("Failed to fetch user data header:", response);
           }
-        } else {
-          console.log("User is not signed in");
-        }
+        // } else { 
+        //   console.log("User is not signed in");
+        // }
       } catch (error) {
         console.error("Error getting current user:", error);
       } finally {
@@ -136,7 +136,7 @@ function Header() {
               show={dropdownOpen} // Control visibility of dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
-              {isEmailSet && (
+              {/* {isEmailSet && ( */}
                 <>
                   <NavDropdown.Item href="/pages/profile">
                     View Profile
@@ -145,7 +145,7 @@ function Header() {
                     Update Profile
                   </NavDropdown.Item>
                 </>
-              )}
+              {/* )} */}
               <NavDropdown.Item href="/pages/settings">
                 Settings
               </NavDropdown.Item>

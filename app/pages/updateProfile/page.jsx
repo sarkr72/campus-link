@@ -37,17 +37,18 @@ const UpdateProfilePage = () => {
         setCurrentEmail(email);
 
         if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            method: "GET",
-          });
+          const response = await fetch(`/api/users/${'jdjsb234@gmail.com'}`, {
+            cache: "no-store", 
+          }); 
+          console.log('response: ', response)
           if (response.ok) {
             const data = await response.json();
             setData((prevData) => ({
-              ...prevData,
+              ...prevData, 
               firstName: data.firstName,
               lastName: data.lastName,
               email: data.email,
-              password: data.password,
+              password: data.password, 
               phone: data.phone,
               profilePicture: data.profilePicture,
               bio: data.bio,
@@ -58,7 +59,7 @@ const UpdateProfilePage = () => {
             }));
 
             setUser(data);
-            console.log("User data:", data);
+            console.log("User data updatepage:", data);
           } else {
             console.log("Failed to fetch user data update page:", response);
           }

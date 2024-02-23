@@ -1,41 +1,75 @@
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
-import connection from "../../../../utils/db";
+// import createConnection from "../../../../utils/db";
 
+import { createConnection } from "mysql2/promise";
+
+// Function to establish MySQL connection
+async function getConnection() {
+  try {
+    const connection = await createConnection({
+      host: process.env.NEXT_PUBLIC_DB_HOST,
+      port: 3306,
+      user: process.env.NEXT_PUBLIC_DB_USER,
+      password: process.env.NEXT_PUBLIC_DB_PASSWORD,
+      database: process.env.NEXT_PUBLIC_DB_DATABASE,
+    });
+    return connection;
+  } catch (error) {
+    console.error("Error establishing database connection:", error);
+    throw error;
+  }
+}
+//mongodb
+
+// export async function GET(req, { params }) {
+//   try {
+//     const email = params.id;
+// console.log("daledddddd")
+//     // Connect to the database
+//     const db = await connection();
+
+//     // Get reference to the students collection
+//     const collection = db.collection('students');
+
+//     // Query the database for the user with the specified email
+//     const user = await collection.findOne({ email });
+
+//     if (!user) {
+//       return NextResponse.error({ message: "User not found", status: 404 });
+//     }
+
+//     console.log('dafafa', user)
+//     // Return the user data
+//     return NextResponse.json(user);
+//   } catch (error) {
+//     console.error("Error fetching user:", error);
+//     return NextResponse.error({
+//       message: "Internal Server Error",
+//     });
+//   }
+// }
 
 export async function GET(req, { params }) {
   try {
     const email = params.id;
-
-    const query = `
-      SELECT * FROM Student
-      WHERE email = ?
-    `;
+    const query = "SELECT * FROM Student WHERE email = ?";
     const values = [email];
-    console.log("i am calledddddd");
-    const user = await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results) => {
-        if (error) {
-          console.error("Error executing SQL query:", error);
-          reject(error);
-        } else {
-          console.log("User fetched successfully:", results);
-          resolve(results[0]); // Resolve with the first result
-        }
-      });
-    });
+    console.log("Fetching user...");
 
-    if (!user) {
+    const connection = await getConnection();
+    const [rows] = await connection.execute(query, values);
+    await connection.end();
+    if (rows.length === 0) {
       return NextResponse.error({ message: "User not found", status: 404 });
     }
-    return NextResponse.json(user);
+    return NextResponse.json(rows[0]);
   } catch (error) {
     console.error("Error fetching user:", error);
-    return NextResponse.error({
-      message: "Internal Server Error",
-    });
+    return NextResponse.error({ message: "Internal Server Error" });
   }
 }
+
 // Function to delete a student
 export async function DELETE(req, { params }) {
   try {
