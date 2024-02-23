@@ -2,6 +2,7 @@ import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
 import connection from "../../../../utils/db";
 
+
 export async function GET(req, { params }) {
   try {
     const email = params.id;
@@ -27,21 +28,7 @@ export async function GET(req, { params }) {
     if (!user) {
       return NextResponse.error({ message: "User not found", status: 404 });
     }
-
-    // Add CORS headers to allow requests from specific origins
-    const allowedOrigins = ["https://rinku2.d26pbs75zpbvmr.amplifyapp.com"];
-    const origin = req.headers.get("Origin");
-    if (allowedOrigins.includes(origin)) {
-      return NextResponse.json(user, {
-        headers: {
-          "Access-Control-Allow-Origin": origin,
-          "Access-Control-Allow-Methods": "GET",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      });
-    } else {
-      return NextResponse.error({ message: "Not allowed by CORS", status: 403 });
-    }
+    return NextResponse.json(user);
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.error({
@@ -49,8 +36,6 @@ export async function GET(req, { params }) {
     });
   }
 }
-
-
 // Function to delete a student
 export async function DELETE(req, { params }) {
   try {

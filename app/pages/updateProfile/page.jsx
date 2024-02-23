@@ -60,7 +60,7 @@ const UpdateProfilePage = () => {
             setUser(data);
             console.log("User data:", data);
           } else {
-            console.log("Failed to fetch user data:", response.statusText);
+            console.log("Failed to fetch user data update page:", response);
           }
         } else {
           console.log("User is not signed in");

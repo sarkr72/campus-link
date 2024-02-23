@@ -55,7 +55,7 @@ function Header() {
             setIsLoading(false);
             console.log("User data:", data);
           } else {
-            console.log("Failed to fetch user data:", response.statusText);
+            console.log("Failed to fetch user data header:", response);
           }
         } else {
           console.log("User is not signed in");
@@ -151,11 +151,11 @@ function Header() {
               </NavDropdown.Item>
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
               <NavDropdown.Divider />
-              {isEmailSet && (
+              {/* {isEmailSet && ( */}
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
                   Logout
                 </NavDropdown.Item>
-              )}
+              {/* // )} */}
             </NavDropdown>
             {!isEmailSet && (
               <>
