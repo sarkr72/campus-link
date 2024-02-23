@@ -1,0 +1,188 @@
+.timeLine-container {
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+/* This is the div at the top that contains the button for creating a post"*/
+.createPostPrompt {
+  gap: 20px;
+  background: aliceblue;
+  margin-top: 20px;
+  justify-content: space-around;
+  align-items: center;
+}
+/* This is for when the user clicks on "Create Post"*/
+.createPostTemplate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.createPostTemplate form {
+  width: 100%;
+}
+
+.createPostTemplate label {
+  font-weight: bold;
+}
+
+.createPostTemplate input,
+.createPostTemplate textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.createPostTemplate .modal-header,
+.createPostTemplate .modal-footer {
+  background-color: aliceblue;
+  padding: 10px;
+}
+
+.timeLine-container,
+.createPostPrompt,
+.createPostTemplate {
+  flex-direction: row;
+  display: flex;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.left-box,
+.right-box {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: start;
+  width: 25%;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.center-box {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: start;
+  width: 50%;
+  margin: 20px;
+}
+
+#createPost-btn {
+  width: 100%;
+}
+
+.feed {
+  width: 100%;
+}
+
+.feed > * {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  background-color: aliceblue;
+}
+
+.post-title {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.post-body {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 10px;
+}
+
+.post-comment {
+  text-align: justify;
+  margin-bottom: 10px;
+}
+
+.post-img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+.post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  background-color: aliceblue;
+}
+
+.post-img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+.btn {
+  background-color: #3586ff;
+  color: white;
+}
+
+.btn:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: white;
+  color: #3586ff;
+  border: 1px solid black;
+}
+
+/* Adjust styles for smaller screens */
+@media (max-width: 800px) {
+  .left-box,
+  .right-box {
+    display: none;
+  }
+
+  .createPostPrompt {
+    width: 100%;
+  }
+  .center-box {
+    width: 90%;
+  }
+
+  .timeLine-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}

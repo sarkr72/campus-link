@@ -124,7 +124,7 @@ const LoginForm = () => {
               />
             </div>
             {/* Remember me, does not work yet */}
-            <div className="input-group form-check remember-box">
+            <div className="input-group remember-box">
               <div className="form-check">
                 <input
                   type="checkbox"
