@@ -3,11 +3,15 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  max-width: 900px;
+  margin: auto;
 }
 
 .box-area {
   width: 800px;
 }
+
 
 .left-box {
   padding: 15px;
@@ -58,6 +62,10 @@ input:hover {
   background-color: #b4d4ff;
 }
 @media only screen and (max-width: 760px) {
+  .auth-container {
+    width: 90%;
+    margin-top: 35px;
+  }
   .box-area {
     margin: 0 10px;
   }

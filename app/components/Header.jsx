@@ -1,6 +1,6 @@
 // Import necessary dependencies
 "use client";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
+import Image from "next/image";
+import logoImage from "../resources/images/logo.png";
 
 function Header() {
   const router = useRouter();
@@ -76,7 +78,7 @@ function Header() {
         const response = await fetch(`/api/users`);
         if (response.ok) {
           const data = await response.json();
-          setIsEmailSet( data.some(user => user.isSignedIn));
+          setIsEmailSet(data.some((user) => user.isSignedIn));
           setUser(data);
           // console.log("ssss", data);
           setIsLoading(false);
@@ -113,13 +115,12 @@ function Header() {
     try {
       const response = await fetch(`/api/logOut`);
       if (response.ok) {
-        
         const data = await response.json();
         const { isSignedIn } = data;
-        setIsEmailSet( isSignedIn);
-        router.push("/pages/logIn")
+        setIsEmailSet(isSignedIn);
+        router.push("/pages/logIn");
         setUser(data);
-        console.log("ssss",  isEmailSet);
+        console.log("ssss", isEmailSet);
         setIsLoading(false);
         console.log("User data:", data);
       } else {
@@ -149,6 +150,7 @@ function Header() {
   return (
     <Navbar
       ref={navbarRef}
+      className="d-flex justify-content-between"
       style={{
         backgroundImage:
           "linear-gradient(to right, #EEF5FF, #B4D4FF, #86B6F6, #176B87)",
@@ -160,7 +162,10 @@ function Header() {
       onToggle={handleToggleNavbar}
     >
       <Container>
-        <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+      <div className="brand d-flex justify-content-center align-items-center">
+      <Image src={logoImage} alt="Logo" style={{ width: "30px", height: "30px", marginRight: "10px" }}/>
+      <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+      </div>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse
           style={{ justifyContent: "flex-end" }}
