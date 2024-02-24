@@ -1,7 +1,6 @@
-// Import necessary dependencies
 "use client";
 
-import { withRouter } from 'next/navigation';
+import { withRouter } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -12,11 +11,12 @@ import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
+import { useLayoutEffect } from "react";
 
 function Header() {
   const router = useRouter();
   const [user, setUser] = useState("");
-  const currnetEmail = currentUser();
+  const [currnetEmail, setCurrentEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSet, setIsEmailSet] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,6 +24,7 @@ function Header() {
   const navbarRef = useRef(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
 
+  console.log("role: ", user?.role)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -36,35 +37,39 @@ function Header() {
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // setIsLoading(true);
     const fetchCurrentUser = async () => {
-      setIsLoading(true);
       try {
         const email = await currentUser();
-        // setCurrentEmail(email);
+        setCurrentEmail(email);
+        if (email) {
+          console.log("emaaaa", email);
+          setIsEmailSet(true);
+        }
         if (email) {
           const response = await fetch(`/api/users/${email}`, {
-            cache: "no-store",
+            method: "GET",
           });
           if (response.ok) {
             const data = await response.json();
             setUser(data);
-            setIsEmailSet(true);
+            setIsLoading(false);
+            console.log("User data:", data);
           } else {
-            console.log("Failed to fetch user data header:", response);
+            console.log("Failed to fetch user data:", response.statusText);
           }
-        } else { 
+        } else {
           console.log("User is not signed in");
         }
       } catch (error) {
         console.error("Error getting current user:", error);
       } finally {
-        setIsLoading(false); // Set loading state to false after fetching user data
       }
     };
 
     fetchCurrentUser();
-  }, []);
+  }, [toggle]);
 
   const handleToggleNavbar = () => {
     setIsNavbarCollapsed(!isNavbarCollapsed);
@@ -82,7 +87,9 @@ function Header() {
     return <GrowSpinner />;
   }
 
-  async function handleSignOut() {
+  async function handleSignOut(e) {
+    e.preventDefault();
+
     try {
       await signOut()
         .then(() => {
@@ -126,6 +133,9 @@ function Header() {
         >
           <Nav className="justify-content-end">
             <Nav.Link href="/">Home</Nav.Link>
+            {user && user.role === "admin" && (
+              <Nav.Link href="/pages/admin">Admin</Nav.Link>
+            )}
             <NavDropdown
               title="User"
               id="basic-nav-dropdown"
@@ -133,28 +143,29 @@ function Header() {
               show={dropdownOpen} // Control visibility of dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
-              {currnetEmail && (
-              <>
-                <NavDropdown.Item href="/pages/profile">
-                  View Profile
-                </NavDropdown.Item>
-                <NavDropdown.Item href="/pages/updateProfile">
-                  Update Profile
-                </NavDropdown.Item>
-              </>
+              {isEmailSet && (
+                <>
+                  <NavDropdown.Item href="/pages/profile">
+                    View Profile
+                  </NavDropdown.Item>
+                  <NavDropdown.Item href="/pages/updateProfile">
+                    Update Profile
+                  </NavDropdown.Item>
+
+                  <NavDropdown.Item href="/pages/settings">
+                    Settings
+                  </NavDropdown.Item>
+                </>
               )}
-              <NavDropdown.Item href="/pages/settings">
-                Settings
-              </NavDropdown.Item>
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
               <NavDropdown.Divider />
-              {currnetEmail && (
+              {isEmailSet && (
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
                   Logout
                 </NavDropdown.Item>
               )}
             </NavDropdown>
-            {!currnetEmail && (
+            {!isEmailSet && (
               <>
                 <Nav.Link href="/pages/logIn">Log In</Nav.Link>
                 <Nav.Link href="/pages/register">Register</Nav.Link>

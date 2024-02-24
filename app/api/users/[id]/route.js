@@ -1,9 +1,9 @@
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
-import {getConnection} from "../../../../utils/db";
+import { getConnection } from "../../../../utils/db";
 
 // import { createConnection } from "mysql2/promise";
-// 
+//
 // Function to establish MySQL connection
 // async function getConnection() {
 //   try {
@@ -51,13 +51,14 @@ import {getConnection} from "../../../../utils/db";
 // }
 
 export async function GET(req, { params }) {
+  let connection;
   try {
     const email = params.id;
     const query = "SELECT * FROM Student WHERE email = ?";
     const values = [email];
     console.log("getting user...");
 
-    const connection = await getConnection();
+    connection = await getConnection();
     const [rows] = await connection.execute(query, values);
     await connection.release();
     if (rows.length === 0) {
@@ -65,14 +66,17 @@ export async function GET(req, { params }) {
     }
     return NextResponse.json(rows[0]);
   } catch (error) {
+    if (connection) {
+      connection.release();
+    }
     console.error("Error fetching user:", error);
     return NextResponse.error({ message: "Internal Server Error" });
   }
 }
 
-
 // Function to delete a student
 export async function DELETE(req, { params }) {
+  let connection;
   try {
     const email = params.id;
 
@@ -81,33 +85,20 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "Student email not provided" });
     }
 
-    // Get a connection from the pool
     const connection = await getConnection();
-
-    // Execute SQL query to delete the student from the Student table
     const query = `
       DELETE FROM Student
       WHERE email = ?
     `;
     const values = [email];
-
-    await new Promise((resolve, reject) => {
-      connection.query(query, values, (error, results) => {
-        if (error) {
-          console.error("Error executing SQL query:", error);
-          reject(error);
-        } else {
-          console.log("Student deleted successfully");
-          resolve();
-        }
-        // Release the connection back to the pool
-        connection.release();
-      });
-    });
-
-    // Return success response
+    await connection.query(query, values);
+    connection.release();
+   
     return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
+    if (connection) {
+      connection.release();
+    }
     console.error("Error deleting student:", error);
     return NextResponse.json({ error: "Internal Server Error" });
   }
@@ -117,11 +108,21 @@ export async function DELETE(req, { params }) {
 export async function PUT(request, { params }) {
   let connection;
   try {
-    console.log('updating user');
+    console.log("updating user");
     const email = params.id;
     // const formData = await request.formData();
     const formData = await request.json();
-    const { firstName, lastName, password, phone, role, bio, major, minor, tutor } = formData;
+    const {
+      firstName,
+      lastName,
+      password,
+      phone,
+      role,
+      bio,
+      major,
+      minor,
+      tutor,
+    } = formData;
     const isTutor = tutor;
     const updatedAt = new Date().toISOString();
     // const password = formData.get("password");
@@ -142,7 +143,7 @@ export async function PUT(request, { params }) {
 
     // Get a connection from the pool
     connection = await getConnection();
- 
+
     // Execute SQL query to update the student in the Student table
     const query = `
       UPDATE Student
@@ -169,21 +170,21 @@ export async function PUT(request, { params }) {
     await connection.query(query, values);
 
     connection.release();
-    console.log('Student updated successfully');
+    console.log("Student updated successfully");
 
-    console.log('done update');
-    
+    console.log("done update");
+
     return NextResponse.json({ message: "Student updated successfully" });
   } catch (error) {
     console.error("Error updating student:", error);
+    if (connection) {
+      connection.release();
+    }
     return NextResponse.json({ error: "Internal Server Error" });
   }
 }
 
-
-
 // OLD
-
 
 // // Function to delete a student
 // export async function DELETE(req, { params }) {
@@ -246,7 +247,7 @@ export async function PUT(request, { params }) {
 //     // Execute SQL query to update the student in the Student table
 //     const query = `
 //     UPDATE Student
-//     SET firstName = ?, lastName = ?, email = ?, password = ?, phone = ?, role = ?, 
+//     SET firstName = ?, lastName = ?, email = ?, password = ?, phone = ?, role = ?,
 //         profilePicture = ?, bio = ?, major = ?, minor = ?, isTutor = ?, updatedAt = ?
 //     WHERE email = ?`;
 

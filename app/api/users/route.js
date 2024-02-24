@@ -6,7 +6,7 @@ import { getConnection } from "../../../utils/db";
 
 // const prisma = new PrismaClient();
 
-import { createConnection } from "mysql2/promise";
+// import { createConnection } from "mysql2/promise";
 
 // Function to establish MySQL connection
 // async function getConnection() {
@@ -102,36 +102,36 @@ export async function POST(request) {
     // Return success response
     return NextResponse.json({ message: "Data inserted successfully" });
   } catch (error) {
+    if (connection) {
+      connection.release();
+    }
     console.error("Error processing request:", error);
     return NextResponse.error({ message: "Internal Server Error" });
   }
 }
 
-// export async function GET(request) {
-//   try {
-//     const query = `
-//       SELECT * FROM Student
-//     `;
-//     console.log("i am called: ");
-//     const signedInUsers = await new Promise((resolve, reject) => {
-//       connection.query(query, (error, results) => {
-//         if (error) {
-//           console.error("Error executing SQL query:", error);
-//           reject(error);
-//         } else {
-//           console.log("Signed-in users fetched successfully:", results);
-//           resolve(results);
-//         }
-//       });
-//     });
+export async function GET(request) {
+  let connection;
+  try {
+    const query = `
+      SELECT * FROM Student
+    `;
+    console.log("i am called: ");
+    connection = await getConnection();
 
-//     // Return success response with fetched signed-in users
-//     return NextResponse.json(signedInUsers);
-//   } catch (error) {
-//     console.error("Error processing request:", error);
-//     return NextResponse.error({ message: "Internal Server Error" });
-//   }
-// }
+    const [rows] = await connection.query(query);
+    connection.release();
+
+    // Return success response with fetched signed-in users
+    return NextResponse.json(rows);
+  } catch (error) {
+    if (connection) {
+      connection.release();
+    }
+    console.error("Error processing request:", error);
+    return NextResponse.error({ message: "Internal Server Error" });
+  }
+}
 
 //mongodb
 

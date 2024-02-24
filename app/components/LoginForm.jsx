@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -12,12 +12,37 @@ import styles from "/styles/authentification.css";
 import img from "next/image";
 import logoImage from "../resources/images/logo.png";
 import GrowSpinner from "./Spinner";
+// import { signInWithRedirect } from "aws-amplify/auth";
+// import { Hub } from "aws-amplify/utils";
+
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [customState, setCustomState] = useState(null);
+
+  // useEffect(() => {
+  //   const unsubscribe = Hub.listen("auth", ({ payload }) => {
+  //     switch (payload.event) {
+  //       case "signInWithRedirect_failure":
+  //         setError("An error has occurred during the OAuth flow.");
+  //         break;
+  //       case "customOAuthState":
+  //         setCustomState(payload.data); // this is the customState provided on signInWithRedirect function
+  //         break;
+  //     }
+  //   });
+
+  //   return unsubscribe;
+  // }, []);
+
+  // const handleGoogleSignIn = () => {
+  //   signInWithRedirect({ provider: "Google", customState: "shopping-cart" });
+  // };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,6 +103,8 @@ const LoginForm = () => {
     return <GrowSpinner />;
   }
 
+
+
   return (
     <div
       className={`auth-container ${styles.footer}`}
@@ -109,6 +136,7 @@ const LoginForm = () => {
             <p id="welcome">Welcome back to Campus Link</p>
           </div>
           {/* Enter email and password */}
+          {/* <button onClick={handleGoogleSignIn}>Sign in with Google</button> */}
           <form onSubmit={handleSubmit} className="input-group">
             <div className="input-group">
               <input
@@ -145,7 +173,7 @@ const LoginForm = () => {
               {/* Forgot password, does not work yet */}
               <div>
                 <small>
-                  <a href="./recoverPassword.html">Forgot Password?</a>
+                  <Link href="/pages/forgotPassword">Forgot Password?</Link>
                 </small>
               </div>
             </div>
