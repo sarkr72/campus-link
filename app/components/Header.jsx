@@ -1,6 +1,7 @@
 // Import necessary dependencies
 "use client";
 
+import { withRouter } from 'next/navigation';
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -15,7 +16,7 @@ import { toast } from "react-toastify";
 function Header() {
   const router = useRouter();
   const [user, setUser] = useState("");
-  const [currnetEmail, setCurrentEmail] = useState("");
+  const currnetEmail = currentUser();
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSet, setIsEmailSet] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -36,38 +37,34 @@ function Header() {
   }, []);
 
   useEffect(() => {
-    // setIsLoading(true);
     const fetchCurrentUser = async () => {
+      setIsLoading(true);
       try {
         const email = await currentUser();
-        setCurrentEmail(email);
+        // setCurrentEmail(email);
         if (email) {
-          console.log("emaaaa", email);
-          setIsEmailSet(true);
-        }
-        // if (email) {
-          const response = await fetch(`/api/users/${'jdjsb234@gmail.com'}`, {
+          const response = await fetch(`/api/users/${email}`, {
             cache: "no-store",
           });
           if (response.ok) {
             const data = await response.json();
             setUser(data);
-            setIsLoading(false);
-            console.log("User data:", data);
+            setIsEmailSet(true);
           } else {
             console.log("Failed to fetch user data header:", response);
           }
-        // } else { 
-        //   console.log("User is not signed in");
-        // }
+        } else { 
+          console.log("User is not signed in");
+        }
       } catch (error) {
         console.error("Error getting current user:", error);
       } finally {
+        setIsLoading(false); // Set loading state to false after fetching user data
       }
     };
 
     fetchCurrentUser();
-  }, [toggle]);
+  }, []);
 
   const handleToggleNavbar = () => {
     setIsNavbarCollapsed(!isNavbarCollapsed);
@@ -136,28 +133,28 @@ function Header() {
               show={dropdownOpen} // Control visibility of dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
-              {/* {isEmailSet && ( */}
-                <>
-                  <NavDropdown.Item href="/pages/profile">
-                    View Profile
-                  </NavDropdown.Item>
-                  <NavDropdown.Item href="/pages/updateProfile">
-                    Update Profile
-                  </NavDropdown.Item>
-                </>
-              {/* )} */}
+              {currnetEmail && (
+              <>
+                <NavDropdown.Item href="/pages/profile">
+                  View Profile
+                </NavDropdown.Item>
+                <NavDropdown.Item href="/pages/updateProfile">
+                  Update Profile
+                </NavDropdown.Item>
+              </>
+              )}
               <NavDropdown.Item href="/pages/settings">
                 Settings
               </NavDropdown.Item>
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
               <NavDropdown.Divider />
-              {/* {isEmailSet && ( */}
+              {currnetEmail && (
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
                   Logout
                 </NavDropdown.Item>
-              {/* // )} */}
+              )}
             </NavDropdown>
-            {!isEmailSet && (
+            {!currnetEmail && (
               <>
                 <Nav.Link href="/pages/logIn">Log In</Nav.Link>
                 <Nav.Link href="/pages/register">Register</Nav.Link>

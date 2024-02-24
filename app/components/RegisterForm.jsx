@@ -31,7 +31,7 @@ const RegisterForm = () => {
     bio: "",
     major: "",
     minor: "",
-    isTutor: false,
+    tutor: false,
     role: "",
   });
   const [error, setError] = useState("");
@@ -85,7 +85,7 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setIsLoading(false);
     // if (data?.password !== data?.confirmPassword) {
     //   setError("Passwords do not match");
     // } else {
@@ -101,60 +101,70 @@ const RegisterForm = () => {
     }
 
     if (!error) {
-      setIsLoading(true);
+      const { password, confirmPassword } = data;
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match");
+        console.log("Passwords do not match");
+        return;
+      }
 
       try {
-        const formDataObj = {
-          email: data?.email,
-          password: data?.password,
-          firstName: data?.firstName,
-          lastName: data?.lastName,
-          major: data?.major,
-          phone: data?.phone,
-          role: data?.role,
-          profilePicture: data?.profilePicture,
-          bio: data?.bio,
-          minor: data?.minor,
-          isTutor: data?.isTutor,
-        };
+        setIsLoading(true);
+        // const formDataObj = {
+        //   email: data?.email,
+        //   password: data?.password,
+        //   firstName: data?.firstName,
+        //   lastName: data?.lastName,
+        //   major: data?.major,
+        //   phone: data?.phone,
+        //   role: data?.role,
+        //   profilePicture: data?.profilePicture,
+        //   bio: data?.bio,
+        //   minor: data?.minor,
+        //   isTutor: data?.isTutor,
+        // };
 
-        const formData = new FormData();
-        Object.entries(formDataObj).forEach(([key, value]) => {
-          formData.append(key, value);
-        });
+        // const formData = new FormData();
+        // Object.entries(formDataObj).forEach(([key, value]) => {
+        //   formData.append(key, value);
+        // });
 
         const response = await fetch(`/api/users`, {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(data),
         });
 
         if (response.ok) {
-          console.log("caled");
-          await signUp({
-            username: data.email,
-            password: data.password,
-            attributes: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              email: data.email,
-              phone_number: data.phone,
-            },
-          });
           const responseData = await response.json();
           if (responseData.message === "Email already exists") {
-            setIsLoading(false);
             toast.error("Email already exists!");
           } else {
-            setIsLoading(false);
+            await signUp({
+              username: data.email,
+              password: data.password,
+              attributes: {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                phone_number: data.phone,
+              },
+            });
+
             setShowConfirmationModal(true);
             console.log("called");
           }
+        } else {
+          toast.error("Failed to create user");
         }
       } catch (error) {
-        console.error("Error signing up user:", error);
+        console.error("Error creating user:", error);
+        toast.error("An error occurred while creating user.");
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      toast.error(error);
     }
   };
 
@@ -165,7 +175,6 @@ const RegisterForm = () => {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
-    // setIsLoading(true);
     try {
       console.log("email", data.email);
       const { isSignUpComplete, nextStep } = await confirmSignUp({
@@ -173,14 +182,14 @@ const RegisterForm = () => {
         confirmationCode,
       });
       if (isSignUpComplete) {
-        setIsLoading(false);
         router.push("/pages/logIn");
-        // router.push('/pages/home/[slug]', `/pages/home/${data.email}`);
       } else {
-        setIsLoading(false);
-        toast.error("Wrong credential");
+        toast.error("Wrong credentials");
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error confirming sign up:", error);
+      toast.error("Wrong confirmation code!");
+    }
   };
 
   return (
@@ -340,8 +349,8 @@ const RegisterForm = () => {
                     type="checkbox"
                     className={`form-check-input mr-${10}`}
                     style={{ marginRight: "10px" }}
-                    name="isTutor"
-                    checked={data.isTutor}
+                    name="tutor"
+                    checked={data.tutor}
                     onChange={handleCheckboxChange}
                   />
                   <label className="form-check-label" htmlFor="isTutor">

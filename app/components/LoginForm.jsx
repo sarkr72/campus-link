@@ -21,7 +21,7 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+
     // try {
     //   const formDataObj = {
     //     email: email,
@@ -58,22 +58,26 @@ const LoginForm = () => {
     //   console.error("Error inserting data:", error);
     // }
 
-    await signIn({ username: email, password })
-      .then((user) => {
-        console.log("User signed in successfully2:", user);
-        router.push("/pages/home");
-      })
-      .catch((error) => {
-        console.error("Error signing in:", error);
-      });
-      setIsLoading(false);
-      console.log('signin')
+    try {
+      await signIn({ username: email, password });
+      console.log("User signed in successfully");
+      router.push("/pages/home");
+    } catch (error) {
+      console.error("Error signing in:", error);
+      if (error.name === "UserNotFoundException") {
+        toast.error("User does not exist!");
+      } else if (error.name === "NotAuthorizedException") {
+        toast.error("Incorrect username or password!");
+      } else {
+        toast.error("An error occurred during sign-in");
+      }
+    }
   };
 
   if (isLoading) {
     return <GrowSpinner />;
   }
-  
+
   return (
     <div
       className={`auth-container ${styles.footer}`}

@@ -13,6 +13,7 @@ import currentUser from "../../../utils/checkSignIn";
 const UpdateProfilePage = () => {
   const [currnetEmail, setCurrentEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [user, setUser] = useState("");
   const [data, setData] = useState({
     firstName: "",
@@ -24,7 +25,7 @@ const UpdateProfilePage = () => {
     bio: "",
     major: "",
     minor: "",
-    isTutor: false,
+    tutor: "",
     role: "",
   });
   const [error, setError] = useState("");
@@ -37,24 +38,24 @@ const UpdateProfilePage = () => {
         setCurrentEmail(email);
 
         if (email) {
-          const response = await fetch(`/api/users/${'jdjsb234@gmail.com'}`, {
-            cache: "no-store", 
-          }); 
-          console.log('response: ', response)
+          const response = await fetch(`/api/users/${email}`, {
+            cache: "no-store",
+          });
+          console.log("response: ", response);
           if (response.ok) {
             const data = await response.json();
             setData((prevData) => ({
-              ...prevData, 
+              ...prevData,
               firstName: data.firstName,
               lastName: data.lastName,
               email: data.email,
-              password: data.password, 
+              password: data.password,
               phone: data.phone,
               profilePicture: data.profilePicture,
               bio: data.bio,
               major: data.major,
               minor: data.minor,
-              isTutor: data.isTutor,
+              tutor: data.isTutor,
               role: data.role,
             }));
 
@@ -131,7 +132,7 @@ const UpdateProfilePage = () => {
   //           isTutor: user.isTutor,
   //           role: user.role
   //         }));
-          
+
   //         setData(extractedData[0]);
   //         setUser(data);
   //         console.log("ssss", data);
@@ -149,7 +150,6 @@ const UpdateProfilePage = () => {
   //   fetchCurrentUser();
   // }, []);
 
-
   const handleCheckboxChange = (e) => {
     setData({
       ...data,
@@ -160,41 +160,48 @@ const UpdateProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
     try {
-      const formDataObj = {
-        email: data?.email,
-        password: data?.password,
-        firstName: data?.firstName,
-        lastName: data?.lastName,
-        major: data?.major,
-        phone: data?.phone,
-        role: data?.role,
-        profilePicture: data?.profilePicture,
-        bio: data?.bio,
-        minor: data?.minor,
-        isTutor: data?.isTutor,
-      };
+      // const formDataObj = {
+      //   email: data?.email,
+      //   password: data?.password,
+      //   firstName: data?.firstName,
+      //   lastName: data?.lastName,
+      //   major: data?.major,
+      //   phone: data?.phone,
+      //   role: data?.role,
+      //   // profilePicture: 'defaultpicture',
+      //   bio: data?.bio,
+      //   minor: data?.minor,
+      //   isTutor: data?.isTutor,
+      // };
 
-      const formData = new FormData ();
-      Object.entries(formDataObj).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+      // const formData = new FormData();
+      // Object.entries(formDataObj).forEach(([key, value]) => {
+      //   formData.append(key, value);
+      // });
 
       const response = await fetch(`/api/users/${currnetEmail}`, {
         method: "PUT",
-        body: formData,
+        headers:{
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
-
+ 
       if (response.ok) {
-        window.location.reload();
-        setIsLoading(false);
-      }
+        console.log("returned");
+        window.location.reload()
+        // router.refresh();
+      } 
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error signing up user:", error);
+      console.error("Error updating user:", error);
+    } finally {
+      setIsLoading(false); // Move setIsLoading inside the try block
     }
-  };
+  }; 
 
   if (isLoading) {
     return <GrowSpinner />;
@@ -346,8 +353,8 @@ const UpdateProfilePage = () => {
                   type="checkbox"
                   className={`form-check-input mr-${10}`}
                   style={{ marginRight: "10px" }}
-                  name="isTutor"
-                  checked={data.isTutor}
+                  name="tutor"
+                  checked={data.tutor}
                   onChange={handleCheckboxChange}
                 />
                 <label className="form-check-label" htmlFor="isTutor">

@@ -9,24 +9,40 @@
 // });
 
 // export default connection;
-  
-import mysql from 'mysql2/promise';
 
-async function createConnection() {
-  const connection = await mysql.createConnection({
-    host: process.env.NEXT_PUBLIC_DB_HOST,
-    port: 3306,
-    user: process.env.NEXT_PUBLIC_DB_USER,
-    password: process.env.NEXT_PUBLIC_DB_PASSWORD,
-    database: process.env.NEXT_PUBLIC_DB_DATABASE
-  });
+import mysql from "mysql2/promise";
 
-  return connection;
+let pool;
+
+export async function getConnection() {
+  if (!pool) {
+    pool = mysql.createPool({
+      host: process.env.NEXT_PUBLIC_DB_HOST,
+      port: 3306,
+      user: process.env.NEXT_PUBLIC_DB_USER,
+      password: process.env.NEXT_PUBLIC_DB_PASSWORD,
+      database: process.env.NEXT_PUBLIC_DB_DATABASE,
+      waitForConnections: true, 
+      connectionLimit: 10, // Adjust the connection limit as needed
+      queueLimit: 0
+    });
+  }
+  return pool.getConnection();
 }
 
-export default createConnection;
+// async function createConnection() {
+//   const connection = await mysql.createConnection({
+//     host: process.env.NEXT_PUBLIC_DB_HOST,
+//     port: 3306,
+//     user: process.env.NEXT_PUBLIC_DB_USER,
+//     password: process.env.NEXT_PUBLIC_DB_PASSWORD,
+//     database: process.env.NEXT_PUBLIC_DB_DATABASE
+//   });
 
+//   return connection;
+// }
 
+// export default createConnection;
 
 // import { MongoClient } from 'mongodb';
 
