@@ -12,9 +12,9 @@ const Footer = () => {
       </div>
 
       <ul className="menu">
-        <li><a href="/pages/home">Home</a></li>
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Contact Us</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="/pages/about">About Us</a></li>
+        <li><a href="/pages/contact">Contact Us</a></li>
       </ul>
       <p className="copyright">© 2024 Campus Link</p>
     </footer>
