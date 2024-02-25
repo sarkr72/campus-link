@@ -1,0 +1,16 @@
+/* LoginForm.module.css */
+
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Make the container at least the height of the viewport */
+  }
+  
+  .box-area {
+    flex: 1; /* Allow the box area to take up remaining space */
+  }
+  
+  .footer {
+    margin-top: auto; /* Push the footer to the bottom of the container */
+  }
+  

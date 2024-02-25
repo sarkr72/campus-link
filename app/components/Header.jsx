@@ -1,18 +1,17 @@
-// Import necessary dependencies
 "use client";
-import "bootstrap/dist/css/bootstrap.min.css";
+
+import { withRouter } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-// import { signOut } from "aws-amplify/auth";
+import { signOut } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
-// import currentUser from "../../utils/checkSignIn";
+import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
-import Image from "next/image";
-import logoImage from "../resources/images/logo.png";
+import { useLayoutEffect } from "react";
 
 function Header() {
   const router = useRouter();
@@ -25,6 +24,7 @@ function Header() {
   const navbarRef = useRef(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
 
+  console.log("role: ", user?.role)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -37,54 +37,30 @@ function Header() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   // setIsLoading(true);
-  //   const fetchCurrentUser = async () => {
-  //     try {
-  //       const email = await currentUser();
-  //       setCurrentEmail(email);
-  //       if (email) {
-  //         console.log("emaaaa", email);
-  //         setIsEmailSet(true);
-  //       }
-  //       if (email) {
-  //         const response = await fetch(`/api/users/${email}`, {
-  //           method: "GET",
-  //         });
-  //         if (response.ok) {
-  //           const data = await response.json();
-  //           setUser(data);
-  //           setIsLoading(false);
-  //           console.log("User data:", data);
-  //         } else {
-  //           console.log("Failed to fetch user data:", response.statusText);
-  //         }
-  //       } else {
-  //         console.log("User is not signed in");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error getting current user:", error);
-  //     } finally {
-  //     }
-  //   };
-
-  //   fetchCurrentUser();
-  // }, [toggle]);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     // setIsLoading(true);
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch(`/api/users`);
-        if (response.ok) {
-          const data = await response.json();
-          setIsEmailSet(data.some((user) => user.isSignedIn));
-          setUser(data);
-          // console.log("ssss", data);
-          setIsLoading(false);
-          console.log("User data:", data);
+        const email = await currentUser();
+        setCurrentEmail(email);
+        if (email) {
+          console.log("emaaaa", email);
+          setIsEmailSet(true);
+        }
+        if (email) {
+          const response = await fetch(`/api/users/${email}`, {
+            method: "GET",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data);
+            setIsLoading(false);
+            console.log("User data:", data);
+          } else {
+            console.log("Failed to fetch user data:", response.statusText);
+          }
         } else {
-          console.log("Failed to fetch user data:", response.statusText);
+          console.log("User is not signed in");
         }
       } catch (error) {
         console.error("Error getting current user:", error);
@@ -111,31 +87,19 @@ function Header() {
     return <GrowSpinner />;
   }
 
-  async function handleSignOut() {
-    try {
-      const response = await fetch(`/api/logOut`);
-      if (response.ok) {
-        const data = await response.json();
-        const { isSignedIn } = data;
-        setIsEmailSet(isSignedIn);
-        router.push("/pages/logIn");
-        setUser(data);
-        console.log("ssss", isEmailSet);
-        setIsLoading(false);
-        console.log("User data:", data);
-      } else {
-        console.log("Failed to fetch user data:", response.statusText);
-      }
+  async function handleSignOut(e) {
+    e.preventDefault();
 
-      // await signOut()
-      //   .then(() => {
-      //     router.push("/pages/logIn");
-      //     setIsEmailSet(false);
-      //     toast.success("You are logged out!");
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error signing out:", error);
-      //   });
+    try {
+      await signOut()
+        .then(() => {
+          router.push("/pages/logIn");
+          setIsEmailSet(false);
+          toast.success("You are logged out!");
+        })
+        .catch((error) => {
+          console.error("Error signing out:", error);
+        });
     } catch (error) {
       console.log("error signing out: ", error);
     }
@@ -150,7 +114,6 @@ function Header() {
   return (
     <Navbar
       ref={navbarRef}
-      className="d-flex justify-content-between"
       style={{
         backgroundImage:
           "linear-gradient(to right, #EEF5FF, #B4D4FF, #86B6F6, #176B87)",
@@ -162,10 +125,7 @@ function Header() {
       onToggle={handleToggleNavbar}
     >
       <Container>
-      <div className="brand d-flex justify-content-center align-items-center">
-      <Image src={logoImage} alt="Logo" style={{ width: "30px", height: "30px", marginRight: "10px" }}/>
-      <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
-      </div>
+        <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse
           style={{ justifyContent: "flex-end" }}
@@ -173,6 +133,9 @@ function Header() {
         >
           <Nav className="justify-content-end">
             <Nav.Link href="/">Home</Nav.Link>
+            {user && user.role === "admin" && (
+              <Nav.Link href="/pages/admin">Admin</Nav.Link>
+            )}
             <NavDropdown
               title="User"
               id="basic-nav-dropdown"
@@ -188,11 +151,12 @@ function Header() {
                   <NavDropdown.Item href="/pages/updateProfile">
                     Update Profile
                   </NavDropdown.Item>
+
+                  <NavDropdown.Item href="/pages/settings">
+                    Settings
+                  </NavDropdown.Item>
                 </>
               )}
-              <NavDropdown.Item href="/pages/settings">
-                Settings
-              </NavDropdown.Item>
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
               <NavDropdown.Divider />
               {isEmailSet && (

@@ -97,40 +97,40 @@ const HomePage2 = () => {
 
  
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      setIsLoading(true)
-      try {
-        currentUser()
-          .then((email) => {
-            setCurrentEmail(email);
-          })
-          .catch((error) => {
-            console.error("Error getting user email:", error);
-          });
+  // useEffect(() => {
+  //   const fetchCurrentUser = async () => {
+  //     setIsLoading(true)
+  //     try {
+  //       currentUser()
+  //         .then((email) => {
+  //           setCurrentEmail(email);
+  //         })
+  //         .catch((error) => {
+  //           console.error("Error getting user email:", error);
+  //         });
 
-        if (currnetEmail) {
-          const response = await fetch(`/api/users/${email}`, {
-            method: "GET",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data);
-            // console.log("User data:", data);
-          } else {
-            console.log("Failed to fetch user data:", response.statusText);
-          }
-        } else {
-          console.log("User is not signed in");
-        }
+  //       if (currnetEmail) {
+  //         const response = await fetch(`/api/users/${email}`, {
+  //           method: "GET",
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setUser(data);
+  //           // console.log("User data:", data);
+  //         } else {
+  //           console.log("Failed to fetch user data:", response);
+  //         }
+  //       } else {
+  //         console.log("User is not signed in");
+  //       }
        
-      } catch (error) {
-        console.error("Error getting current user:", error);
-      }
-    };
-    fetchCurrentUser();
-    setIsLoading(false)
-  }, []);
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     }
+  //   };
+  //   fetchCurrentUser();
+  //   setIsLoading(false)
+  // }, []);
 
   if (isLoading) {
     // window.location.reload();
@@ -146,7 +146,7 @@ const HomePage2 = () => {
       >
         Home Page for Campus Link
       </h1>
-      <p>{user}</p>
+      {/* <p>{user}</p> */}
       {/* <Footer /> */}
     </div>
   );
