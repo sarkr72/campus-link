@@ -1,5 +1,4 @@
 "use client";
-import { Inter } from "next/font/google";
 import Image from "next/image";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect } from "react";
