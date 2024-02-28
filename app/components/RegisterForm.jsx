@@ -129,6 +129,17 @@ const RegisterForm = () => {
         //   formData.append(key, value);
         // });
 
+        await signUp({
+          username: data.email,
+          password: data.password,
+          attributes: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone_number: data.phone,
+          },
+        });
+
         const response = await fetch(`/api/users`, {
           method: "POST",
           headers: {
@@ -142,17 +153,6 @@ const RegisterForm = () => {
           if (responseData.message === "Email already exists") {
             toast.error("Email already exists!");
           } else {
-            await signUp({
-              username: data.email,
-              password: data.password,
-              attributes: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                email: data.email,
-                phone_number: data.phone,
-              },
-            });
-
             setShowConfirmationModal(true);
             console.log("called");
           }
@@ -160,8 +160,20 @@ const RegisterForm = () => {
           toast.error("Failed to create user");
         }
       } catch (error) {
-        console.error("Error creating user:", error);
-        toast.error("An error occurred while creating user.");
+        console.error("Error creating user:", error.message);
+        if (error.message.includes("Password must have uppercase characters")) {
+          toast.error("Password must have uppercase characters!");
+        } else if (error.message.includes("Password not long enough")) {
+          toast.error("Password must be at least 8 characters long!");
+        } else if (
+          error.message.includes("Password must have numeric characters")
+        ) {
+          toast.error("Password must have numeric characters!");
+        } else if (
+          error.message.includes("Password must have symbol characters")
+        ) {
+          toast.error("Password must have symbol characters!");
+        }
       } finally {
         setIsLoading(false);
       }
