@@ -1,13 +1,13 @@
 import React from 'react';
-import { Auth } from 'aws-amplify';
+import { Auth } from 'aws-amplify/auth';
 import { RiGoogleFill } from 'react-icons/ri';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from "next/navigation";
 import { toast } from 'react-toastify';
-import awsconfig from '../../aws-exports';
-Auth.configure(awsconfig);
+// import config from '../../aws-exports';
+// Auth.configure(config);
 
 const OAuth = () => {
-  const navigate = useNavigate();
+ const router = useRouter();
 
   const onGoogleClick = async () => {
     try {
@@ -16,7 +16,7 @@ const OAuth = () => {
       // Check if user is already in database (server-side)
       // Call your backend API to handle this logic
 
-      navigate('/');
+      router.push('/pages/home');
     } catch (error) {
       toast.error('Could not authorize with Google.');
     }

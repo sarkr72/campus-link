@@ -2,104 +2,204 @@
 // import { PrismaClient } from "@prisma/client";
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
-import connection from "../../../utils/db";
+import { getConnection } from "../../../utils/db";
 
 // const prisma = new PrismaClient();
 
+// import { createConnection } from "mysql2/promise";
+
+// Function to establish MySQL connection
+// async function getConnection() {
+//   try {
+//     const connection = await createConnection({
+//       host: process.env.NEXT_PUBLIC_DB_HOST,
+//       port: 3306,
+//       user: process.env.NEXT_PUBLIC_DB_USER,
+//       password: process.env.NEXT_PUBLIC_DB_PASSWORD,
+//       database: process.env.NEXT_PUBLIC_DB_DATABASE,
+//     });
+//     return connection;
+//   } catch (error) {
+//     console.error("Error establishing database connection:", error);
+//     throw error;
+//   }
+// }
+
 export async function POST(request) {
+  let connection;
   try {
-    const formData = await request.formData();
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const firstName = formData.get("firstName");
-    const lastName = formData.get("lastName");
-    const major = formData.get("major");
-    const phone = formData.get("phone");
-    const profilePicture = formData.get("profilePicture"); // Handle file upload separately
-    const bio = formData.get("bio");
-    const minor = formData.get("minor");
-    const isTutor = formData.get("isTutor") === "true"; // Convert to boolean
-    const role = formData.get("role");
-    const createdAt = new Date().toISOString(); // Format createdAt date
-    const updatedAt = createdAt; // Assuming createdAt and updatedAt are the same initially
-    
+    // const formData = await request.formData();
+    const formData = await request.json();
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      role,
+      bio,
+      major,
+      minor,
+      tutor,
+    } = formData;
+    const isTutor = tutor;
+    const createdAt = new Date().toISOString();
+    const updatedAt = createdAt;
+    // const email = formData.get("email");
+    // const password = formData.get("password");
+    // const firstName = formData.get("firstName");
+    // const lastName = formData.get("lastName");
+    // const major = formData.get("major");
+    // const phone = formData.get("phone");
+    // const profilePicture = formData.get("profilePicture"); // Handle file upload separately
+    // const bio = formData.get("bio");
+    // const minor = formData.get("minor");
+    // const isTutor = formData.get("isTutor") === "true"; // Convert to boolean
+    // const role = formData.get("role");
+    // const createdAt = new Date().toISOString(); // Format createdAt date
+    // const updatedAt = createdAt; // Assuming createdAt and updatedAt are the same initially
+
     // Check if the email already exists in the database
+    connection = await getConnection();
+
     const emailExistsQuery = `
       SELECT COUNT(*) AS count FROM Student WHERE email = ?
     `;
     const emailExistsValues = [email];
-    const emailExistsResult = await new Promise((resolve, reject) => {
-      connection.query(emailExistsQuery, emailExistsValues, (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results[0].count);
-        }
-      });
-    });
+    const [emailExistsResult] = await connection.query(
+      emailExistsQuery,
+      emailExistsValues
+    );
 
-    if (emailExistsResult > 0) {
-      // If the email already exists, return an error response
+    if (emailExistsResult[0].count > 0) {
       return NextResponse.json({ message: "Email already exists" });
     }
-
+    console.log("reached");
     // If the email does not exist, insert the data into the database
-    const insertQuery = `
-      INSERT INTO Student (firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    const query = `
+      INSERT INTO Student (firstName, lastName, email, password, phone, role, bio, major, minor, isTutor, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const insertValues = [firstName, lastName, email, password, phone, role, profilePicture, bio, major, minor, isTutor, createdAt, updatedAt];
+    const values = [
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      role,
+      bio,
+      major,
+      minor,
+      isTutor,
+      createdAt,
+      updatedAt,
+    ];
 
-    await new Promise((resolve, reject) => {
-      connection.query(insertQuery, insertValues, (error, results) => {
-        if (error) {
-          console.error("Error executing SQL query:", error);
-          reject(error);
-        } else {
-          console.log("Data inserted successfully:", results);
-          resolve(results);
-        }
-      });
-    });
-
+    // Execute the query
+    await connection.query(query, values);
+    connection.release();
+    console.log("reached2");
     // Return success response
     return NextResponse.json({ message: "Data inserted successfully" });
   } catch (error) {
+    if (connection) {
+      connection.release();
+    }
     console.error("Error processing request:", error);
     return NextResponse.error({ message: "Internal Server Error" });
   }
 }
 
-
-
-
 export async function GET(request) {
+  let connection;
   try {
     const query = `
       SELECT * FROM Student
-      WHERE isSignedIn = true
     `;
     console.log("i am called: ");
-    const signedInUsers = await new Promise((resolve, reject) => {
-      connection.query(query, (error, results) => {
-        if (error) {
-          console.error("Error executing SQL query:", error);
-          reject(error);
-        } else {
-          console.log("Signed-in users fetched successfully:", results);
-          resolve(results);
-        }
-      });
-    });
+    connection = await getConnection();
+
+    const [rows] = await connection.query(query);
+    connection.release();
 
     // Return success response with fetched signed-in users
-    return NextResponse.json(signedInUsers);
+    return NextResponse.json(rows);
   } catch (error) {
+    if (connection) {
+      connection.release();
+    }
     console.error("Error processing request:", error);
     return NextResponse.error({ message: "Internal Server Error" });
   }
 }
 
+//mongodb
+
+// export async function POST(request) {
+//   try {
+//     const formData = await request.formData();
+//     const email = formData.get("email");
+//     const password = formData.get("password");
+//     const firstName = formData.get("firstName");
+//     const lastName = formData.get("lastName");
+//     const major = formData.get("major");
+//     const phone = formData.get("phone");
+//     const profilePicture = formData.get("profilePicture"); // Handle file upload separately
+//     const bio = formData.get("bio");
+//     const minor = formData.get("minor");
+//     const isTutor = formData.get("isTutor") === "true"; // Convert to boolean
+//     const role = formData.get("role");
+//     const createdAt = new Date().toISOString(); // Format createdAt date
+//     const updatedAt = createdAt; // Assuming createdAt and updatedAt are the same initially
+
+//     // Connect to the database
+//     const db = await connection();
+
+//     // Check if the students collection exists
+//     const collectionNames = await db.listCollections().toArray();
+//     const collectionExists = collectionNames.some(collection => collection.name === 'students');
+
+//     if (!collectionExists) {
+//       // If the students collection doesn't exist, create it
+//       await db.createCollection('students');
+//     }
+
+//     // Get reference to the students collection
+//     const collection = db.collection('students');
+
+//     // Check if the email already exists in the database
+//     const emailExistsResult = await collection.countDocuments({ email });
+
+//     if (emailExistsResult > 0) {
+//       // If the email already exists, return an error response
+//       return NextResponse.json({ message: "Email already exists" }, { status: 400 });
+//     }
+
+//     // If the email does not exist, insert the data into the database
+//     const result = await collection.insertOne({
+//       firstName,
+//       lastName,
+//       email,
+//       password,
+//       phone,
+//       role,
+//       profilePicture,
+//       bio,
+//       major,
+//       minor,
+//       isTutor,
+//       createdAt,
+//       updatedAt
+//     });
+
+//     console.log("inserted: ", result)
+//     // Return success response
+//     return NextResponse.json({ message: "Data inserted successfully" }, { status: 200 });
+//   } catch (error) {
+//     console.error("Error processing request:", error);
+//     return NextResponse.error({ message: "Internal Server Error" });
+//   }
+// }
 
 // export async function GET(request) {
 //   try {
@@ -126,7 +226,6 @@ export async function GET(request) {
 //     return NextResponse.error({ message: "Internal Server Error" });
 //   }
 // }
-
 
 // export async function POST(request) {
 //     try {

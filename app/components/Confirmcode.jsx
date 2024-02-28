@@ -6,20 +6,13 @@ import { Button } from 'react-bootstrap';
 function ConfirmationPage() {
   const router = useRouter();
 
-  // Function to handle confirmation
   const handleConfirm = () => {
-    // Perform confirmation logic here
-
-    // For demonstration purposes, navigate to the home page after confirmation
     router.push('/');
   };
 
   // Function to handle cancellation
   const handleCancel = () => {
-    // Perform cancellation logic here
-
-    // For demonstration purposes, navigate back to the previous page
-    router.back();
+   router.back();
   };
 
   return (

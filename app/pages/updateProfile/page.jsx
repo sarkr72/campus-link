@@ -8,12 +8,12 @@ import Image from "next/image";
 import GrowSpinner from "../../components/Spinner";
 import styles from "../../../styles/authentification.css";
 import { fetchUserData } from "../../../utils/fetchUserData";
-import { toast } from "react-toastify";
-// import currentUser from "../../../utils/checkSignIn";
+import currentUser from "../../../utils/checkSignIn";
 
 const UpdateProfilePage = () => {
   const [currnetEmail, setCurrentEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [user, setUser] = useState("");
   const [data, setData] = useState({
     firstName: "",
@@ -25,90 +25,53 @@ const UpdateProfilePage = () => {
     bio: "",
     major: "",
     minor: "",
-    isTutor: false,
+    tutor: "",
     role: "",
   });
   const [error, setError] = useState("");
 
-  // useEffect(() => {
-  //   setIsLoading(true);
-  //   const fetchCurrentUser = async () => {
-  //     try {
-  //       const email = await currentUser();
-  //       setCurrentEmail(email);
-
-  //       if (email) {
-  //         const response = await fetch(`/api/users/${email}`, {
-  //           method: "GET",
-  //         });
-  //         if (response.ok) {
-  //           const data = await response.json();
-  //           setData((prevData) => ({
-  //             ...prevData,
-  //             firstName: data.firstName,
-  //             lastName: data.lastName,
-  //             email: data.email,
-  //             password: data.password,
-  //             phone: data.phone,
-  //             profilePicture: data.profilePicture,
-  //             bio: data.bio,
-  //             major: data.major,
-  //             minor: data.minor,
-  //             isTutor: data.isTutor,
-  //             role: data.role,
-  //           }));
-
-  //           setUser(data);
-  //           console.log("User data:", data);
-  //         } else {
-  //           console.log("Failed to fetch user data:", response.statusText);
-  //         }
-  //       } else {
-  //         console.log("User is not signed in");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error getting current user:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //       // setIsEmailSet(true);
-  //     }
-  //   };
-
-  //   fetchCurrentUser();
-  // }, []);
-
   useEffect(() => {
-    // setIsLoading(true);
+    setIsLoading(true);
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch(`/api/users`);
-        if (response.ok) {
-          const data2 = await response.json();
-          const extractedData = data2.map(user => ({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            password: user.password,
-            phone: user.phone,
-            profilePicture: user.profilePicture,
-            bio: user.bio,
-            major: user.major,
-            minor: user.minor,
-            isTutor: user.isTutor,
-            role: user.role
-          }));
-          
-          setData(extractedData[0]);
-          setUser(data);
-          console.log("ssss", data);
-          setIsLoading(false);
-          console.log("User data:", data);
+        const email = await currentUser();
+        setCurrentEmail(email);
+
+        if (email) {
+          const response = await fetch(`/api/users/${email}`, {
+            cache: "no-store",
+          });
+          console.log("response: ", response);
+          if (response.ok) {
+            const data = await response.json();
+            setData((prevData) => ({
+              ...prevData,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              password: data.password,
+              phone: data.phone,
+              profilePicture: data.profilePicture,
+              bio: data.bio,
+              major: data.major,
+              minor: data.minor,
+              tutor: data.isTutor,
+              role: data.role,
+            }));
+
+            setUser(data);
+            console.log("User data updatepage:", data);
+          } else {
+            console.log("Failed to fetch user data update page:", response);
+          }
         } else {
-          console.log("Failed to fetch user data:", response.statusText);
+          console.log("User is not signed in");
         }
       } catch (error) {
         console.error("Error getting current user:", error);
       } finally {
+        setIsLoading(false);
+        // setIsEmailSet(true);
       }
     };
 
@@ -149,6 +112,44 @@ const UpdateProfilePage = () => {
     }
   };
 
+  // useEffect(() => {
+  //   // setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const response = await fetch(`/api/users`);
+  //       if (response.ok) {
+  //         const data2 = await response.json();
+  //         const extractedData = data2.map(user => ({
+  //           firstName: user.firstName,
+  //           lastName: user.lastName,
+  //           email: user.email,
+  //           password: user.password,
+  //           phone: user.phone,
+  //           profilePicture: user.profilePicture,
+  //           bio: user.bio,
+  //           major: user.major,
+  //           minor: user.minor,
+  //           isTutor: user.isTutor,
+  //           role: user.role
+  //         }));
+
+  //         setData(extractedData[0]);
+  //         setUser(data);
+  //         console.log("ssss", data);
+  //         setIsLoading(false);
+  //         console.log("User data:", data);
+  //       } else {
+  //         console.log("Failed to fetch user data:", response.statusText);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //     }
+  //   };
+
+  //   fetchCurrentUser();
+  // }, []);
+
   const handleCheckboxChange = (e) => {
     setData({
       ...data,
@@ -159,42 +160,48 @@ const UpdateProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
     try {
-      const formDataObj = {
-        email: data?.email,
-        password: data?.password,
-        firstName: data?.firstName,
-        lastName: data?.lastName,
-        major: data?.major,
-        phone: data?.phone,
-        role: data?.role,
-        profilePicture: data?.profilePicture,
-        bio: data?.bio,
-        minor: data?.minor,
-        isTutor: data?.isTutor,
-      };
+      // const formDataObj = {
+      //   email: data?.email,
+      //   password: data?.password,
+      //   firstName: data?.firstName,
+      //   lastName: data?.lastName,
+      //   major: data?.major,
+      //   phone: data?.phone,
+      //   role: data?.role,
+      //   // profilePicture: 'defaultpicture',
+      //   bio: data?.bio,
+      //   minor: data?.minor,
+      //   isTutor: data?.isTutor,
+      // };
 
-      const formData = new FormData();
-      Object.entries(formDataObj).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+      // const formData = new FormData();
+      // Object.entries(formDataObj).forEach(([key, value]) => {
+      //   formData.append(key, value);
+      // });
 
-      const response = await fetch(`/api/users/${data?.email}`, {
+      const response = await fetch(`/api/users/${currnetEmail}`, {
         method: "PUT",
-        body: formData,
+        headers:{
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
-
+ 
       if (response.ok) {
-        setIsLoading(false);
-        window.location.reload();
-        toast.success('Profile updated!')
-      }
+        console.log("returned");
+        window.location.reload()
+        // router.refresh();
+      } 
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error signing up user:", error);
+      console.error("Error updating user:", error);
+    } finally {
+      setIsLoading(false); // Move setIsLoading inside the try block
     }
-  };
+  }; 
 
   if (isLoading) {
     return <GrowSpinner />;
@@ -346,8 +353,8 @@ const UpdateProfilePage = () => {
                   type="checkbox"
                   className={`form-check-input mr-${10}`}
                   style={{ marginRight: "10px" }}
-                  name="isTutor"
-                  checked={data.isTutor}
+                  name="tutor"
+                  checked={data.tutor}
                   onChange={handleCheckboxChange}
                 />
                 <label className="form-check-label" htmlFor="isTutor">
