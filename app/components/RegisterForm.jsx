@@ -15,7 +15,8 @@ import styles from "/styles/authentification.css";
 import img from "next/image";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
-import { Storage } from 'aws-amplify';
+import { StorageImage, StorageManager } from "@aws-amplify/ui-react-storage";
+import "@aws-amplify/ui-react/styles.css";
 import { confirmSignUp } from "aws-amplify/auth";
 
 const RegisterForm = () => {
@@ -29,7 +30,7 @@ const RegisterForm = () => {
     password: "",
     confirmPassword: "",
     phone: "",
-    profilePicture: "",
+    profilePicture: null,
     bio: "",
     major: "",
     minor: "",
@@ -40,17 +41,16 @@ const RegisterForm = () => {
   const [confirmationCode, setConfirmationCode] = useState("");
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
-
   const uploadImage = async (file) => {
     try {
       // Upload the file to AWS S3 bucket
       const result = await Storage.put(file.name, file);
-      console.log('File uploaded successfully:', result.key);
+      console.log("File uploaded successfully:", result.key);
 
       // Set the uploaded image URL
       setImageURL(result.key);
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -99,6 +99,14 @@ const RegisterForm = () => {
   if (isLoading) {
     return <GrowSpinner />;
   }
+
+  const handleProfilePictureChange = (file) => {
+    // Update the profilePicture field with the selected file
+    setData((prevData) => ({
+      ...prevData,
+      profilePicture: file,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -166,7 +174,6 @@ const RegisterForm = () => {
         });
 
         if (response.ok) {
-
           const responseData = await response.json();
           if (responseData.message === "Email already exists") {
             toast.error("Email already exists!");
@@ -324,11 +331,23 @@ const RegisterForm = () => {
                   />
                 </div>
                 <div className="input-group">
-                  <input
-                    type="file"
-                    className="form-control"
-                    name="profilePicture"
-                    onChange={handleChange}
+                  <StorageManager
+                     acceptedFileTypes={[
+                      // List file extensions
+                      '.gif',
+                      '.bmp',
+                      '.doc',
+                      '.jpeg',
+                      '.jpg',
+                      // List MIME types
+                      'image/png',
+                      'video/*',
+                    ]}
+                    accessLevel="guest"
+                    autoUpload={false}
+                    maxFileCount={1}
+                    isResumable
+                    onChange={handleProfilePictureChange} // Add onChange handler
                   />
                 </div>
                 <div className="input-group">
@@ -389,7 +408,7 @@ const RegisterForm = () => {
                 </div>
                 <div className="input-group">
                   <button type="submit" className="btn btn-primary w-100">
-                  Submit
+                    Submit
                   </button>
                 </div>
               </form>
