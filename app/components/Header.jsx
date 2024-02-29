@@ -12,6 +12,8 @@ import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
 import { useLayoutEffect } from "react";
+import Image from "next/image";
+import logoImage from "../resources/images/logo.png";
 
 function Header() {
   const router = useRouter();
@@ -24,7 +26,7 @@ function Header() {
   const navbarRef = useRef(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
 
-  console.log("role: ", user?.role)
+  console.log("role: ", user?.role);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -125,7 +127,10 @@ function Header() {
       onToggle={handleToggleNavbar}
     >
       <Container>
-        <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+        <div className="brand d-flex justify-content-center align-items-center">
+          <Image src={logoImage} alt="Logo" style={{ width: "30px", height: "30px", marginRight: "10px" }}/>
+          <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+        </div>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse
           style={{ justifyContent: "flex-end" }}
@@ -158,6 +163,7 @@ function Header() {
                 </>
               )}
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
+              <NavDropdown.Item href="/pages/mainTimeline">Timeline</NavDropdown.Item>
               <NavDropdown.Divider />
               {isEmailSet && (
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
