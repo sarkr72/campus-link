@@ -78,7 +78,7 @@ const MainTimelineFeed = () => {
       </div>
 
       <div className="col-md-6 center-box">
-        {/* <div className="createPostPrompt shadow-sm border rounded-5 p-3 bg-white shadow box-area">
+        <div className="createPostPrompt shadow-sm border rounded-5 p-3 bg-white shadow box-area">
           <p>Share what&apos;s on your mind</p>
           <Button
             variant="primary"
@@ -86,7 +86,7 @@ const MainTimelineFeed = () => {
           >
             Create Post
           </Button>
-        </div> */}
+        </div>
 
         <div className="feed">
           {posts.map((post, index) => (
