@@ -13,9 +13,6 @@ const OAuth = () => {
     try {
       const user = await Auth.federatedSignIn({ provider: 'Google' });
 
-      // Check if user is already in database (server-side)
-      // Call your backend API to handle this logic
-
       router.push('/pages/home');
     } catch (error) {
       toast.error('Could not authorize with Google.');
