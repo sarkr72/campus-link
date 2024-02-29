@@ -15,9 +15,11 @@ import styles from "/styles/authentification.css";
 import img from "next/image";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
+import { Storage } from 'aws-amplify';
 import { confirmSignUp } from "aws-amplify/auth";
 
 const RegisterForm = () => {
+  const [imageURL, setImageURL] = useState(null);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({
@@ -38,6 +40,20 @@ const RegisterForm = () => {
   const [confirmationCode, setConfirmationCode] = useState("");
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
+
+  const uploadImage = async (file) => {
+    try {
+      // Upload the file to AWS S3 bucket
+      const result = await Storage.put(file.name, file);
+      console.log('File uploaded successfully:', result.key);
+
+      // Set the uploaded image URL
+      setImageURL(result.key);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
@@ -53,6 +69,7 @@ const RegisterForm = () => {
     if (type === "file") {
       const newProfilePicture = e.target.files[0];
       if (newProfilePicture) {
+        uploadImage(newProfilePicture);
         // Read the file as a data URL or a blob object
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -149,6 +166,7 @@ const RegisterForm = () => {
         });
 
         if (response.ok) {
+
           const responseData = await response.json();
           if (responseData.message === "Email already exists") {
             toast.error("Email already exists!");
