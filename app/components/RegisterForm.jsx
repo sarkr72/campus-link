@@ -369,9 +369,11 @@ const RegisterForm = () => {
                     Are you a tutor?
                   </label>
                 </div>
-                <button type="submit" className="btn btn-primary">
+                <div className="input-group">
+                  <button type="submit" className="btn btn-primary w-100">
                   Submit
-                </button>
+                  </button>
+                </div>
               </form>
             </div>
           </div>

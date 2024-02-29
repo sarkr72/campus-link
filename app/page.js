@@ -1,9 +1,9 @@
 "use client";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
-import Image from "react-bootstrap/Image";
-import image from './resources/images/person.jpeg'
-
+import Image from "next/image";
+import logoImage from "./resources/images/logo.png";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
@@ -28,7 +28,13 @@ export default function Home() {
           </Button>
         </Col>
         <Col md={6} className="text-center">
-          <Image src={image} alt='person' rounded style={{width: "200px", height: "100px"}}/>
+          <Image
+              className="featured-image"
+              src={logoImage} // path to your logo file
+              alt="Logo"
+              width={250}
+              height={250}
+            />
         </Col>
       </Row>
 
