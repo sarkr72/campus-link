@@ -2,11 +2,13 @@ import styles from "/styles/mainTimeline.css";
 import React, { useState } from "react";
 import { Button, Card, Modal, Form } from "react-bootstrap";
 import Image from "next/image";
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getFirestore, addDoc, collection } from 'firebase/firestore';
 
 const MainTimelineFeed = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [postTitle, setPostTitle] = useState("");
-  const [postComment, setPostComment] = useState("");
+  const [content, setContent] = useState("");
   const [postImage, setPostImage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -14,11 +16,12 @@ const MainTimelineFeed = () => {
   const [likedByUser, setLikedByUser] = useState(
     Array(posts.length).fill(false)
   );
+  const [imageUrl, setImageUrl] = useState('');
 
   const handleCreatePost = () => {
     const newPost = {
       title: postTitle,
-      comment: postComment,
+      comment: content,
       image: postImage,
     };
 
@@ -27,17 +30,30 @@ const MainTimelineFeed = () => {
     setLikedByUser([...likedByUser, false]);
 
     setPostTitle("");
-    setPostComment("");
+    setContent("");
     setShowCreatePostModal(false);
   };
-  const handleImageChange = (e) => {
+  const handleImageChange = async(e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPostImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      const storage = getStorage();
+      const storageRef = ref(storage, `images/${file.name}`);
+      await uploadBytes(storageRef, file);
+      
+      // Get download URL of the uploaded image
+      const imageUrl = await getDownloadURL(storageRef);
+      setImageUrl(imageUrl);
+  
+      // Save image URL and path into Firestore
+      const db = getFirestore();
+      const imagesCollection = collection(db, 'images');
+      await addDoc(imagesCollection, {
+        name: file.name,
+        url: imageUrl,
+        path: `images/${file.name}`
+      });
+  
+      setPostImage(null);
     }
   };
 
@@ -168,14 +184,14 @@ const MainTimelineFeed = () => {
                 onChange={(e) => setPostTitle(e.target.value)}
               />
             </Form.Group>
-            <Form.Group controlId="postComment">
+            <Form.Group controlId="content">
               <Form.Label>Comment</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
                 placeholder="What's on your mind?"
-                value={postComment}
-                onChange={(e) => setPostComment(e.target.value)}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
               />
             </Form.Group>
             <Form.Group controlId="postImage">

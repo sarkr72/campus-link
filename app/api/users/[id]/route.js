@@ -53,7 +53,7 @@ const db = admin.firestore();
 
 export async function GET(request, { params }) {
   let connection;
-  const userId = await request.json();
+  // const userId = await request.json();
   try {
     const email = params.id;
     const query = "SELECT * FROM Student WHERE email = ?";
