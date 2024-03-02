@@ -2,16 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Authenticator } from "@aws-amplify/ui-react";
-import { deleteUser } from "../../../utils/server";
+// import { Authenticator } from "@aws-amplify/ui-react";
+// import { deleteUser } from "../../../utils/server";
 import { toast } from "react-toastify";
 import { Modal, Button } from "react-bootstrap";
 import GrowSpinner from "../../components/Spinner";
 // import listUsers from '../../../utils/server'
-import { Amplify } from "aws-amplify";
-import config from "../../../aws-exports";
-import "@aws-amplify/ui-react/styles.css";
-Amplify.configure(config);
+// import { Amplify } from "aws-amplify";
+// import config from "../../../aws-exports";
+// import "@aws-amplify/ui-react/styles.css";
+// Amplify.configure(config);
+import { db } from "../../../firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
@@ -42,7 +56,12 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  const handleDeleteUser = (id, email) => {
+  const handleDeleteUser = async (email) => {
+    let id = "";
+    const userRef = collection(db, "users");
+    const userQuery = query(userRef, where("email", "==", email));
+    const querySnapshot = await getDocs(userQuery);
+    id = querySnapshot.docs[0].id;
     setDeleteUserId(id);
     setDeleteUserEmail(email);
     setShowConfirmModal(true);
@@ -61,11 +80,13 @@ export default function Home() {
     try {
       console.log("delete id:", deleteUserId);
       setShowConfirmModal(false);
+
       const response = await fetch(`/api/users/${deleteUserEmail}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ deleteUserId }),
       });
 
       let data = "";
@@ -73,12 +94,12 @@ export default function Home() {
         data = await response?.json();
         console.log("data:", data.message, data);
         if (data && data?.message === "Student deleted successfully") {
-          console.log("deleeee");
-          await deleteUser(deleteUserEmail);
+          // console.log("deleeee");
+          // await deleteUser(deleteUserEmail);
           toast.success("Account deleted successfully!");
           handleToggle();
         }
-        fetchUsers();
+        // fetchUsers();
       }
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -107,7 +128,7 @@ export default function Home() {
               <td>
                 <button
                   className="btn btn-danger"
-                  onClick={() => handleDeleteUser(user.id, user.email)}
+                  onClick={() => handleDeleteUser(user.email)}
                 >
                   Delete
                 </button>

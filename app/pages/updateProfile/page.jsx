@@ -7,11 +7,26 @@ import React, { useState } from "react";
 import Image from "next/image";
 import GrowSpinner from "../../components/Spinner";
 import styles from "../../../styles/authentification.css";
-import { fetchUserData } from "../../../utils/fetchUserData";
-import currentUser from "../../../utils/checkSignIn";
+// import { fetchUserData } from "../../../utils/fetchUserData";
+// import currentUser from "../../../utils/checkSignIn";
+import { db } from "../../../firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const UpdateProfilePage = () => {
-  const [currnetEmail, setCurrentEmail] = useState("");
+  // const [currnetEmail, setCurrentEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [user, setUser] = useState("");
@@ -30,13 +45,18 @@ const UpdateProfilePage = () => {
   });
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    setIsLoading(true);
-    const fetchCurrentUser = async () => {
-      try {
-        const email = await currentUser();
-        setCurrentEmail(email);
+  const [userId, setUserId] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [currnetEmail, setCurrentEmail] = useState("");
+  const auth = getAuth();
 
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+        const email = await getUserEmailById(user.uid);
+        console.log("id2: ", user.uid)
         if (email) {
           const response = await fetch(`/api/users/${email}`, {
             cache: "no-store",
@@ -64,19 +84,77 @@ const UpdateProfilePage = () => {
           } else {
             console.log("Failed to fetch user data update page:", response);
           }
-        } else {
-          console.log("User is not signed in");
         }
-      } catch (error) {
-        console.error("Error getting current user:", error);
-      } finally {
-        setIsLoading(false);
-        // setIsEmailSet(true);
       }
-    };
-
-    fetchCurrentUser();
+    });
   }, []);
+
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const email = await currentUser();
+  //       setCurrentEmail(email);
+
+  //       if (email) {
+  //         const response = await fetch(`/api/users/${email}`, {
+  //           cache: "no-store",
+  //         });
+  //         console.log("response: ", response);
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setData((prevData) => ({
+  //             ...prevData,
+  //             firstName: data.firstName,
+  //             lastName: data.lastName,
+  //             email: data.email,
+  //             password: data.password,
+  //             phone: data.phone,
+  //             profilePicture: data.profilePicture,
+  //             bio: data.bio,
+  //             major: data.major,
+  //             minor: data.minor,
+  //             tutor: data.isTutor,
+  //             role: data.role,
+  //           }));
+
+  //           setUser(data);
+  //           console.log("User data updatepage:", data);
+  //         } else {
+  //           console.log("Failed to fetch user data update page:", response);
+  //         }
+  //       } else {
+  //         console.log("User is not signed in");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //       // setIsEmailSet(true);
+  //     }
+  //   };
+
+  //   fetchCurrentUser();
+  // }, []);
+
+  const getUserEmailById = async (userId) => {
+    try {
+      console.log("id: ", userId)
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
+      
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        const userEmail = userData.email;
+        setCurrentEmail(userEmail);
+        return userEmail;
+      } else {
+        throw new Error("User document not found");
+      }
+    } catch (error) {
+      console.error("Error retrieving user email:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -184,24 +262,24 @@ const UpdateProfilePage = () => {
 
       const response = await fetch(`/api/users/${currnetEmail}`, {
         method: "PUT",
-        headers:{
+        headers: {
           "Content-type": "application/json",
         },
         body: JSON.stringify(data),
       });
- 
+
       if (response.ok) {
         console.log("returned");
-        window.location.reload()
+        window.location.reload();
         // router.refresh();
-      } 
+      }
       setIsLoading(false);
     } catch (error) {
       console.error("Error updating user:", error);
     } finally {
       setIsLoading(false); // Move setIsLoading inside the try block
     }
-  }; 
+  };
 
   if (isLoading) {
     return <GrowSpinner />;
