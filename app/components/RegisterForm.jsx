@@ -16,6 +16,13 @@ import img from "next/image";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
 import { confirmSignUp } from "aws-amplify/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+} from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -129,38 +136,71 @@ const RegisterForm = () => {
         //   formData.append(key, value);
         // });
 
-        await signUp({
-          username: data.email,
-          password: data.password,
-          attributes: {
+        // await signUp({
+        //   username: data.email,
+        //   password: data.password,
+        //   attributes: {
+        //     firstName: data.firstName,
+        //     lastName: data.lastName,
+        //     email: data.email,
+        //     phone_number: data.phone,
+        //   },
+        // });
+
+        const auth = getAuth();
+        // Adds user to authenticated accounts
+        const userCredentials = await createUserWithEmailAndPassword(
+          auth,
+          data.email,
+          data.password
+        );
+        console.log(
+          "Success. The user is created in Firebase",
+          userCredentials
+        );
+
+        if (userCredentials.user) {
+          updateProfile(auth.currentUser, {
+            displayName: data.firstName + data.lastName,
+          });
+          const user = userCredentials.user;
+          const formDataCopy = {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            phone_number: data.phone,
-          },
-        });
+            password: data.password,
+            role: data.role,
+          };
 
-        const response = await fetch(`/api/users`, {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
+          delete formDataCopy.password;
+          formDataCopy.timestamp = serverTimestamp();
+          await setDoc(doc(db, "users", user.uid), formDataCopy);
 
-        if (response.ok) {
-          const responseData = await response.json();
-          if (responseData.message === "Email already exists") {
-            toast.error("Email already exists!");
+          const response = await fetch(`/api/users`, {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            const responseData = await response.json();
+            if (responseData.message === "Email already exists") {
+              toast.error("Email already exists!");
+            } else {
+              router.push("/pages/logIn");
+              // setShowConfirmationModal(true);
+              console.log("called");
+            }
           } else {
-            setShowConfirmationModal(true);
-            console.log("called");
+            toast.error("Failed to create user");
           }
         } else {
-          toast.error("Failed to create user");
+
         }
       } catch (error) {
-        console.error("Error creating user:", error.message);
+        console.error("Error creating user:", error);
         if (error.message.includes("Password must have uppercase characters")) {
           toast.error("Password must have uppercase characters!");
         } else if (error.message.includes("Password not long enough")) {
@@ -173,6 +213,14 @@ const RegisterForm = () => {
           error.message.includes("Password must have symbol characters")
         ) {
           toast.error("Password must have symbol characters!");
+        }else if (
+          error.message.includes("auth/email-already-in-use")
+        ) {
+          toast.error("Email already exists!");
+        }else if (
+          error.message.includes("Password should be at least 6 characters")
+        ) {
+          toast.error("Password should be at least 6 characters!");
         }
       } finally {
         setIsLoading(false);
@@ -371,7 +419,7 @@ const RegisterForm = () => {
                 </div>
                 <div className="input-group">
                   <button type="submit" className="btn btn-primary w-100">
-                  Submit
+                    Submit
                   </button>
                 </div>
               </form>
