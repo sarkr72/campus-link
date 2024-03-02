@@ -93,7 +93,7 @@ const LoginForm = () => {
         password
       );
       if (userCredentials.user) {
-        router.push("/pages/home");
+        router.push("/pages/mainTimeline");
       }
     
     } catch (error) {

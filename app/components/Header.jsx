@@ -1,11 +1,11 @@
 "use client";
 
-import { withRouter } from "next/navigation";
+// import { withRouter } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { signOut } from "aws-amplify/auth";
+// import { signOut } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 // import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
@@ -55,17 +55,18 @@ function Header() {
   }, [toggle]);
 
   console.log("role: ", userRole);
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-  //       setIsNavbarCollapsed(true);
-  //     }
-  //   };
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navbarRef.current && !navbarRef.current.contains(event.target)) {
+        setIsNavbarCollapsed(true);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // useLayoutEffect(() => {
   //   // setIsLoading(true);
@@ -149,7 +150,8 @@ function Header() {
 
       await auth.signOut();
       handleToggle();
-      router.push("/pages/logIn");
+      // router.push("/pages/logIn");
+      window.location.assign("/pages/logIn");
     } catch (error) {
       console.log("error signing out: ", error);
     }
@@ -189,7 +191,11 @@ function Header() {
           id="basic-navbar-nav"
         >
           <Nav className="justify-content-end">
-            <Nav.Link href="/">Home</Nav.Link>
+            {userId ? (
+              <Nav.Link href="/pages/mainTimeline">Home</Nav.Link>
+            ) : (
+              <Nav.Link href="/">Home</Nav.Link>
+            )}
             {userRole && userRole === "admin" && (
               <Nav.Link href="/pages/admin">Admin</Nav.Link>
             )}
