@@ -1,0 +1,453 @@
+// Import necessary dependencies
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import React, { useState } from "react";
+import Image from "next/image";
+import GrowSpinner from "../../components/Spinner";
+import styles from "../../../styles/authentification.css";
+// import { fetchUserData } from "../../../utils/fetchUserData";
+// import currentUser from "../../../utils/checkSignIn";
+import { db } from "../../../firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+const UpdateProfilePage = () => {
+  // const [currnetEmail, setCurrentEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const [user, setUser] = useState("");
+  const [data, setData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    profilePicture: "",
+    bio: "",
+    major: "",
+    minor: "",
+    tutor: "",
+    role: "",
+  });
+  const [error, setError] = useState("");
+
+  const [userId, setUserId] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [currnetEmail, setCurrentEmail] = useState("");
+  const auth = getAuth();
+
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+        const email = await getUserEmailById(user.uid);
+        console.log("id2: ", user.uid)
+        if (email) {
+          const response = await fetch(`/api/users/${email}`, {
+            cache: "no-store",
+          });
+          console.log("response: ", response);
+          if (response.ok) {
+            const data = await response.json();
+            setData((prevData) => ({
+              ...prevData,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              password: data.password,
+              phone: data.phone,
+              profilePicture: data.profilePicture,
+              bio: data.bio,
+              major: data.major,
+              minor: data.minor,
+              tutor: data.isTutor,
+              role: data.role,
+            }));
+
+            setUser(data);
+            console.log("User data updatepage:", data);
+          } else {
+            console.log("Failed to fetch user data update page:", response);
+          }
+        }
+      }
+    });
+  }, []);
+
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const email = await currentUser();
+  //       setCurrentEmail(email);
+
+  //       if (email) {
+  //         const response = await fetch(`/api/users/${email}`, {
+  //           cache: "no-store",
+  //         });
+  //         console.log("response: ", response);
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setData((prevData) => ({
+  //             ...prevData,
+  //             firstName: data.firstName,
+  //             lastName: data.lastName,
+  //             email: data.email,
+  //             password: data.password,
+  //             phone: data.phone,
+  //             profilePicture: data.profilePicture,
+  //             bio: data.bio,
+  //             major: data.major,
+  //             minor: data.minor,
+  //             tutor: data.isTutor,
+  //             role: data.role,
+  //           }));
+
+  //           setUser(data);
+  //           console.log("User data updatepage:", data);
+  //         } else {
+  //           console.log("Failed to fetch user data update page:", response);
+  //         }
+  //       } else {
+  //         console.log("User is not signed in");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //       // setIsEmailSet(true);
+  //     }
+  //   };
+
+  //   fetchCurrentUser();
+  // }, []);
+
+  const getUserEmailById = async (userId) => {
+    try {
+      console.log("id: ", userId)
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
+      
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        const userEmail = userData.email;
+        setCurrentEmail(userEmail);
+        return userEmail;
+      } else {
+        throw new Error("User document not found");
+      }
+    } catch (error) {
+      console.error("Error retrieving user email:", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+
+    if (name === "confirmPassword") {
+      if (value !== data?.password) {
+        setError("Passwords do not match");
+      } else {
+        setError("");
+      }
+    }
+
+    if (type === "file") {
+      const newProfilePicture = e.target.files[0];
+      if (newProfilePicture) {
+        // Read the file as a data URL or a blob object
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const fileData = event.target.result;
+          setData((prevData) => ({
+            ...prevData,
+            profilePicture: fileData, // Save the file data to the state
+          }));
+        };
+        reader.readAsDataURL(newProfilePicture); // You can also use readAsArrayBuffer() for a blob
+      }
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        [name]: newValue,
+      }));
+    }
+  };
+
+  // useEffect(() => {
+  //   // setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const response = await fetch(`/api/users`);
+  //       if (response.ok) {
+  //         const data2 = await response.json();
+  //         const extractedData = data2.map(user => ({
+  //           firstName: user.firstName,
+  //           lastName: user.lastName,
+  //           email: user.email,
+  //           password: user.password,
+  //           phone: user.phone,
+  //           profilePicture: user.profilePicture,
+  //           bio: user.bio,
+  //           major: user.major,
+  //           minor: user.minor,
+  //           isTutor: user.isTutor,
+  //           role: user.role
+  //         }));
+
+  //         setData(extractedData[0]);
+  //         setUser(data);
+  //         console.log("ssss", data);
+  //         setIsLoading(false);
+  //         console.log("User data:", data);
+  //       } else {
+  //         console.log("Failed to fetch user data:", response.statusText);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //     }
+  //   };
+
+  //   fetchCurrentUser();
+  // }, []);
+
+  const handleCheckboxChange = (e) => {
+    setData({
+      ...data,
+      [e.target.name]: e.target.checked,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // setIsLoading(true);
+
+    try {
+      // const formDataObj = {
+      //   email: data?.email,
+      //   password: data?.password,
+      //   firstName: data?.firstName,
+      //   lastName: data?.lastName,
+      //   major: data?.major,
+      //   phone: data?.phone,
+      //   role: data?.role,
+      //   // profilePicture: 'defaultpicture',
+      //   bio: data?.bio,
+      //   minor: data?.minor,
+      //   isTutor: data?.isTutor,
+      // };
+
+      // const formData = new FormData();
+      // Object.entries(formDataObj).forEach(([key, value]) => {
+      //   formData.append(key, value);
+      // });
+
+      const response = await fetch(`/api/users/${currnetEmail}`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        console.log("returned");
+        window.location.reload();
+        // router.refresh();
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    } finally {
+      setIsLoading(false); // Move setIsLoading inside the try block
+    }
+  };
+
+  if (isLoading) {
+    return <GrowSpinner />;
+  }
+
+  return (
+    <div>
+      <div
+        className={`auth-container ${styles.footer}`}
+        style={{ minHeight: "100vh" }}
+      >
+        <div className={`row border rounded-5 p-3 bg-white shadow }`}>
+          {/* Left */}
+          <div className="col-md-6 rounded-4 left-box">
+            <h3>Update your profile</h3>
+            <small className="welcome-msg">
+              Your learning adventure begins here!
+            </small>
+            <small className="welcome-msg">Please signup to get started.</small>
+          </div>
+          {/* Right */}
+          <div className="col-md-6 right-box">
+            <div className="row"></div>
+            <form onSubmit={handleSubmit} className="input-group">
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  First Name:{" "}
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="firstName"
+                  placeholder="Enter your first name"
+                  value={data.firstName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Last Name:{" "}
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="lastName"
+                  placeholder="Enter your last name"
+                  value={data.lastName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Email:{" "}
+                </label>
+                <input
+                  type="email"
+                  className="form-control"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={data.email}
+                  onChange={handleChange}
+                  disabled
+                />
+              </div>
+
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Phone:{" "}
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="phone"
+                  placeholder="Enter your phone number"
+                  value={data.phone}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Profile Picture:{" "}
+                </label>
+                <input
+                  type="file"
+                  className="form-control"
+                  name="profilePicture"
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Bio:{" "}
+                </label>
+                <textarea
+                  className="form-control"
+                  name="bio"
+                  placeholder="Enter your bio"
+                  value={data.bio}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Major:{" "}
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="major"
+                  placeholder="Enter your major"
+                  value={data.major}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Minor:{" "}
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="minor"
+                  placeholder="Enter your minor"
+                  value={data.minor}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  Role:{" "}
+                </label>
+                <input
+                  className="form-control"
+                  type="text"
+                  name="role"
+                  value={data.role}
+                  onChange={handleChange}
+                  placeholder="Role"
+                  disabled
+                />
+              </div>
+              <div className="input-group">
+                <label style={{ marginRight: "10px", marginTop: "5px" }}>
+                  {" "}
+                </label>
+                <input
+                  type="checkbox"
+                  className={`form-check-input mr-${10}`}
+                  style={{ marginRight: "10px" }}
+                  name="tutor"
+                  checked={data.tutor}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="form-check-label" htmlFor="isTutor">
+                  Are you a tutor?
+                </label>
+              </div>
+              <button type="submit" className="btn btn-primary">
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UpdateProfilePage;

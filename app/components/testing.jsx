@@ -1,6 +1,6 @@
 import Spinner from 'react-bootstrap/Spinner';
 
-function GrowSpinner() {
+function GrowSpinner2() {
   // return <Spinner animation="grow" />;
   
   return(
@@ -13,4 +13,4 @@ function GrowSpinner() {
   )
 }
 
-export default GrowSpinner;
+export default GrowSpinner2;
