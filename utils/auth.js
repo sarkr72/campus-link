@@ -8,10 +8,10 @@ export const loginUser = async (email) => {
     where: {
       email,
     },
-  });
+});
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error(`User with email '${email}' not found`);
   }
 
   return user;
