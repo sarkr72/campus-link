@@ -9,7 +9,7 @@ import {
   } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyANZnj8oYFOSj_Xm6B3bw0GvhGpNuVxFlI",
+  apiKey: process.env.NEXT_PUBLIC_apiKey,
   authDomain: "campus--link.firebaseapp.com",
   projectId: "campus--link",
   storageBucket: "campus--link.appspot.com",
