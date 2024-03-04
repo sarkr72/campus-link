@@ -12,10 +12,31 @@ import "react-toastify/dist/ReactToastify.css";
 import { Modal, Button } from "react-bootstrap";
 import GrowSpinner from "./Spinner";
 import styles from "/styles/authentification.css";
-import img from "next/image";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
 import { confirmSignUp } from "aws-amplify/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { db } from "../../firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -37,6 +58,9 @@ const RegisterForm = () => {
   const [error, setError] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -53,16 +77,17 @@ const RegisterForm = () => {
     if (type === "file") {
       const newProfilePicture = e.target.files[0];
       if (newProfilePicture) {
-        // Read the file as a data URL or a blob object
+        setImage(newProfilePicture);
         const reader = new FileReader();
         reader.onload = (event) => {
+          setSelectedImage(reader.result);
           const fileData = event.target.result;
           setData((prevData) => ({
             ...prevData,
-            profilePicture: fileData, // Save the file data to the state
+            profilePicture: fileData,
           }));
         };
-        reader.readAsDataURL(newProfilePicture); // You can also use readAsArrayBuffer() for a blob
+        reader.readAsDataURL(newProfilePicture);
       }
     } else {
       setData((prevData) => ({
@@ -82,6 +107,33 @@ const RegisterForm = () => {
   if (isLoading) {
     return <GrowSpinner />;
   }
+
+  const handleImageUpload = async () => {
+    // Upload image to Firebase Storage
+    const storage = getStorage();
+    const storageRef = ref(storage, `images/profilepicture/${image.name}`);
+    await uploadBytes(storageRef, image);
+
+    // Get download URL of the uploaded image
+    const imageUrl = await getDownloadURL(storageRef);
+    // setImageUrl(imageUrl);
+
+    // Update user document with image URL and path
+    const usersCollection = collection(db, "users");
+    const userQuery = query(usersCollection, where("email", "==", data.email));
+    const querySnapshot = await getDocs(userQuery);
+    querySnapshot.forEach(async (doc) => {
+      await updateDoc(doc.ref, {
+        image: {
+          name: image.name,
+          url: imageUrl,
+          path: `images/profilepicture/${image.name}`,
+        },
+      });
+    });
+
+    setImage(null); // Clear the input field after upload
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,68 +181,120 @@ const RegisterForm = () => {
         //   formData.append(key, value);
         // });
 
-        const response = await fetch(`/api/users`, {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
+        // await signUp({
+        //   username: data.email,
+        //   password: data.password,
+        //   attributes: {
+        //     firstName: data.firstName,
+        //     lastName: data.lastName,
+        //     email: data.email,
+        //     phone_number: data.phone,
+        //   },
+        // });
 
-        if (response.ok) {
-          const responseData = await response.json();
-          if (responseData.message === "Email already exists") {
-            toast.error("Email already exists!");
+        const auth = getAuth();
+        // Adds user to authenticated accounts
+        const userCredentials = await createUserWithEmailAndPassword(
+          auth,
+          data.email,
+          data.password
+        );
+        console.log(
+          "Success. The user is created in Firebase",
+          userCredentials
+        );
+
+        if (userCredentials.user) {
+          updateProfile(auth.currentUser, {
+            displayName: data.firstName + data.lastName,
+          });
+          const user = userCredentials.user;
+          const formDataCopy = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            password: data.password,
+            role: data.role,
+          };
+
+          delete formDataCopy.password;
+          formDataCopy.timestamp = serverTimestamp();
+          await setDoc(doc(db, "users", user.uid), formDataCopy);
+
+          const response = await fetch(`/api/users`, {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            const responseData = await response.json();
+            if (responseData.message === "Email already exists") {
+              toast.error("Email already exists!");
+            } else {
+              await handleImageUpload();
+
+              router.push("/pages/mainTimeline");
+              // setShowConfirmationModal(true);
+              console.log("called");
+            }
           } else {
-            await signUp({
-              username: data.email,
-              password: data.password,
-              attributes: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                email: data.email,
-                phone_number: data.phone,
-              },
-            });
-
-            setShowConfirmationModal(true);
-            console.log("called");
+            toast.error("Failed to create user");
           }
         } else {
-          toast.error("Failed to create user");
         }
       } catch (error) {
         console.error("Error creating user:", error);
-        toast.error("An error occurred while creating user.");
+        if (error.message.includes("Password must have uppercase characters")) {
+          toast.error("Password must have uppercase characters!");
+        } else if (error.message.includes("Password not long enough")) {
+          toast.error("Password must be at least 8 characters long!");
+        } else if (
+          error.message.includes("Password must have numeric characters")
+        ) {
+          toast.error("Password must have numeric characters!");
+        } else if (
+          error.message.includes("Password must have symbol characters")
+        ) {
+          toast.error("Password must have symbol characters!");
+        } else if (error.message.includes("auth/email-already-in-use")) {
+          toast.error("Email already exists!");
+        } else if (
+          error.message.includes("Password should be at least 6 characters")
+        ) {
+          toast.error("Password should be at least 6 characters!");
+        }
       } finally {
         setIsLoading(false);
       }
     }
   };
 
-  const handleChangeConfirmationCode = (e) => {
-    const { value } = e.target;
-    setConfirmationCode(value);
-  };
+  // const handleChangeConfirmationCode = (e) => {
+  //   const { value } = e.target;
+  //   setConfirmationCode(value);
+  // };
 
-  const handleConfirm = async (e) => {
-    e.preventDefault();
-    try {
-      console.log("email", data.email);
-      const { isSignUpComplete, nextStep } = await confirmSignUp({
-        username: data.email,
-        confirmationCode,
-      });
-      if (isSignUpComplete) {
-        router.push("/pages/logIn");
-      } else {
-        toast.error("Wrong credentials");
-      }
-    } catch (error) {
-      console.error("Error confirming sign up:", error);
-      toast.error("Wrong confirmation code!");
-    }
-  };
+  // const handleConfirm = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     console.log("email", data.email);
+  //     const { isSignUpComplete, nextStep } = await confirmSignUp({
+  //       username: data.email,
+  //       confirmationCode,
+  //     });
+  //     if (isSignUpComplete) {
+  //       router.push("/pages/mainTimeline");
+  //     } else {
+  //       toast.error("Wrong credentials");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error confirming sign up:", error);
+  //     toast.error("Wrong confirmation code!");
+  //   }
+  // };
 
   return (
     <div>
@@ -277,7 +381,7 @@ const RegisterForm = () => {
                     type="password"
                     className="form-control"
                     name="confirmPassword"
-                    placeholder="Enter your confirmPassword"
+                    placeholder="Confirm Password"
                     value={data.confirmPassword}
                     onChange={handleChange}
                     required
@@ -293,13 +397,23 @@ const RegisterForm = () => {
                     onChange={handleChange}
                   />
                 </div>
-                <div className="input-group">
+                <div style={{marginBottom: "10px"}}>
                   <input
                     type="file"
                     className="form-control"
                     name="profilePicture"
                     onChange={handleChange}
                   />
+                   {selectedImage && (
+                  <div style={{marginTop: "10px"}}>
+                    <Image
+                      src={selectedImage}
+                      alt="Selected Image"
+                      height={80}
+                      width={80}
+                    />
+                  </div>
+                )}
                 </div>
                 <div className="input-group">
                   <textarea
@@ -357,9 +471,11 @@ const RegisterForm = () => {
                     Are you a tutor?
                   </label>
                 </div>
-                <button type="submit" className="btn btn-primary">
-                  Submit
-                </button>
+                <div className="input-group">
+                  <button type="submit" className="btn btn-primary w-100">
+                    Submit
+                  </button>
+                </div>
               </form>
             </div>
           </div>

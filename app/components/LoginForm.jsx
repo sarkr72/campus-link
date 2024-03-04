@@ -14,7 +14,7 @@ import logoImage from "../resources/images/logo.png";
 import GrowSpinner from "./Spinner";
 // import { signInWithRedirect } from "aws-amplify/auth";
 // import { Hub } from "aws-amplify/utils";
-
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -84,15 +84,26 @@ const LoginForm = () => {
     // }
 
     try {
-      await signIn({ username: email, password });
-      console.log("User signed in successfully");
-      router.push("/pages/home");
+      // await signIn({ username: email, password });
+      // console.log("User signed in successfully");
+      const auth = getAuth();
+      const userCredentials = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (userCredentials.user) {
+        router.push("/pages/mainTimeline");
+      }
+    
     } catch (error) {
       console.error("Error signing in:", error);
       if (error.name === "UserNotFoundException") {
         toast.error("User does not exist!");
       } else if (error.name === "NotAuthorizedException") {
         toast.error("Incorrect username or password!");
+      } else if (error.message.includes("auth/invalid-credential")) {
+        toast.error("Incorrect email or password!");
       } else {
         toast.error("An error occurred during sign-in");
       }

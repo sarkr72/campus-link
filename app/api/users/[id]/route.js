@@ -1,7 +1,8 @@
 import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
 import { getConnection } from "../../../../utils/db";
-
+import { admin } from "../../../../utils/firebaseAdmin";
+const db = admin.firestore();
 // import { createConnection } from "mysql2/promise";
 //
 // Function to establish MySQL connection
@@ -50,8 +51,9 @@ import { getConnection } from "../../../../utils/db";
 //   }
 // }
 
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   let connection;
+  // const userId = await request.json();
   try {
     const email = params.id;
     const query = "SELECT * FROM Student WHERE email = ?";
@@ -75,10 +77,14 @@ export async function GET(req, { params }) {
 }
 
 // Function to delete a student
-export async function DELETE(req, { params }) {
+export async function DELETE(request, { params }) {
   let connection;
   try {
     const email = params.id;
+    const requestData  = await request.json();
+    const userId = requestData.deleteUserId;
+    await admin.auth().deleteUser(userId);
+    await db.collection("users").doc(userId).delete();
 
     if (!email) {
       console.log("Student email not provided");
@@ -93,7 +99,7 @@ export async function DELETE(req, { params }) {
     const values = [email];
     await connection.query(query, values);
     connection.release();
-   
+
     return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
     if (connection) {

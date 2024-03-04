@@ -1,17 +1,34 @@
 "use client";
 
-import { withRouter } from "next/navigation";
+// import { withRouter } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { signOut } from "aws-amplify/auth";
+// import { signOut } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
-import currentUser from "../../utils/checkSignIn";
+// import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
 import { toast } from "react-toastify";
 import { useLayoutEffect } from "react";
+import Image from "next/image";
+import logoImage from "../resources/images/logo.png";
+import { db } from "../../firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function Header() {
   const router = useRouter();
@@ -23,8 +40,22 @@ function Header() {
   const [toggle, setToggle] = useState(false);
   const navbarRef = useRef(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
+  const [userId, setUserId] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const auth = getAuth();
 
-  console.log("role: ", user?.role)
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+        getUserRole(user.uid);
+      }
+    });
+  }, [toggle]);
+
+  console.log("role: ", userRole);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -37,39 +68,55 @@ function Header() {
     };
   }, []);
 
-  useLayoutEffect(() => {
-    // setIsLoading(true);
-    const fetchCurrentUser = async () => {
-      try {
-        const email = await currentUser();
-        setCurrentEmail(email);
-        if (email) {
-          console.log("emaaaa", email);
-          setIsEmailSet(true);
-        }
-        if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            method: "GET",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data);
-            setIsLoading(false);
-            console.log("User data:", data);
-          } else {
-            console.log("Failed to fetch user data:", response.statusText);
-          }
-        } else {
-          console.log("User is not signed in");
-        }
-      } catch (error) {
-        console.error("Error getting current user:", error);
-      } finally {
-      }
-    };
+  // useLayoutEffect(() => {
+  //   // setIsLoading(true);
+  //   const fetchCurrentUser = async () => {
+  //     try {
+  //       const email = await currentUser();
+  //       setCurrentEmail(email);
+  //       if (email) {
+  //         console.log("emaaaa", email);
+  //         setIsEmailSet(true);
+  //       }
+  //       if (email) {
+  //         const response = await fetch(`/api/users/${email}`, {
+  //           method: "GET",
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           setUser(data);
+  //           setIsLoading(false);
+  //           console.log("User data:", data);
+  //         } else {
+  //           console.log("Failed to fetch user data:", response.statusText);
+  //         }
+  //       } else {
+  //         console.log("User is not signed in");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting current user:", error);
+  //     } finally {
+  //     }
+  //   };
 
-    fetchCurrentUser();
-  }, [toggle]);
+  //   fetchCurrentUser();
+  // }, [toggle]);
+
+  const getUserRole = async (uid) => {
+    const userRef = doc(db, "users", uid);
+
+    try {
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUserRole(userData.role);
+      } else {
+        console.log("User document not found.");
+      }
+    } catch (error) {
+      console.error("Error getting user document:", error);
+    }
+  };
 
   const handleToggleNavbar = () => {
     setIsNavbarCollapsed(!isNavbarCollapsed);
@@ -91,15 +138,20 @@ function Header() {
     e.preventDefault();
 
     try {
-      await signOut()
-        .then(() => {
-          router.push("/pages/logIn");
-          setIsEmailSet(false);
-          toast.success("You are logged out!");
-        })
-        .catch((error) => {
-          console.error("Error signing out:", error);
-        });
+      // await signOut()
+      //   .then(() => {
+      //     router.push("/pages/logIn");
+      //     setIsEmailSet(false);
+      //     toast.success("You are logged out!");
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error signing out:", error);
+      //   });
+
+      await auth.signOut();
+      handleToggle();
+      // router.push("/pages/logIn");
+      window.location.assign("/pages/logIn");
     } catch (error) {
       console.log("error signing out: ", error);
     }
@@ -120,20 +172,31 @@ function Header() {
       }}
       expand="lg"
       collapseOnSelect
-      onClick={handleToggle}
+      // onClick={handleToggle}
       expanded={!isNavbarCollapsed}
       onToggle={handleToggleNavbar}
     >
       <Container>
-        <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+        <div className="brand d-flex justify-content-center align-items-center">
+          <Image
+            src={logoImage}
+            alt="Logo"
+            style={{ width: "30px", height: "30px", marginRight: "10px" }}
+          />
+          <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+        </div>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse
           style={{ justifyContent: "flex-end" }}
           id="basic-navbar-nav"
         >
           <Nav className="justify-content-end">
-            <Nav.Link href="/">Home</Nav.Link>
-            {user && user.role === "admin" && (
+            {userId ? (
+              <Nav.Link href="/pages/mainTimeline">Home</Nav.Link>
+            ) : (
+              <Nav.Link href="/">Home</Nav.Link>
+            )}
+            {userRole && userRole === "admin" && (
               <Nav.Link href="/pages/admin">Admin</Nav.Link>
             )}
             <NavDropdown
@@ -143,7 +206,7 @@ function Header() {
               show={dropdownOpen} // Control visibility of dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
-              {isEmailSet && (
+              {userId && (
                 <>
                   <NavDropdown.Item href="/pages/profile">
                     View Profile
@@ -161,14 +224,17 @@ function Header() {
                 </>
               )}
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
+              <NavDropdown.Item href="/pages/mainTimeline">
+                Timeline
+              </NavDropdown.Item>
               <NavDropdown.Divider />
-              {isEmailSet && (
+              {userId && (
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
                   Logout
                 </NavDropdown.Item>
               )}
             </NavDropdown>
-            {!isEmailSet && (
+            {!userId && (
               <>
                 <Nav.Link href="/pages/logIn">Log In</Nav.Link>
                 <Nav.Link href="/pages/register">Register</Nav.Link>

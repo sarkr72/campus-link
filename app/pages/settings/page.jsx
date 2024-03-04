@@ -3,7 +3,13 @@
 import { Container, Nav, Button, Modal, Form, Alert } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { updatePassword } from "aws-amplify/auth";
+// import { updatePassword } from "aws-amplify/auth";
+import {
+  getAuth,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
+import { EmailAuthProvider } from "firebase/auth";
 
 const SettingsPage = () => {
   const router = useRouter();
@@ -29,12 +35,39 @@ const SettingsPage = () => {
     e.preventDefault();
 
     try {
-      const user = await updatePassword({ oldPassword, newPassword });
-      setSuccessMessage("Password changed successfully.");
-      handleCloseModal();
+      // const user = await updatePassword({ oldPassword, newPassword });
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      const password = newPassword;
+      const response = await fetch(`/api/changeUserPassword/${user.email}`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          oldPassword
+        );
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+        setSuccessMessage("Password changed successfully.");
+        toast.success("Password changed successfully!")
+        handleCloseModal();
+      }
     } catch (error) {
       console.error("Error changing password:", error);
-      setErrorMessage(error.message);
+      if (error.message.includes("auth/invalid-credential")) {
+        setErrorMessage("Incorrect old password!");
+      } else if (
+        error.message.includes("Password should be at least 6 characters")
+      ) {
+        setErrorMessage("Password should be at least 6 characters!");
+      }
     }
   };
 

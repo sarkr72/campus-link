@@ -1,13 +1,11 @@
 // Import necessary dependencies
 "use client";
 
-/*
-import '../../../utils/configureAmplify';
-import { Amplify } from "aws-amplify";
-import config from "../../../aws-exports";
-import "@aws-amplify/ui-react/styles.css";
-Amplify.configure(config);
-*/
+// import '../../../utils/configureAmplify';
+// import { Amplify } from "aws-amplify";
+// import config from "../../../aws-exports";
+// import "@aws-amplify/ui-react/styles.css";
+// Amplify.configure(config);
 
 import GrowSpinner from "../../components/Spinner";
 import { useRouter } from "next/navigation";
@@ -15,7 +13,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 // import { getCurrentUser } from "aws-amplify/auth";
-import currentUser from "../../../utils/checkSignIn";
+// import currentUser from "../../../utils/checkSignIn";
 
 const HomePage2 = () => {
   const router = useRouter();
