@@ -6,9 +6,7 @@ import { useEffect } from "react";
 import React, { useState } from "react";
 import Image from "next/image";
 import GrowSpinner from "../../components/Spinner";
-import styles from "../../../styles/authentification.css";
-// import { fetchUserData } from "../../../utils/fetchUserData";
-// import currentUser from "../../../utils/checkSignIn";
+import styles from "../../../styles/updateProfile.css";
 import { db } from "../../../firebase";
 import {
   collection,
@@ -108,77 +106,6 @@ const UpdateProfilePage = () => {
     });
   }, []);
 
-  // useEffect(() => {
-  //   const fetchImage = async () => {
-  //     try {
-  //       const usersCollection = collection(db, 'users');
-  //       const userQuery = query(usersCollection, where('email', '==', email));
-  //       const querySnapshot = await getDocs(userQuery);
-
-  //       querySnapshot.forEach((doc) => {
-  //         const userData = doc.data();
-  //         console.log("url2: ")
-  //         if (userData.image && userData.image.url) {
-  //           setImageUrl(userData.image.url);
-  //           console.log("url: ", userData.image.url)
-  //         }
-  //       });
-  //     } catch (error) {
-  //       console.error('Error fetching image:', error);
-  //     }
-  //   };
-
-  //   fetchImage();
-  // }, []);
-
-  // useEffect(() => {
-  //   setIsLoading(true);
-  //   const fetchCurrentUser = async () => {
-  //     try {
-  //       const email = await currentUser();
-  //       setCurrentEmail(email);
-
-  //       if (email) {
-  //         const response = await fetch(`/api/users/${email}`, {
-  //           cache: "no-store",
-  //         });
-  //         console.log("response: ", response);
-  //         if (response.ok) {
-  //           const data = await response.json();
-  //           setData((prevData) => ({
-  //             ...prevData,
-  //             firstName: data.firstName,
-  //             lastName: data.lastName,
-  //             email: data.email,
-  //             password: data.password,
-  //             phone: data.phone,
-  //             profilePicture: data.profilePicture,
-  //             bio: data.bio,
-  //             major: data.major,
-  //             minor: data.minor,
-  //             tutor: data.isTutor,
-  //             role: data.role,
-  //           }));
-
-  //           setUser(data);
-  //           console.log("User data updatepage:", data);
-  //         } else {
-  //           console.log("Failed to fetch user data update page:", response);
-  //         }
-  //       } else {
-  //         console.log("User is not signed in");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error getting current user:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //       // setIsEmailSet(true);
-  //     }
-  //   };
-
-  //   fetchCurrentUser();
-  // }, []);
-
   const getUserEmailById = async (userId) => {
     try {
       console.log("id: ", userId);
@@ -233,45 +160,6 @@ const UpdateProfilePage = () => {
       }));
     }
   };
-
-  // useEffect(() => {
-  //   // setIsLoading(true);
-  //   const fetchCurrentUser = async () => {
-  //     try {
-  //       const response = await fetch(`/api/users`);
-  //       if (response.ok) {
-  //         const data2 = await response.json();
-  //         const extractedData = data2.map(user => ({
-  //           firstName: user.firstName,
-  //           lastName: user.lastName,
-  //           email: user.email,
-  //           password: user.password,
-  //           phone: user.phone,
-  //           profilePicture: user.profilePicture,
-  //           bio: user.bio,
-  //           major: user.major,
-  //           minor: user.minor,
-  //           isTutor: user.isTutor,
-  //           role: user.role
-  //         }));
-
-  //         setData(extractedData[0]);
-  //         setUser(data);
-  //         console.log("ssss", data);
-  //         setIsLoading(false);
-  //         console.log("User data:", data);
-  //       } else {
-  //         console.log("Failed to fetch user data:", response.statusText);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error getting current user:", error);
-  //     } finally {
-  //     }
-  //   };
-
-  //   fetchCurrentUser();
-  // }, []);
-
   const handleCheckboxChange = (e) => {
     setData({
       ...data,
@@ -282,27 +170,8 @@ const UpdateProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // setIsLoading(true);
 
     try {
-      // const formDataObj = {
-      //   email: data?.email,
-      //   password: data?.password,
-      //   firstName: data?.firstName,
-      //   lastName: data?.lastName,
-      //   major: data?.major,
-      //   phone: data?.phone,
-      //   role: data?.role,
-      //   // profilePicture: 'defaultpicture',
-      //   bio: data?.bio,
-      //   minor: data?.minor,
-      //   isTutor: data?.isTutor,
-      // };
-
-      // const formData = new FormData();
-      // Object.entries(formDataObj).forEach(([key, value]) => {
-      //   formData.append(key, value);
-      // });
 
       const response = await fetch(`/api/users/${currnetEmail}`, {
         method: "PUT",
@@ -353,20 +222,6 @@ const UpdateProfilePage = () => {
     setImage(null); // Clear the input field after upload
   };
 
-  // if (isLoading) {
-  //   return <GrowSpinner />;
-  // }
-
-  // useEffect(() => {
-  //   if (imageUrl) {
-  //     // Create a new image element to calculate the image's width
-  //     const img = new Image();
-  //     img.onload = () => {
-  //       setImageWidth(img.width); // Set the image width
-  //     };
-  //     img.src = imageUrl; // Load the image
-  //   }
-  // }, [imageUrl]);
 
   return (
     <div>
@@ -376,23 +231,21 @@ const UpdateProfilePage = () => {
       >
         <div className={`row border rounded-5 p-3 bg-white shadow }`}>
           {/* Left */}
-          <div className="col-md-6 rounded-4 left-box">
+          <div className="col-md-6 rounded-4 left-box" >
             {imageUrl && (
               <div>
-                {console.log("urllll", imageUrl)}
                 <Image
-                  className="rounded-4 "
+                  className="profile-pic featured-image"
                   src={imageUrl}
                   alt="User"
-                  height={400}
-                  width={400}
+                  height={300}
+                  width={300}
                 />
               </div>
             )}
           </div>
           {/* Right */}
           <div className="col-md-6 right-box">
-            <div className="row"></div>
             <form onSubmit={handleSubmit} className="input-group">
               <div className="input-group">
                 <label style={{ marginRight: "10px", marginTop: "5px" }}>
@@ -539,6 +392,7 @@ const UpdateProfilePage = () => {
                   Are you a tutor?
                 </label>
               </div>
+              
               <button type="submit" className="btn btn-primary">
                 Submit
               </button>
