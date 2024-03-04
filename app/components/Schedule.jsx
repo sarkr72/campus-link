@@ -5,9 +5,18 @@ import { useEffect } from "react";
 import React, { useState } from "react";
 import { Container } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+
+
 
 
 const Schedule = () => {
+    const [date, setDate] = useState(new Date());
+    const onChange = (newDate) => {
+      setDate(newDate);
+    };
+
     const [currnetEmail, setCurrentEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [user, setUser] = useState("");
@@ -65,9 +74,12 @@ const Schedule = () => {
     }, []);
 
     return (
-      <Container>
-        <Form.Control type="date" />
-      </Container>
+      <div>
+        <Calendar
+        onChange={onChange}
+        value={date}
+        />
+      </div>
     );
   }
   
