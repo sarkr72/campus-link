@@ -23,7 +23,7 @@ export async function getConnection() {
       password: process.env.NEXT_PUBLIC_DB_PASSWORD,
       database: process.env.NEXT_PUBLIC_DB_DATABASE,
       waitForConnections: true, 
-      connectionLimit: 10, // Adjust the connection limit as needed
+      connectionLimit: 10, 
       queueLimit: 0
     });
   }

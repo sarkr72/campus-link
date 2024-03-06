@@ -97,13 +97,13 @@ export async function POST(request) {
 
     // Execute the query
     await connection.query(query, values);
-    connection.release();
+    await connection.release();
     console.log("reached2");
     // Return success response
     return NextResponse.json({ message: "Data inserted successfully" });
   } catch (error) {
     if (connection) {
-      connection.release();
+      await connection.release();
     }
     console.error("Error processing request:", error);
     return NextResponse.error({ message: "Internal Server Error" });
@@ -120,13 +120,13 @@ export async function GET(request) {
     connection = await getConnection();
 
     const [rows] = await connection.query(query);
-    connection.release();
+    await connection.release();
 
     // Return success response with fetched signed-in users
     return NextResponse.json(rows);
   } catch (error) {
     if (connection) {
-      connection.release();
+      await connection.release();
     }
     console.error("Error processing request:", error);
     return NextResponse.error({ message: "Internal Server Error" });

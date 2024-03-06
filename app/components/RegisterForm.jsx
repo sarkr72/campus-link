@@ -5,8 +5,8 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signUp } from "aws-amplify/auth";
-import "../../utils/configureAmplify";
+// import { signUp } from "aws-amplify/auth";
+// import "../../utils/configureAmplify";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Modal, Button } from "react-bootstrap";
@@ -14,7 +14,7 @@ import GrowSpinner from "./Spinner";
 import styles from "/styles/authentification.css";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
-import { confirmSignUp } from "aws-amplify/auth";
+// import { confirmSignUp } from "aws-amplify/auth";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -42,6 +42,7 @@ const RegisterForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({
+    id: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -453,9 +454,9 @@ const RegisterForm = () => {
                     required
                   >
                     <option value="">Select your role</option>
-                    <option value="student">Student</option>
-                    <option value="professor">Professor</option>
-                    <option value="admin">Admin</option>
+                    <option value="Student">Student</option>
+                    <option value="Professor">Professor</option>
+                    <option value="Admin">Admin</option>
                   </select>
                 </div>
                 <div className="input-group">
