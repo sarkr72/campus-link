@@ -1,4 +1,4 @@
-import { Allura } from "next/font/google";
+
 import { NextResponse } from "next/server";
 import { getConnection } from "../../../../utils/db";
 import { admin } from "../../../../utils/firebaseAdmin";
@@ -69,7 +69,7 @@ export async function GET(request, { params }) {
     return NextResponse.json(rows[0]);
   } catch (error) {
     if (connection) {
-      connection.release();
+      await connection.release();
     }
     console.error("Error fetching user:", error);
     return NextResponse.error({ message: "Internal Server Error" });
@@ -98,12 +98,12 @@ export async function DELETE(request, { params }) {
     `;
     const values = [email];
     await connection.query(query, values);
-    connection.release();
+    await connection.release();
 
     return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
     if (connection) {
-      connection.release();
+      await connection.release();
     }
     console.error("Error deleting student:", error);
     return NextResponse.json({ error: "Internal Server Error" });
@@ -175,7 +175,7 @@ export async function PUT(request, { params }) {
     // Execute the query
     await connection.query(query, values);
 
-    connection.release();
+    await connection.release();
     console.log("Student updated successfully");
 
     console.log("done update");
@@ -184,7 +184,7 @@ export async function PUT(request, { params }) {
   } catch (error) {
     console.error("Error updating student:", error);
     if (connection) {
-      connection.release();
+      await connection.release();
     }
     return NextResponse.json({ error: "Internal Server Error" });
   }

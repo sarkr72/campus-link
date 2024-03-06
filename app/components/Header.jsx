@@ -196,7 +196,7 @@ function Header() {
             ) : (
               <Nav.Link href="/">Home</Nav.Link>
             )}
-            {userRole && userRole === "admin" && (
+            {userRole && userRole === "Admin" && (
               <Nav.Link href="/pages/admin">Admin</Nav.Link>
             )}
             <NavDropdown
