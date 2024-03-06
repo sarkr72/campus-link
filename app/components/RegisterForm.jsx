@@ -382,7 +382,7 @@ const RegisterForm = () => {
                     type="password"
                     className="form-control"
                     name="confirmPassword"
-                    placeholder="Enter your confirmPassword"
+                    placeholder="Confirm Password"
                     value={data.confirmPassword}
                     onChange={handleChange}
                     required
