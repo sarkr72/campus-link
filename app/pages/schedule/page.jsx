@@ -1,14 +1,14 @@
 // Import necessary dependencies
 "use client";
 
-import TimeSlotPicker from "@/app/components/TimeSlotPicker";
+import CalendarPage from '@/app/components/CalendarPage';
 import { useEffect } from "react";
 import React, { useState } from "react";
 
 const SchedulePage = () => {
     return (
       <>
-      <TimeSlotPicker />
+      <CalendarPage />
       </>
     );
   }
