@@ -37,6 +37,7 @@ const MainTimelineFeed = () => {
   const [likedByUser, setLikedByUser] = useState(
     Array(posts.length).fill(false)
   );
+  const [likedPosts, setLikedPosts] = useState([]);
   const [imageUrls, setImageUrls] = useState([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -80,6 +81,8 @@ const MainTimelineFeed = () => {
     const userRef = doc(db, "users", uid);
     let userId2 = "";
     let postArray = [];
+
+    const seen = new Set();
     try {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
@@ -97,10 +100,11 @@ const MainTimelineFeed = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("length: ", userId);
+          console.log("length2: ", data);
           let likedBy = [];
           for (let i = 0; i < data.length; i++) {
             if (id == data[i].userId) {
+              // console.log("length: ", data[i]?.likedBy);
               const id = data[i].id;
               const date = data[i].createdAt;
               const content = data[i].content;
@@ -109,24 +113,31 @@ const MainTimelineFeed = () => {
               const likesCount = data[i].likesCount;
               const commentsCount = data[i].commentsCount;
               const sharesCount = data[i].sharesCount;
-
-              const likedByArray = data[i]?.likedBy?.split(", ");
-              const likedBy = likedByArray?.map((user) => {
-                const [name, profilePicture] = user.split(","); // Split by comma
-                return { name, profilePicture }; // Assuming the name is first and profilePicture is second
+              let newLikedBy = [];
+              let likedByArray = [];
+              likedByArray = data[i]?.likedBy?.split(", ");
+              newLikedBy = likedByArray?.map((user) => {
+                const [name, profilePicture] = user.split(",");
+                return { id, name, profilePicture };
               });
-              // const profilePicture
+
+              newLikedBy?.forEach((entry) => {
+                if (!seen.has(entry.name)) {
+                  likedBy.push(entry);
+                  seen.add(entry.name);
+                }
+              });
+
               const existingPostIndex = postArray.findIndex(
                 (post) => post.id === id
               );
 
               if (existingPostIndex !== -1) {
                 postArray[existingPostIndex].images.push(image);
-                if (Array.isArray(postArray[existingPostIndex].likedBy)) {
+                if (data[i]?.likedBy?.length) {
                   postArray[existingPostIndex].likedBy = [
                     ...new Set([
                       ...(postArray[existingPostIndex].likedBy || []),
-                      ...(likedBy || []),
                     ]),
                   ];
                 } else {
@@ -144,13 +155,13 @@ const MainTimelineFeed = () => {
                     likes: likesCount,
                     comments: commentsCount,
                     shares: sharesCount,
-                    likedBy: likedBy || [],
+                    likedBy: data[i]?.likedBy ? newLikedBy : [],
                   },
                 ];
               }
             }
           }
-
+          console.log("postarray", postArray);
           setGetPosts(postArray);
         }
 
@@ -486,8 +497,6 @@ const MainTimelineFeed = () => {
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           {post.likedBy.map((value, index) => (
-                            <>
-                            {console.log(value.profilePicture)}
                             <Dropdown.Item key={index}>
                               <Image
                                 src={value?.profilePicture}
@@ -498,7 +507,6 @@ const MainTimelineFeed = () => {
                               />
                               {value?.name}
                             </Dropdown.Item>
-                            </>
                           ))}
                         </Dropdown.Menu>
                       </Dropdown>
@@ -507,19 +515,16 @@ const MainTimelineFeed = () => {
 
                   <Button
                     variant="btn"
-                    onClick={() => {
-                      handleLikeButtonClick(), handleLikePost(index);
+                    onClick={(event) => {
+                      handleLikeButtonClick();
+                      handleLikePost(index);
+                      event.target.classList.toggle("clicked"); // Toggle the presence of the class
                     }}
-                    style={{
-                      // backgroundColor: isLikeClicked ? "blue" : "initial",
-                      // color: isLikeClicked ? "white" : "black",
-                      backgroundColor: post.likes > 0 ? "blue" : "initial",
-                      color: post.likes > 0 ? "white" : "black",
-                    }}
+                    className={post.likes > 0 ? "liked" : ""}
                   >
                     {post.likes === 0 && <span>Like</span>}
-                    {post.likes > 1 && <span> Likes</span>}
-                    {post.likes === 1 && <span> Like</span>}
+                    {post.likes > 1 && <span>Likes</span>}
+                    {post.likes === 1 && <span>Like</span>}
                   </Button>
                   <Button variant="btn">Comment</Button>
                   <Button variant="btn">Share</Button>

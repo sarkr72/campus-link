@@ -191,6 +191,15 @@
   object-fit: cover; /* Maintain aspect ratio and cover container */
 }
 
+.clicked {
+  background-color: rgb(43, 43, 238);
+  color: white;
+}
+
+.liked {
+  background-color: rgb(39, 39, 236);
+  color: white;
+}
 .post-action-dropdown {
   position: relative;
 }
