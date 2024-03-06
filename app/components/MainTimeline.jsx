@@ -2,86 +2,294 @@ import styles from "/styles/mainTimeline.css";
 import React, { useState, useEffect } from "react";
 import { Button, Card, Modal, Form, Dropdown } from "react-bootstrap";
 import Image from "next/image";
-import defaultProfilePicture from "../resources/images/default-profile-picture.jpeg";
-import likeIcon from "../resources/images/like.svg";
-import commentIcon from "../resources/images/comment.svg";
-import shareIcon from "../resources/images/share.svg";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { db } from "../../firebase";
-
+import Link from "next/link";
 import {
   collection,
+  deleteDoc,
   doc,
+  documentId,
   getDoc,
   getDocs,
+  orderBy,
   query,
   where,
-  addDoc,
-  orderBy,
+  setDoc,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import deleteImage from "../resources/images/deleteImage.png";
+import GrowSpinner from "./Spinner";
 
 const MainTimelineFeed = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [postTitle, setPostTitle] = useState("");
   const [content, setContent] = useState("");
-  const [postImage, setPostImage] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [likes, setLikes] = useState([]);
-  const [likedByUser, setLikedByUser] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState("");
-  const [image, setImage] = useState(null);
-  const [data, setData] = useState({
-    email: "",
-    profilePicture: "",
-  });
+  const [likes, setLikes] = useState(Array(posts.length).fill(0));
+  const [likedByUser, setLikedByUser] = useState(
+    Array(posts.length).fill(false)
+  );
+  const [imageUrls, setImageUrls] = useState([]);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagesToSave, setImagesToSave] = useState([]);
+  const [userRole, setUserRole] = useState("");
+  const [getPosts, setGetPosts] = useState([]);
   const [userId, setUserId] = useState("");
-  const [currentEmail, setCurrentEmail] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [profilePicture, setProfilePicture] = useState("");
+  const auth = getAuth();
+  const [postId, setPost] = useState("");
+  const [isLikeClicked, setIsLikeClicked] = useState(false);
+  useEffect(() => {
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // setUserId(user.uid);
+        setEmail(user.email);
+
+        if (user.email) {
+          const response = await fetch(`/api/users/${user.email}`, {
+            cache: "no-store",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setProfilePicture(data?.profilePicture);
+            setName(data?.firstName + " " + data?.lastName);
+            setUserId(data.id);
+            await getUserRole(user.uid, data?.id);
+          }
+        }
+      }
+    });
+  }, []);
+
+  if (isLoading) {
+    return <GrowSpinner />;
+  }
+
+  const getUserRole = async (uid, id) => {
+    const userRef = doc(db, "users", uid);
+    let userId2 = "";
+    let postArray = [];
+    try {
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUserRole(userData.role);
+
+        const response = await fetch(`/api/getPost`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: userData.email, role: userData.role }),
+          cache: "no-store",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("length: ", userId);
+          let likedBy = [];
+          for (let i = 0; i < data.length; i++) {
+            if (id == data[i].userId) {
+              const id = data[i].id;
+              const date = data[i].createdAt;
+              const content = data[i].content;
+              const image = data[i].image;
+              const userId = data[i].userId;
+              const likesCount = data[i].likesCount;
+              const commentsCount = data[i].commentsCount;
+              const sharesCount = data[i].sharesCount;
+
+              const likedByArray = data[i]?.likedBy?.split(", ");
+              const likedBy = likedByArray?.map((user) => {
+                const [name, profilePicture] = user.split(","); // Split by comma
+                return { name, profilePicture }; // Assuming the name is first and profilePicture is second
+              });
+              // const profilePicture
+              const existingPostIndex = postArray.findIndex(
+                (post) => post.id === id
+              );
+
+              if (existingPostIndex !== -1) {
+                postArray[existingPostIndex].images.push(image);
+                if (Array.isArray(postArray[existingPostIndex].likedBy)) {
+                  postArray[existingPostIndex].likedBy = [
+                    ...new Set([
+                      ...(postArray[existingPostIndex].likedBy || []),
+                      ...(likedBy || []),
+                    ]),
+                  ];
+                } else {
+                  postArray[existingPostIndex].likedBy = likedBy;
+                }
+              } else {
+                postArray = [
+                  ...postArray,
+                  {
+                    id: id,
+                    date: date,
+                    content: content,
+                    images: [image],
+                    userId: userId,
+                    likes: likesCount,
+                    comments: commentsCount,
+                    shares: sharesCount,
+                    likedBy: likedBy || [],
+                  },
+                ];
+              }
+            }
+          }
+
+          setGetPosts(postArray);
+        }
+
+        // const likeCommentShareResponse = await fetch(`/api/getPost`, {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({ userId: userId2 }),
+        //   cache: "no-store",
+        // });
+
+        // if (likeCommentShareResponse.ok) {
+        //   const data = await likeCommentShareResponse.json();
+        //   const { likes, comments } = data;
+
+        //   const updatedPosts = postArray.map((post) => {
+
+        //     const postLikes = likes.find(
+        //       (like) => like.postId === post.id && like.userId === post.userId
+        //     );
+
+        //     const postComments = comments.filter(
+        //       (comment) =>
+        //         comment.postId === post.id && comment.userId === post.userId
+        //     );
+
+        //     return {
+        //       ...post,
+        //       likes: postLikes ? postLikes.likes : 0,
+        //       comments: postComments ? postComments.length : 0,
+        //     };
+
+        //   });
+        //   setGetPosts(updatedPosts);
+        // }
+      } else {
+        console.log("User document not found.");
+      }
+    } catch (error) {
+      console.error("Error getting user document:", error);
+    }
+  };
 
   const handleCreatePost = async () => {
-    const newPost = {
-      username: user.email ? user.email.split("@")[0] : "",
-      userProfilePicture: imageUrl,
-      comment: content,
-      image: postImage,
-      creationTime: new Date(),
-      likes: 0,
-      likedBy: [],
-    };
+    setIsLoading(true);
+    let newImageUrls = [];
+    const storage = getStorage();
+    const usersCollection = collection(db, "users");
 
-    // Save the new post to Firestore
-    const postsCollection = collection(db, "posts");
-    const docRef = await addDoc(postsCollection, newPost);
+    const userQuery = query(usersCollection, where("email", "==", email));
+    const querySnapshot = await getDocs(userQuery);
 
-    // Update the local state
-    setPosts([{ ...newPost, id: docRef.id }, ...posts]);
-    setLikes([...likes, 0]);
-    setLikedByUser([...likedByUser, false]);
+    if (!querySnapshot.empty) {
+      for (const doc of querySnapshot.docs) {
+        const userData = doc.data();
 
-    // Clear input fields and close the modal
-    setContent("");
-    setPostImage("");
-    setShowCreatePostModal(false);
+        if (userData.postsPicture && Array.isArray(userData.postsPicture)) {
+          updatedImages = userData.postsPicture.slice();
+        }
+
+        for (const image of imagesToSave) {
+          const storageRef = ref(storage, `images/posts/${image.name}`);
+          await uploadBytes(storageRef, image);
+          const imageUrl = await getDownloadURL(storageRef);
+          newImageUrls.push(imageUrl);
+          console.log("Image uploaded");
+        }
+      }
+
+      if (newImageUrls.length > 0) {
+        const newPost = {
+          title: postTitle,
+          comment: content,
+          role: userRole,
+          email: email,
+          imagesCount: newImageUrls.length,
+          imageUrls: newImageUrls,
+        };
+        console.log("checking image urls:", newImageUrls);
+        const response = await fetch(`/api/post`, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(newPost),
+        });
+
+        if (response.ok) {
+          setImagesToSave([]);
+          setImageUrls([]);
+          setSelectedImages([]);
+          setPostTitle("");
+          setContent("");
+          setIsLoading(false);
+          // window.location.reload();
+        } else {
+          setIsLoading(false);
+          console.log("failed to post.");
+        }
+        setShowCreatePostModal(false);
+        setIsLoading(false);
+      } else {
+        console.log("images urls empty");
+        setIsLoading(false);
+      }
+    }
   };
-    // Store image post
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPostImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-      const storage = getStorage();
-      const storageRef = ref(storage, `images/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const imageUrl = await getDownloadURL(storageRef);
-      setPostImage(imageUrl);
+
+  const handleChange = (e) => {
+    const files = e.target.files;
+    const newProfilePictures = [];
+
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          newProfilePictures.push(event.target.result);
+          // Check if all files have been processed
+          if (newProfilePictures.length === files.length) {
+            setImagesToSave(files); // Save the files
+            setSelectedImages(newProfilePictures); // Save the base64 data
+          }
+        };
+        reader.readAsDataURL(files[i]); // Read each file as data URL
+      }
+    }
+  };
+
+  const handleDeleteImage = async (imageIndex) => {
+    try {
+      const updatedImages = [...selectedImages];
+      updatedImages.splice(imageIndex, 1);
+      setSelectedImages(updatedImages);
+      const updatedImages2 = [...imagesToSave];
+      updatedImages2.splice(imageIndex, 1);
+      setImagesToSave(updatedImages2);
+    } catch (error) {
+      console.error("Error deleting image:", error);
     }
   };
 
@@ -102,141 +310,81 @@ const MainTimelineFeed = () => {
 
   const handleLikePost = async (index) => {
     try {
-      const post = posts[index];
+      const post = getPosts[index];
       const postId = post.id;
-
+      const userId = post.userId;
       // Check if the user already liked the post
-      if (!likedByUser[index]) {
-        // Increment likes
-        const updatedLikes = [...likes];
-        updatedLikes[index]++;
-        setLikes(updatedLikes);
+      // if (!likedByUser[index]) {
+      //   // Increment likes
+      //   const updatedLikes = [...likes];
+      //   updatedLikes[index]++;
+      //   setLikes(updatedLikes);
 
-        // Update likedByUser state
-        const updatedLikedByUser = [...likedByUser];
-        updatedLikedByUser[index] = true;
-        setLikedByUser(updatedLikedByUser);
+      //   // Update likedByUser state
+      //   const updatedLikedByUser = [...likedByUser];
+      //   updatedLikedByUser[index] = true;
+      //   setLikedByUser(updatedLikedByUser);
 
-        // Add the user to the list of users who liked the post in Firestore
-        const likedUsersRef = doc(db, "posts", postId);
-        await updateDoc(likedUsersRef, {
-          likedBy: [...post.likedBy, userId],
-        });
-      } else {
-        // Decrement likes if the user already liked the post
-        const updatedLikes = [...likes];
-        updatedLikes[index]--;
-        setLikes(updatedLikes);
-
-        // Update likedByUser state
-        const updatedLikedByUser = [...likedByUser];
-        updatedLikedByUser[index] = false;
-        setLikedByUser(updatedLikedByUser);
-
-        // Remove the user from the list of users who liked the post in Firestore
-        const likedUsersRef = doc(db, "posts", postId);
-        await updateDoc(likedUsersRef, {
-          likedBy: post.likedBy.filter((id) => id !== userId),
-        });
+      // Add the user to the list of users who liked the post in Firestore
+      // const likedUsersRef = doc(db, "posts", postId);
+      // await updateDoc(likedUsersRef, {
+      //   likedBy: [...post.likedBy, userId],
+      // });
+      const response = await fetch(`/api/insertLike`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId: postId, userId: userId }),
+        cache: "no-store",
+      });
+      if (response.ok) {
+        console.log("like saved:", postId, userId);
       }
+      // }
+      // else {
+      //   // Decrement likes if the user already liked the post
+      //   const updatedLikes = [...likes];
+      //   updatedLikes[index]--;
+      //   setLikes(updatedLikes);
+
+      //   // Update likedByUser state
+      //   const updatedLikedByUser = [...likedByUser];
+      //   updatedLikedByUser[index] = false;
+      //   setLikedByUser(updatedLikedByUser);
+
+      //   // Remove the user from the list of users who liked the post in Firestore
+      //   // const likedUsersRef = doc(db, "posts", postId);
+      //   // await updateDoc(likedUsersRef, {
+      //   //   likedBy: post.likedBy.filter((id) => id !== userId),
+      //   // });
+      //   const response = await fetch(`/api/undoLike`, {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ postId: postId, userId: userId }),
+      //     cache: "no-store",
+      //   });
+      //   if(response.ok){
+      //     console.log("like saved:", postId, userId);
+      //   }
+      // }
     } catch (error) {
       console.error("Error handling like:", error);
     }
   };
-  const fetchPosts = async () => {
-    try {
-      const postsCollection = collection(db, "posts");
-      const postsQuery = query(
-        postsCollection,
-        orderBy("creationTime", "desc")
-      );
 
-      const querySnapshot = await getDocs(postsQuery);
-
-      const fetchedPosts = [];
-      const fetchedLikes = [];
-      const fetchedLikedByUser = [];
-
-      querySnapshot.forEach((doc) => {
-        const postData = doc.data();
-        fetchedPosts.push({ ...postData, id: doc.id });
-        fetchedLikes.push(postData.likes || 0);
-        fetchedLikedByUser.push(false);
-      });
-
-      setPosts(fetchedPosts);
-      setLikes(fetchedLikes);
-      setLikedByUser(fetchedLikedByUser);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleLikeButtonClick = () => {
+    setIsLikeClicked(!isLikeClicked);
   };
 
-  const [currentUser, setCurrentUser] = useState({
-    email: null,
-    profilePicture: null,
-  });
-
-  useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUserId(user.uid);
-        const email = await getUserEmailById(user.uid);
-        setEmail(user.email);
-        if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            cache: "no-store",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setData((prevData) => ({
-              ...prevData,
-              email: data.email,
-              profilePicture: data.profilePicture,
-            }));
-
-            setUser(data);
-            const usersCollection = collection(db, "users");
-            const userQuery = query(
-              usersCollection,
-              where("email", "==", email)
-            );
-            const querySnapshot = await getDocs(userQuery);
-
-            querySnapshot.forEach((doc) => {
-              const userData = doc.data();
-              if (userData.image && userData.image.url) {
-                setImageUrl(userData.image.url);
-              }
-            });
-          } else {
-            console.log("Failed to fetch user data", response);
-          }
-          fetchPosts();
-        }
-      }
-    });
-  }, []);
-  const getUserEmailById = async (userId) => {
-    try {
-      console.log("id: ", userId);
-      const userDocRef = doc(db, "users", userId);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const userData = userDocSnapshot.data();
-        const userEmail = userData.email;
-        setCurrentEmail(userEmail);
-        return userEmail;
-      } else {
-        throw new Error("User not found");
-      }
-    } catch (error) {
-      console.error("Error retrieving user email:", error);
+  function handleDropdownChange(event) {
+    const userId = event.target.value;
+    if (userId) {
+      router.push(`/pages/profile/`);
     }
-  };
+  }
 
   return (
     <div className={`timeLine-container ${styles.mainTimeline}`}>
@@ -249,136 +397,140 @@ const MainTimelineFeed = () => {
 
       <div className="col-md-6 center-box">
         <div className="createPostPrompt shadow-sm border rounded-5 p-3 bg-white shadow box-area">
-          <div className="prompt-info">
-            {imageUrl ? (
-              <Image
-                src={imageUrl}
-                alt="Profile pic"
-                className="profile-pic"
-                width={50}
-                height={50}
-              />
-            ) : (
-              <Image
-                src={defaultProfilePicture}
-                alt="Default profile pic"
-                className="default-profile-pic"
-                width={50}
-                height={50}
-              />
-            )}
-            <p className="poster-username">
-              What&apos;s on your mind{" "}
-              {user.email ? user.email.split("@")[0] : ""}?{" "}
-            </p>
-          </div>
-
+          <p>Share what&apos;s on your mind</p>
           <Button
             variant="primary"
+            style={{ color: "white", border: "white" }}
             onClick={() => setShowCreatePostModal(true)}
           >
             Create Post
           </Button>
         </div>
-
-        <div className="feed">
-          {posts.map((post, index) => (
-            <Card key={index} className="mb-3">
-              <Card.Header className="post-header">
-                <div className="profile-info">
-                  {imageUrl ? (
-                    <Image
-                      src={post.userProfilePicture}
-                      alt="Profile pic"
-                      className="profile-pic"
-                      width={50}
-                      height={50}
-                    />
-                  ) : (
-                    <Image
-                      src={defaultProfilePicture}
-                      alt="Default profile pic"
-                      className="default-profile-pic"
-                      width={50}
-                      height={50}
-                    />
-                  )}
-                  <p className="poster-username">{post.username}</p>
-                </div>
-                <Dropdown className="post-action-dropdown">
-                  <Dropdown.Toggle className="post-options">
-                    <span style={{ fontSize: "1.5em" }}>•••</span>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() => handleDeletePost(index)}
-                      className="text-danger"
-                    >
-                      <strong>Delete Post</strong>
-                    </Dropdown.Item>
-                    <Dropdown.Item className="text-warning">
-                      <strong>Report Post</strong>
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Card.Header>
-              <Card.Body className="post-body">
-                <Card.Text className="post-comment">{post.comment}</Card.Text>
-                {post.image && (
-                  <div className="post-img">
-                    <Image
-                      className="post-img"
-                      src={post.image}
-                      alt="Post Image"
-                      width={200}
-                      height={200}
-                      priority
-                      style={{ filter: "brightness(90%)" }}
-                      onError={(e) => console.error("Image failed to load", e)}
-                    />
+        {getPosts && Array.isArray(getPosts) && (
+          <div className="feed">
+            {getPosts.map((post, index) => (
+              <Card key={index} className="mb-3">
+                <Card.Header className="post-header">
+                  <div>
+                    {/* Profile pic */}
+                    {profilePicture && (
+                      <Image
+                        src={profilePicture}
+                        alt={`Profile Image`}
+                        width={40}
+                        height={40}
+                        style={{ borderRadius: "50%" }}
+                      />
+                    )}
+                    <strong> {name}</strong>
                   </div>
-                )}
-              </Card.Body>
-              <Card.Footer className="post-footer">
-                <Button
-                  className="social-btn"
-                  variant="btn"
-                  onClick={() => handleLikePost(index)}
-                >
-                  <Image
-                    className="social-btn-icon"
-                    src={likeIcon}
-                    alt="Discussion Board Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Like ({likes[index]})
-                </Button>
+                  <Dropdown className="post-action-dropdown">
+                    <Dropdown.Toggle
+                      style={{ border: "white" }}
+                      className="post-options"
+                    >
+                      <span style={{ fontSize: "1.5em", color: "white" }}>
+                        •••
+                      </span>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        onClick={() => handleDeletePost(index)}
+                        className="text-danger"
+                      >
+                        <strong>Delete Post</strong>
+                      </Dropdown.Item>
+                      <Dropdown.Item className="text-warning">
+                        <strong>Report Post</strong>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                  {/* <div className="post-title"><p>{post.title}</p></div> */}
+                </Card.Header>
+                <Card.Body className="post-body">
+                  <Card.Text className="post-comment">{post.content}</Card.Text>
+                  {post && post?.images && (
+                    <div className="post-img">
+                      {post.images.map((image, index) => (
+                        <div key={index} className="post-img">
+                          {image && (
+                            <Image
+                              src={image}
+                              alt={`Post Image ${index}`}
+                              width={200}
+                              height={200}
+                              priority
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card.Body>
+                <Card.Footer className="post-footer">
+                  <Link href={`/pages/profile/${"post.userId"}`}></Link>
+                  {post?.likedBy?.length > 0 && (
+                    <>
+                      <Dropdown onSelect={handleDropdownChange}>
+                        <Dropdown.Toggle
+                          variant="transparent"
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            width: "40px",
+                          }}
+                        >
+                          {post.likes === 0 && "Like"}
+                          {post.likes > 1 && `${post.likes} Likes`}
+                          {post.likes === 1 && `${post.likes} Like`}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          {post.likedBy.map((value, index) => (
+                            <>
+                            {console.log(value.profilePicture)}
+                            <Dropdown.Item key={index}>
+                              <Image
+                                src={value?.profilePicture}
+                                alt={value?.name}
+                                width={20}
+                                height={20}
+                                style={{ borderRadius: "50%" }}
+                              />
+                              {value?.name}
+                            </Dropdown.Item>
+                            </>
+                          ))}
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </>
+                  )}
 
-                <Button className="social-btn" variant="btn">
-                  <Image
-                    className="social-btn-icon"
-                    src={commentIcon}
-                    alt="Discussion Board Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Comment
-                </Button>
-                <Button className="social-btn" variant="btn">
-                  <Image
-                    className="social-btn-icon"
-                    src={shareIcon}
-                    alt="Discussion Board Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Share
-                </Button>
-              </Card.Footer>
-            </Card>
-          ))}
-        </div>
+                  <Button
+                    variant="btn"
+                    onClick={() => {
+                      handleLikeButtonClick(), handleLikePost(index);
+                    }}
+                    style={{
+                      // backgroundColor: isLikeClicked ? "blue" : "initial",
+                      // color: isLikeClicked ? "white" : "black",
+                      backgroundColor: post.likes > 0 ? "blue" : "initial",
+                      color: post.likes > 0 ? "white" : "black",
+                    }}
+                  >
+                    {post.likes === 0 && <span>Like</span>}
+                    {post.likes > 1 && <span> Likes</span>}
+                    {post.likes === 1 && <span> Like</span>}
+                  </Button>
+                  <Button variant="btn">Comment</Button>
+                  <Button variant="btn">Share</Button>
+                  {/* <Button variant="btn" onClick={() => handleDeletePost(index)}>
+                    Delete
+                  </Button> */}
+                </Card.Footer>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="col-md-3 right-box">
@@ -398,6 +550,15 @@ const MainTimelineFeed = () => {
         </Modal.Header>
         <Modal.Body>
           <Form>
+            <Form.Group controlId="postTitle">
+              <Form.Label>Post Title</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter post title"
+                value={postTitle}
+                onChange={(e) => setPostTitle(e.target.value)}
+              />
+            </Form.Group>
             <Form.Group controlId="content">
               <Form.Label>Comment</Form.Label>
               <Form.Control
@@ -413,8 +574,37 @@ const MainTimelineFeed = () => {
               <Form.Control
                 type="file"
                 accept="image/*"
-                onChange={handleImageChange}
+                onChange={handleChange}
+                multiple
               />
+
+              {Array.isArray(selectedImages) &&
+                selectedImages.length > 0 &&
+                selectedImages.map((image, index) => (
+                  <div key={index} className="relative inline-block">
+                    <button
+                      className="position-absolute z-10 p-2 bg-white rounded-circle"
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevent the form submission
+                        handleDeleteImage(index);
+                      }}
+                    >
+                      <Image
+                        src={deleteImage}
+                        alt="Delete"
+                        width={14}
+                        height={18}
+                      />
+                    </button>
+                    <Image
+                      src={image}
+                      alt={`Uploaded Image ${index}`}
+                      className="mb-4"
+                      width={150}
+                      height={150}
+                    />
+                  </div>
+                ))}
             </Form.Group>
           </Form>
         </Modal.Body>
