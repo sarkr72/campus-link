@@ -171,7 +171,7 @@
   align-items: center;
   justify-content: space-evenly;
   gap: 5px;
-  /* margin-top: 10px; */
+  margin-top: 10px;
   background-color: aliceblue;
 }
 
@@ -185,21 +185,6 @@
   margin-top: 10px;
 }
 
-.post-image {
-  width: 100%; /* Set the width to 100% */
-  height: 100%; /* Set the height to 100% */
-  object-fit: cover; /* Maintain aspect ratio and cover container */
-}
-
-.clicked {
-  background-color: rgb(43, 43, 238);
-  color: white;
-}
-
-.liked {
-  background-color: rgb(39, 39, 236);
-  color: white;
-}
 .post-action-dropdown {
   position: relative;
 }
@@ -213,18 +198,17 @@
 }
 
 .btn {
-  /* background-color: #3586ff; */
-  color: black;
-  /* border: 1px solid black; */
+  background-color: #3586ff;
+  color: white;
 }
 
-/* .btn:hover {
+.btn:hover {
   transition: transform 0.4s ease-in-out;
   transform: scale(1.025);
   background-color: white;
   color: #3586ff;
   border: 1px solid black;
-} */
+}
 
 
 /* Adjust styles for smaller screens */
