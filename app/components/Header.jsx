@@ -68,40 +68,6 @@ function Header() {
     };
   }, []);
 
-  // useLayoutEffect(() => {
-  //   // setIsLoading(true);
-  //   const fetchCurrentUser = async () => {
-  //     try {
-  //       const email = await currentUser();
-  //       setCurrentEmail(email);
-  //       if (email) {
-  //         console.log("emaaaa", email);
-  //         setIsEmailSet(true);
-  //       }
-  //       if (email) {
-  //         const response = await fetch(`/api/users/${email}`, {
-  //           method: "GET",
-  //         });
-  //         if (response.ok) {
-  //           const data = await response.json();
-  //           setUser(data);
-  //           setIsLoading(false);
-  //           console.log("User data:", data);
-  //         } else {
-  //           console.log("Failed to fetch user data:", response.statusText);
-  //         }
-  //       } else {
-  //         console.log("User is not signed in");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error getting current user:", error);
-  //     } finally {
-  //     }
-  //   };
-
-  //   fetchCurrentUser();
-  // }, [toggle]);
-
   const getUserRole = async (uid) => {
     const userRef = doc(db, "users", uid);
 
@@ -138,16 +104,6 @@ function Header() {
     e.preventDefault();
 
     try {
-      // await signOut()
-      //   .then(() => {
-      //     router.push("/pages/logIn");
-      //     setIsEmailSet(false);
-      //     toast.success("You are logged out!");
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error signing out:", error);
-      //   });
-
       await auth.signOut();
       handleToggle();
       // router.push("/pages/logIn");
@@ -196,15 +152,16 @@ function Header() {
             ) : (
               <Nav.Link href="/">Home</Nav.Link>
             )}
-            {userRole && userRole === "admin" && (
+            {userRole && userRole.toLocaleLowerCase() === "admin" && (
               <Nav.Link href="/pages/admin">Admin</Nav.Link>
             )}
             <NavDropdown
-              title="User"
+              title="Tools"
               id="basic-nav-dropdown"
               onSelect={handleDropdownSelect} // Close dropdown on select
               show={dropdownOpen} // Control visibility of dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{ zIndex: 9999 }}
             >
               {userId && (
                 <>
@@ -218,9 +175,17 @@ function Header() {
                   <NavDropdown.Item href="/pages/settings">
                     Settings
                   </NavDropdown.Item>
-                  <NavDropdown.Item href="/pages/schedule">
-                    View Schedule
+
+                  {userRole && userRole.toLocaleLowerCase() === "admin" && (
+                    <>
+                    <NavDropdown.Item href="/pages/addCourse">
+                      Add Course
+                    </NavDropdown.Item>
+                    <NavDropdown.Item href="/pages/createTutoringSession">
+                    Create Tutoring Session
                   </NavDropdown.Item>
+                  </>
+                  )}
                 </>
               )}
               <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>

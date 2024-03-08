@@ -5,8 +5,8 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signUp } from "aws-amplify/auth";
-import "../../utils/configureAmplify";
+// import { signUp } from "aws-amplify/auth";
+// import "../../utils/configureAmplify";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Modal, Button } from "react-bootstrap";
@@ -14,7 +14,7 @@ import GrowSpinner from "./Spinner";
 import styles from "/styles/authentification.css";
 import logoImage from "../resources/images/logo.png";
 // import { Auth } from "aws-amplify";
-import { confirmSignUp } from "aws-amplify/auth";
+// import { confirmSignUp } from "aws-amplify/auth";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -42,6 +42,7 @@ const RegisterForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({
+    id: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -51,8 +52,7 @@ const RegisterForm = () => {
     profilePicture: "",
     bio: "",
     major: "",
-    minor: "",
-    tutor: false,
+    isTutor: false,
     role: "",
   });
   const [error, setError] = useState("");
@@ -109,16 +109,10 @@ const RegisterForm = () => {
   }
 
   const handleImageUpload = async () => {
-    // Upload image to Firebase Storage
     const storage = getStorage();
     const storageRef = ref(storage, `images/profilepicture/${image.name}`);
     await uploadBytes(storageRef, image);
-
-    // Get download URL of the uploaded image
     const imageUrl = await getDownloadURL(storageRef);
-    // setImageUrl(imageUrl);
-
-    // Update user document with image URL and path
     const usersCollection = collection(db, "users");
     const userQuery = query(usersCollection, where("email", "==", data.email));
     const querySnapshot = await getDocs(userQuery);
@@ -132,7 +126,7 @@ const RegisterForm = () => {
       });
     });
 
-    setImage(null); // Clear the input field after upload
+    setImage(null);
   };
 
   const handleSubmit = async (e) => {
@@ -162,38 +156,7 @@ const RegisterForm = () => {
 
       try {
         setIsLoading(true);
-        // const formDataObj = {
-        //   email: data?.email,
-        //   password: data?.password,
-        //   firstName: data?.firstName,
-        //   lastName: data?.lastName,
-        //   major: data?.major,
-        //   phone: data?.phone,
-        //   role: data?.role,
-        //   profilePicture: data?.profilePicture,
-        //   bio: data?.bio,
-        //   minor: data?.minor,
-        //   isTutor: data?.isTutor,
-        // };
-
-        // const formData = new FormData();
-        // Object.entries(formDataObj).forEach(([key, value]) => {
-        //   formData.append(key, value);
-        // });
-
-        // await signUp({
-        //   username: data.email,
-        //   password: data.password,
-        //   attributes: {
-        //     firstName: data.firstName,
-        //     lastName: data.lastName,
-        //     email: data.email,
-        //     phone_number: data.phone,
-        //   },
-        // });
-
         const auth = getAuth();
-        // Adds user to authenticated accounts
         const userCredentials = await createUserWithEmailAndPassword(
           auth,
           data.email,
@@ -208,41 +171,54 @@ const RegisterForm = () => {
           updateProfile(auth.currentUser, {
             displayName: data.firstName + data.lastName,
           });
+          const imageUrl = "";
+          if (image) {
+            const storage = getStorage();
+            const storageRef = ref(
+              storage,
+              `images/profilepicture/${image?.name}`
+            );
+            await uploadBytes(storageRef, image);
+            imageUrl = await getDownloadURL(storageRef);
+            // const usersCollection = collection(db, "users");
+            // const userQuery = query(
+            //   usersCollection,
+            //   where("email", "==", data.email)
+            // );
+            // const querySnapshot = await getDocs(userQuery);
+            // querySnapshot.forEach(async (doc) => {
+            //   await updateDoc(doc.ref, {
+            //     image: {
+            //       url: imageUrl,
+            //       path: `images/profilepicture/${image.name}`,
+            //     },
+            //   });
+            // });
+          }
+          setImage(null);
+
           const user = userCredentials.user;
           const formDataCopy = {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            password: data.password,
-            role: data.role,
+            firstName: data?.firstName,
+            lastName: data?.lastName,
+            email: data?.email,
+            password: data?.password,
+            phone: data?.phone,
+            profilePicture: {
+              name: image?.name,
+              url: imageUrl,
+              path: `images/profilepicture/${image?.name}`,
+            },
+            role: data?.role,
+            bio: data?.bio,
+            major: data?.major,
+            isTutor: data?.isTutor,
+            role: data?.role,
           };
 
           delete formDataCopy.password;
           formDataCopy.timestamp = serverTimestamp();
           await setDoc(doc(db, "users", user.uid), formDataCopy);
-
-          const response = await fetch(`/api/users`, {
-            method: "POST",
-            headers: {
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-
-          if (response.ok) {
-            const responseData = await response.json();
-            if (responseData.message === "Email already exists") {
-              toast.error("Email already exists!");
-            } else {
-              await handleImageUpload();
-
-              router.push("/pages/mainTimeline");
-              // setShowConfirmationModal(true);
-              console.log("called");
-            }
-          } else {
-            toast.error("Failed to create user");
-          }
         } else {
         }
       } catch (error) {
@@ -271,30 +247,6 @@ const RegisterForm = () => {
       }
     }
   };
-
-  // const handleChangeConfirmationCode = (e) => {
-  //   const { value } = e.target;
-  //   setConfirmationCode(value);
-  // };
-
-  // const handleConfirm = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     console.log("email", data.email);
-  //     const { isSignUpComplete, nextStep } = await confirmSignUp({
-  //       username: data.email,
-  //       confirmationCode,
-  //     });
-  //     if (isSignUpComplete) {
-  //       router.push("/pages/mainTimeline");
-  //     } else {
-  //       toast.error("Wrong credentials");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error confirming sign up:", error);
-  //     toast.error("Wrong confirmation code!");
-  //   }
-  // };
 
   return (
     <div>
@@ -397,23 +349,23 @@ const RegisterForm = () => {
                     onChange={handleChange}
                   />
                 </div>
-                <div style={{marginBottom: "10px"}}>
+                <div style={{ marginBottom: "10px" }}>
                   <input
                     type="file"
                     className="form-control"
                     name="profilePicture"
                     onChange={handleChange}
                   />
-                   {selectedImage && (
-                  <div style={{marginTop: "10px"}}>
-                    <Image
-                      src={selectedImage}
-                      alt="Selected Image"
-                      height={80}
-                      width={80}
-                    />
-                  </div>
-                )}
+                  {selectedImage && (
+                    <div style={{ marginTop: "10px" }}>
+                      <Image
+                        src={selectedImage}
+                        alt="Selected Image"
+                        height={80}
+                        width={80}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="input-group">
                   <textarea
@@ -435,16 +387,6 @@ const RegisterForm = () => {
                   />
                 </div>
                 <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="minor"
-                    placeholder="Enter your minor"
-                    value={data.minor}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="input-group">
                   <select
                     className="form-select"
                     name="role"
@@ -453,9 +395,9 @@ const RegisterForm = () => {
                     required
                   >
                     <option value="">Select your role</option>
-                    <option value="student">Student</option>
-                    <option value="professor">Professor</option>
-                    <option value="admin">Admin</option>
+                    <option value="Student">Student</option>
+                    <option value="Professor">Professor</option>
+                    <option value="Admin">Admin</option>
                   </select>
                 </div>
                 <div className="input-group">
@@ -463,8 +405,8 @@ const RegisterForm = () => {
                     type="checkbox"
                     className={`form-check-input mr-${10}`}
                     style={{ marginRight: "10px" }}
-                    name="tutor"
-                    checked={data.tutor}
+                    name="isTutor"
+                    checked={data.isTutor}
                     onChange={handleCheckboxChange}
                   />
                   <label className="form-check-label" htmlFor="isTutor">

@@ -174,11 +174,6 @@ const MainTimelineFeed = () => {
     }
   };
 
-  const [currentUser, setCurrentUser] = useState({
-    email: null,
-    profilePicture: null,
-  });
-
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
@@ -186,17 +181,8 @@ const MainTimelineFeed = () => {
         setUserId(user.uid);
         const email = await getUserEmailById(user.uid);
         setEmail(user.email);
-        if (email) {
-          const response = await fetch(`/api/users/${email}`, {
-            cache: "no-store",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setData((prevData) => ({
-              ...prevData,
-              email: data.email,
-              profilePicture: data.profilePicture,
-            }));
+        if (user.email) {
+      
 
             setUser(data);
             const usersCollection = collection(db, "users");
@@ -208,8 +194,13 @@ const MainTimelineFeed = () => {
 
             querySnapshot.forEach((doc) => {
               const userData = doc.data();
-              if (userData.image && userData.image.url) {
-                setImageUrl(userData.image.url);
+              if (userData) {
+                // setImageUrl(userData.image.url);
+                setData((prevData) => ({
+                  ...prevData,
+                  email: userData?.email,
+                  profilePicture: userData?.profilePicture?.url,
+                }));
               }
             });
           } else {
@@ -217,7 +208,7 @@ const MainTimelineFeed = () => {
           }
           fetchPosts();
         }
-      }
+      
     });
   }, []);
   const getUserEmailById = async (userId) => {
