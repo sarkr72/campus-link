@@ -20,6 +20,7 @@ import {
 import { db } from "../../firebase";
 import styles from "../../styles/timeSlot.css";
 import { toast } from "react-toastify";
+import styless from "../../styles/timeSlot.css";
 
 const TimeSlotPicker = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());

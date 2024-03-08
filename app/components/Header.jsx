@@ -161,6 +161,7 @@ function Header() {
               onSelect={handleDropdownSelect} // Close dropdown on select
               show={dropdownOpen} // Control visibility of dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{ zIndex: 9999 }}
             >
               {userId && (
                 <>
@@ -176,9 +177,14 @@ function Header() {
                   </NavDropdown.Item>
 
                   {userRole && userRole.toLocaleLowerCase() === "admin" && (
+                    <>
                     <NavDropdown.Item href="/pages/addCourse">
                       Add Course
                     </NavDropdown.Item>
+                    <NavDropdown.Item href="/pages/createTutoringSession">
+                    Create Tutoring Session
+                  </NavDropdown.Item>
+                  </>
                   )}
                 </>
               )}
