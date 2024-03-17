@@ -1,10 +1,11 @@
 "use client";
-// import "bootstrap/dist/css/bootstrap.min.css";
-// import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Image from "next/image";
 import logoImage from "./resources/images/logo.png";
+import styles from "/styles/landing.css";
 
 // Font Awesome icons used in features section
 import tutorIcon from "./resources/images/person-video.svg";
@@ -256,6 +257,8 @@ export default function Home() {
           </Button>
         </div>
       </section>
+
     </div>
+    
   );
 }

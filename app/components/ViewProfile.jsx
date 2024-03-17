@@ -70,7 +70,7 @@ function ViewProfile() {
 
           querySnapshot?.forEach((doc) => {
             const data2 = doc?.data();
-            console.log("ddd", data2.profilePicture)
+            console.log("ddd", data2.profilePicture);
             if (data) {
               setData((prevData) => ({
                 ...prevData,
@@ -95,7 +95,7 @@ function ViewProfile() {
 
   return (
     <div className="profile-container container">
-      <Row>
+      <Row >
         <Breadcrumb className="bg-light rounded-3">
           <Breadcrumb.Item href="/pages/mainTimeline">Home</Breadcrumb.Item>
           <Breadcrumb.Item href="#">User</Breadcrumb.Item>
@@ -109,13 +109,13 @@ function ViewProfile() {
               <Card.Header>
                 {data?.profilePicture ? (
                   <Image
-                    className=""
+                    className="profile-pic"
                     // style={{width: "100%"}}
                     src={data.profilePicture}
                     alt="User"
-                    height={290}
-                    width={1000}
-                    style={{ width: "100%" }}
+                    height={250}
+                    width={250}
+                    style={{ width: "auto" }}
                   />
                 ) : (
                   <Image
@@ -133,11 +133,7 @@ function ViewProfile() {
                   {data.role && (
                     <li className="list-group-item">{data.role}</li>
                   )}
-                  {data?.tutor && (
-                            <li className="list-group-item">
-                              Tutor
-                            </li>
-                          )}
+                  {data?.tutor && <li className="list-group-item">Tutor</li>}
                   <p className="username">
                     {user.email ? user.email.split("@")[0] : ""}
                   </p>
@@ -153,7 +149,7 @@ function ViewProfile() {
 
               {showDetails && (
                 <div className="d-flex justify-content-center">
-                  <Card.Body style={{maxWidth: "600px"}}>
+                  <Card.Body style={{ maxWidth: "600px" }}>
                     <ul className="list-group">
                       {data && (
                         <>
@@ -170,7 +166,6 @@ function ViewProfile() {
                               Major: {data.major}
                             </li>
                           )}
-                          
                         </>
                       )}
                     </ul>
@@ -178,7 +173,7 @@ function ViewProfile() {
                 </div>
               )}
 
-              <Card.Footer  className="card-footer">
+              <Card.Footer className="card-footer">
                 <Button className="profile-btn">
                   <Image
                     className="profile-btn-icon"
@@ -202,7 +197,6 @@ function ViewProfile() {
               </Card.Footer>
             </Card>
           </div>
-
           <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
         </div>
       </>
