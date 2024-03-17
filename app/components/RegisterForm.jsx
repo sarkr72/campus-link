@@ -171,7 +171,7 @@ const RegisterForm = () => {
           updateProfile(auth.currentUser, {
             displayName: data.firstName + data.lastName,
           });
-          const imageUrl = "";
+          let imageUrl = "";
           if (image) {
             const storage = getStorage();
             const storageRef = ref(
@@ -244,6 +244,7 @@ const RegisterForm = () => {
         }
       } finally {
         setIsLoading(false);
+        router.push("/pages/mainTimeline");
       }
     }
   };

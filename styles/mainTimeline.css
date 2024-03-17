@@ -8,11 +8,11 @@
 }
 
 .left-box {
-  background: linear-gradient(to bottom, #EEF5FF, #ffffff);
+  background: linear-gradient(to bottom, #eef5ff, #ffffff);
 }
 
 .right-box {
-  background: linear-gradient(to bottom, #176B87, #86B6F6, #ffffff);
+  background: linear-gradient(to bottom, #176b87, #86b6f6, #ffffff);
 }
 /* This is the div at the top that contains the button for creating a post"*/
 .createPostPrompt {
@@ -165,14 +165,20 @@
 .profile-pic {
   clip-path: circle();
 }
-
 .post-footer {
+  background-color: aliceblue;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.post-footer-icons {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   gap: 5px;
-  margin-top: 10px;
-  background-color: aliceblue;
+  margin-top: 5px;
+  margin-bottom: 5px;
+
 }
 
 .post-img {
@@ -197,6 +203,49 @@
   display: none; /* Hide the default arrow */
 }
 
+.comment-section {
+  display: block;
+  gap: 15px;
+}
+
+.comment-prompt {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.comment {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 5px;
+}
+
+.comment-user, .comment-text {
+  margin: 0px;
+}
+.comment-user {
+  font-weight: bold;
+}
+
+
+.comment-timestamp {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+#comment-btn {
+  text-decoration: none;
+}
+
 .btn {
   background-color: #3586ff;
   color: white;
@@ -209,7 +258,6 @@
   color: #3586ff;
   border: 1px solid black;
 }
-
 
 /* Adjust styles for smaller screens */
 @media (max-width: 800px) {

@@ -1,6 +1,9 @@
 .profile-container {
   font-size: medium;
-  /* margin-top: 20px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
 }
 
 .bg-light {
