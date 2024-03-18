@@ -26,6 +26,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
+import Dropdown from "../../components/Dropdown";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
@@ -34,6 +35,7 @@ export default function Home() {
   const [deleteUserEmail, setDeleteUserEmail] = useState(null);
   const [toggle, setToggle] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedRow, setSelectedRow] = useState();
 
   useEffect(() => {
     fetchUsers();
@@ -42,14 +44,17 @@ export default function Home() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // const fetchedUsers = await listUsers();
-      const response = await fetch("/api/users");
-
-      let data = "";
-      if (response.ok) {
-        data = await response?.json();
-        setUsers(data);
-      }
+      const userRef = collection(db, "users");
+      const snapshot = await getDocs(userRef);
+      const usersData = snapshot.docs.map((doc) => ({
+        id: doc?.id,
+        email: doc?.data()?.email,
+        firstName: doc?.data()?.firstName,
+        lastName: doc?.data()?.lastName,
+        role: doc?.data()?.role,
+        timestamp: doc?.data()?.timestamp?.toDate(),
+      }));
+      setUsers(usersData);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -113,6 +118,7 @@ export default function Home() {
       <table className="table table-striped table-bordered mt-4">
         <thead className="thead-dark">
           <tr>
+          <th>Role</th>
             <th>Email</th>
             <th>Name</th>
             <th>Created At</th>
@@ -122,9 +128,17 @@ export default function Home() {
         <tbody>
           {users.map((user, index) => (
             <tr key={index}>
-              <td>{user.email}</td>
-              <td>{user.firstName + " " + user.lastName}</td>
-              <td>{user.createdAt}</td>
+              <td
+                onClick={() => {
+                  setSelectedRow(user?.id);
+                }}
+                className="p-3 md:p-6"
+              >
+                <Dropdown userId={user?.id} selected={selectedRow === user?.id} />
+              </td>
+              <td>{user?.email}</td>
+              <td>{user?.firstName + " " + user?.lastName}</td>
+              <td>{user?.timestamp?.toLocaleString()}</td>
               <td>
                 <button
                   className="btn btn-danger"

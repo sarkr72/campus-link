@@ -172,7 +172,7 @@ const TimeSlotPicker = () => {
 
   const handleSlotSelect = (e, slot) => {
     e.preventDefault();
-    
+
     const isSelected = selectedTimes.includes(slot);
     if (isSelected) {
       setSelectedTimes(
@@ -222,7 +222,9 @@ const TimeSlotPicker = () => {
       <Row className="mb-3">
         <Col>
           <Form.Group>
-            <Form.Label>Select Date:</Form.Label>
+            <div>
+              <Form.Label>Select Date:</Form.Label>
+            </div>
             <DatePicker
               selected={selectedDate}
               onChange={handleDateChange}
@@ -271,14 +273,14 @@ const TimeSlotPicker = () => {
       </Row>
       {selectedTimes.length > 0 && (
         <>
-      <Row className="mt-3">
-        <Col>
-          <Button variant="success" onClick={handleSaveSession}>
-            Save Session
-          </Button>
-        </Col>
-      </Row>
-      </>
+          <Row className="mt-3">
+            <Col>
+              <Button variant="success" onClick={handleSaveSession}>
+                Save Session
+              </Button>
+            </Col>
+          </Row>
+        </>
       )}
     </Container>
   );

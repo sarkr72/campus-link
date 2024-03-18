@@ -1,31 +1,51 @@
-import React from 'react';
-import { Auth } from 'aws-amplify/auth';
-import { RiGoogleFill } from 'react-icons/ri';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { RiGoogleFill } from "react-icons/ri";
 import { useRouter } from "next/navigation";
-import { toast } from 'react-toastify';
-// import config from '../../aws-exports';
-// Auth.configure(config);
+import { toast } from "react-toastify";
+import { db } from "../../firebase";
 
 const OAuth = () => {
- const router = useRouter();
+  const router = useRouter();
 
   const onGoogleClick = async () => {
     try {
-      const user = await Auth.federatedSignIn({ provider: 'Google' });
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' }); // Ensure that Google prompts for account selection
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-      router.push('/pages/home');
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        const displayName = user.displayName;
+        const [firstName, lastName] = displayName ? displayName.split(" ") : ["", ""];
+  
+        await setDoc(docRef, {
+          firstName: firstName,
+          lastName: lastName,
+          email: user.email,
+          timestamp: serverTimestamp(),
+          role: "student",
+        });
+      }
+  
+      router.push("/");
     } catch (error) {
-      toast.error('Could not authorize with Google.');
+      toast.error("Could not authorize with Google.");
     }
   };
+  
 
   return (
     <button
       type="button"
       onClick={onGoogleClick}
-      className="flex items-center justify-center w-full bg-gray-600 text-white px-7 py-3 uppercase text-sm font-medium hover:bg-gray-700 active:bg-gray-800 shadow-md hover:shadow-lg active:shadow-lg transition duration-150 ease-in-out rounded"
+      className="btn btn-primary d-flex align-items-center justify-content-center w-full"
     >
-      <RiGoogleFill className="text-gray-500 text-2xl bg-white rounded-full mr-2" />
+      <RiGoogleFill className="text-gray-500 text-2xl rounded-circle me-2" />
       Continue with Google
     </button>
   );

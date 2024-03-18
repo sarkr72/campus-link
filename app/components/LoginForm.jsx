@@ -5,9 +5,9 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { Auth } from "aws-amplify";
-import { signIn } from "aws-amplify/auth";
-import "../../utils/configureAmplify";
+// import { Auth } from "aws-amplify";
+// import { signIn } from "aws-amplify/auth";
+// import "../../utils/configureAmplify";
 import styles from "/styles/authentification.css";
 import img from "next/image";
 import logoImage from "../resources/images/logo.png";
@@ -15,6 +15,7 @@ import GrowSpinner from "./Spinner";
 // import { signInWithRedirect } from "aws-amplify/auth";
 // import { Hub } from "aws-amplify/utils";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import OAuth from './OAuth'
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -198,8 +199,10 @@ const LoginForm = () => {
               <small>
                 Don&apos;t have an account?{" "}
                 <Link href="/pages/register">Sign Up</Link>
+                <div style={{marginTop: "10px"}}>< OAuth /></div>
               </small>
             </div>
+           
           </form>
         </div>
       </div>
