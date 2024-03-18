@@ -103,6 +103,7 @@ export default function AddCoursePage() {
             name="courseNumber"
             value={courseData.courseNumber}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-3">
@@ -128,6 +129,7 @@ export default function AddCoursePage() {
             name="courseDescription"
             value={courseData.courseDescription}
             onChange={handleInputChange}
+            required
           ></textarea>
         </div>
         <div className="mb-3">
@@ -141,6 +143,7 @@ export default function AddCoursePage() {
             name="courseName"
             value={courseData.courseName}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-3">

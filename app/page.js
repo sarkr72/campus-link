@@ -47,8 +47,8 @@ export default function Home() {
         </Row>
       </section>
       {/* Features */}
-      <section id="features" class="row">
-        <div class="feature-box">
+      <section id="features" className="row">
+        <div className="feature-box">
           <Image
             className="icon"
             src={tutorIcon}
@@ -56,10 +56,10 @@ export default function Home() {
             width={64}
             height={64}
           />
-          <h3 class="feature-title">Tutoring Sessions</h3>
+          <h3 className="feature-title">Tutoring Sessions</h3>
           <p className="feature-desc">Connect with experienced tutors.</p>
         </div>
-        <div class="feature-box">
+        <div className="feature-box">
           <Image
             className="icon"
             src={peopleIcon}
@@ -67,10 +67,10 @@ export default function Home() {
             width={64}
             height={64}
           />
-          <h3 class="feature-title">Discussion Boards</h3>
+          <h3 className="feature-title">Discussion Boards</h3>
           <p className="feature-desc">Engage in meaningful discussions.</p>
         </div>
-        <div class="feature-box">
+        <div className="feature-box">
           <Image
             className="icon"
             src={calendarIcon}
@@ -78,7 +78,7 @@ export default function Home() {
             width={64}
             height={60}
           />
-          <h3 class="feature-title">Schedule Tracker</h3>
+          <h3 className="feature-title">Schedule Tracker</h3>
           <p className="feature-desc">Organize your academic schedule.</p>
         </div>
       </section>
@@ -98,10 +98,10 @@ export default function Home() {
       </section>
       {/* Testimonials */}
       <section id="testimonials">
-        <div id="carouselExample" class="carousel slide">
-          <div class="carousel-inner">
-            <div class="carousel-item active">
-              <h2 class="testimonial-text">
+        <div id="carouselExample" className="carousel slide">
+          <div className="carousel-inner">
+            <div className="carousel-item active">
+              <h2 className="testimonial-text">
                 My college life was so boring before Campus Link!
               </h2>
               <Image
@@ -113,8 +113,8 @@ export default function Home() {
               />{" "}
               <em>Cecilia Laterano, Biology Major</em>
             </div>
-            <div class="carousel-item">
-              <h2 class="testimonial-text">
+            <div className="carousel-item">
+              <h2 className="testimonial-text">
                 Campus Link has made connecting with my students much easier!
               </h2>
               <Image
@@ -126,8 +126,8 @@ export default function Home() {
               />{" "}
               <em>Walter White, Chemistry Teacher</em>
             </div>
-            <div class="carousel-item">
-              <h2 class="testimonial-text">
+            <div className="carousel-item">
+              <h2 className="testimonial-text">
                 I love the tutoring feature! Helping people learn is my passion.
               </h2>
               <Image
@@ -141,22 +141,22 @@ export default function Home() {
             </div>
           </div>
           <button
-            class="carousel-control-prev"
+            className="carousel-control-prev"
             type="button"
             data-bs-target="#carouselExample"
             data-bs-slide="prev"
           >
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
+            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span className="visually-hidden">Previous</span>
           </button>
           <button
-            class="carousel-control-next"
+            className="carousel-control-next"
             type="button"
             data-bs-target="#carouselExample"
             data-bs-slide="next"
           >
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
+            <span className="carousel-control-next-icon" aria-hidden="true"></span>
+            <span className="visually-hidden">Next</span>
           </button>
         </div>
       </section>

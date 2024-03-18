@@ -4,21 +4,35 @@ import Image from "next/image";
 import defaultProfilePicture from "../resources/images/default-profile-picture.jpeg";
 import reportIcon from "../resources/images/flag.svg";
 import messageIcon from "../resources/images/comment.svg";
+import styles2 from "/styles/mainTimeline.css";
 import {
   Container,
   Row,
   Breadcrumb,
   Card,
+  Modal,
+  Form,
+  Dropdown,
   ListGroup,
   CardBody,
   CardText,
   Col,
   Button,
 } from "react-bootstrap";
-
+import likeIcon from "../resources/images/like.svg";
+import dislikeIcon from "../resources/images/dislike.svg";
+import commentIcon from "../resources/images/comment.svg";
+import shareIcon from "../resources/images/share.svg";
+import logoImage from "../resources/images/logo.png";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import React, { useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { db } from "../../firebase";
 import {
   collection,
@@ -32,9 +46,9 @@ import {
   where,
   setDoc,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function ViewProfile() {
   const [isLoading, setIsLoading] = useState(false);
@@ -104,7 +118,7 @@ function ViewProfile() {
       </Row>
       <>
         <div className="row justify-content-center">
-          <div className="col-md-8 right-box">
+          <div className="col-md-8 viewProfile-right-box">
             <Card className="mb-4 text-center">
               <Card.Header>
                 {data?.profilePicture ? (
@@ -200,6 +214,8 @@ function ViewProfile() {
           <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
         </div>
       </>
+
+      
     </div>
   );
 }

@@ -16,16 +16,16 @@ let pool;
 
 export async function getConnection() {
   if (!pool) {
-    pool = mysql.createPool({
-      host: process.env.NEXT_PUBLIC_DB_HOST,
-      port: 3306,
-      user: process.env.NEXT_PUBLIC_DB_USER,
-      password: process.env.NEXT_PUBLIC_DB_PASSWORD,
-      database: process.env.NEXT_PUBLIC_DB_DATABASE,
-      waitForConnections: true, 
-      connectionLimit: 10, 
-      queueLimit: 0
-    });
+    // pool = mysql.createPool({
+    //   host: process.env.NEXT_PUBLIC_DB_HOST,
+    //   port: 3306,
+    //   user: process.env.NEXT_PUBLIC_DB_USER,
+    //   password: process.env.NEXT_PUBLIC_DB_PASSWORD,
+    //   database: process.env.NEXT_PUBLIC_DB_DATABASE,
+    //   waitForConnections: true, 
+    //   connectionLimit: 10, 
+    //   queueLimit: 0
+    // });
   }
   return pool.getConnection();
 }

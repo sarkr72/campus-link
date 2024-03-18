@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { getConnection } from "../../../../utils/db";
 import { admin } from "../../../../utils/firebaseAdmin";
@@ -81,7 +80,7 @@ export async function DELETE(request, { params }) {
   let connection;
   try {
     const email = params.id;
-    const requestData  = await request.json();
+    const requestData = await request.json();
     const userId = requestData.deleteUserId;
     await admin.auth().deleteUser(userId);
     await db.collection("users").doc(userId).delete();
@@ -91,20 +90,20 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Student email not provided" });
     }
 
-    const connection = await getConnection();
-    const query = `
-      DELETE FROM Student
-      WHERE email = ?
-    `;
-    const values = [email];
-    await connection.query(query, values);
-    await connection.release();
+    // const connection = await getConnection();
+    // const query = `
+    //   DELETE FROM Student
+    //   WHERE email = ?
+    // `;
+    // const values = [email];
+    // await connection.query(query, values);
+    // await connection.release();
 
     return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
-    if (connection) {
-      await connection.release();
-    }
+    // if (connection) {
+    //   await connection.release();
+    // }
     console.error("Error deleting student:", error);
     return NextResponse.json({ error: "Internal Server Error" });
   }

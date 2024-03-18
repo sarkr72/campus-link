@@ -37,6 +37,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import OAuth from "./OAuth";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -414,11 +415,16 @@ const RegisterForm = () => {
                     Are you a tutor?
                   </label>
                 </div>
-                <div className="input-group">
-                  <button type="submit" className="btn btn-primary w-100">
-                    Submit
-                  </button>
-                </div>
+                <div className="input-group d-flex flex-column align-items-center">
+  <button type="submit" className="btn btn-primary w-100 mb-2">
+    Submit
+  </button>
+  <div style={{ marginTop: "5px" }}>
+    <OAuth />
+  </div>
+</div>
+
+                
               </form>
             </div>
           </div>
