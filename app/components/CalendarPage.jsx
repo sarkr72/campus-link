@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import BigCalendar from 'react-big-calendar';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+//import { BigCalendar } from 'react-big-calendar';
+//import 'react-big-calendar/lib/css/react-big-calendar.css';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -52,7 +54,7 @@ const CalendarPage = () => {
   return (
     <div>
       <h1>Select Available Date and Time for Tutoring Session</h1>
-      <BigCalendar 
+      <Calendar 
         selectable
         onSelectSlot={(slotInfo) => handleDateSelect(slotInfo.start)}
         onSelectEvent={(event) => handleTimeSlotSelect(event.start)}
