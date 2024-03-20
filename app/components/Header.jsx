@@ -192,6 +192,9 @@ function Header() {
               <NavDropdown.Item href="/pages/mainTimeline">
                 Timeline
               </NavDropdown.Item>
+              <NavDropdown.Item href="/pages/schedule">
+                Schedule
+              </NavDropdown.Item>
               <NavDropdown.Divider />
               {userId && (
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
