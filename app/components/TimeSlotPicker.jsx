@@ -17,7 +17,7 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import styles from "../../styles/timeSlot.css";
 import { toast } from "react-toastify";
 import styless from "../../styles/timeSlot.css";

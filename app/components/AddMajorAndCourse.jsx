@@ -1,4 +1,4 @@
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import { useState, useEffect } from "react";
 import { Container, Form, Button } from "react-bootstrap";
 import { toast } from "react-toastify";

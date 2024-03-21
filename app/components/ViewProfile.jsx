@@ -33,7 +33,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from "firebase/auth";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import {
   collection,
   deleteDoc,

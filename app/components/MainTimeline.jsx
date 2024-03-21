@@ -7,7 +7,7 @@ import likeIcon from "../resources/images/like.svg";
 import dislikeIcon from "../resources/images/dislike.svg";
 import commentIcon from "../resources/images/comment.svg";
 import shareIcon from "../resources/images/share.svg";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
