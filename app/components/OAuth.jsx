@@ -3,7 +3,7 @@ import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { RiGoogleFill } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 
 const OAuth = () => {
   const router = useRouter();

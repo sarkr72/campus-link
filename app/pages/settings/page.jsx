@@ -39,16 +39,16 @@ const SettingsPage = () => {
       const auth = getAuth();
       const user = auth.currentUser;
 
-      const password = newPassword;
-      const response = await fetch(`/api/changeUserPassword/${user.email}`, {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({ password }),
-      });
+      // const password = newPassword;
+      // const response = await fetch(`/api/changeUserPassword/${user.email}`, {
+      //   method: "PUT",
+      //   headers: {
+      //     "Content-type": "application/json",
+      //   },
+      //   body: JSON.stringify({ password }),
+      // });
 
-      if (response.ok) {
+      // if (response.ok) {
         const credential = EmailAuthProvider.credential(
           user.email,
           oldPassword
@@ -58,7 +58,7 @@ const SettingsPage = () => {
         setSuccessMessage("Password changed successfully.");
         toast.success("Password changed successfully!")
         handleCloseModal();
-      }
+      // }
     } catch (error) {
       console.error("Error changing password:", error);
       if (error.message.includes("auth/invalid-credential")) {
