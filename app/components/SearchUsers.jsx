@@ -16,19 +16,19 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 ">
       <form onSubmit={handleFormSubmit}>
         <div className="input-group">
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchInputChange}
-            className="form-control"
+            className="form-control rounded-5"
             placeholder="Search"
           />
           {searchQuery.trim().length > 0 && (
-            <div className="input-group-append">
-              <button className="btn btn-primary" type="submit">
+            <div className="input-group-append ">
+              <button className="btn btn-primary rounded-5" type="submit">
                 Search
               </button>
             </div>
