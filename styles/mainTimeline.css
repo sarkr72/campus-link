@@ -7,6 +7,11 @@
   justify-content: space-between;
 }
 
+.searchcontainer {
+  position: absolute;
+  z-index: 9999; /* Ensure the search results appear on top of other content */
+}
+
 .left-box {
   background: linear-gradient(to bottom, #eef5ff, #ffffff);
 }

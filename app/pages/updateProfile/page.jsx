@@ -74,7 +74,7 @@ const UpdateProfilePage = () => {
                 email: userData?.email || "",
                 password: userData?.password || "",
                 phone: userData?.phone || "",
-                profilePicture: userData?.profilePicture?.url,
+                profilePicture: userData?.profilePicture?.url || "",
                 bio: userData?.bio || "",
                 major: userData?.major || "",
                 isTutor: userData?.isTutor || false, 

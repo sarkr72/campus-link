@@ -397,9 +397,9 @@ const RegisterForm = () => {
                     required
                   >
                     <option value="">Select your role</option>
-                    <option value="Student">Student</option>
-                    <option value="Professor">Professor</option>
-                    <option value="Admin">Admin</option>
+                    <option value="student">Student</option>
+                    <option value="professor">Professor</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </div>
                 <div className="input-group">
