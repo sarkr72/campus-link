@@ -66,6 +66,13 @@ function ViewProfile() {
     tutor: "",
     role: "",
   });
+  const [emailData, setEmailData] = useState({
+    user_name: "",
+    user_location: "",
+    user_city: "",
+    user_email: "",
+    user_phone: "",
+  });   
   const [userId, setUserId] = useState("");
   const [showDetails, setShowDetails] = useState(false);
 
@@ -107,6 +114,24 @@ function ViewProfile() {
     });
   }, []);
 
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(emailData),
+      });
+
+    } catch (error) {
+      console.error("Error sending email:", error, response);
+    }
+  };   
+
+
   return (
     <div className="profile-container container">
       <Row >
@@ -118,7 +143,9 @@ function ViewProfile() {
       </Row>
       <>
         <div className="row justify-content-center">
+          
           <div className="col-md-8 viewProfile-right-box">
+          
             <Card className="mb-4 text-center">
               <Card.Header>
                 {data?.profilePicture ? (
@@ -183,11 +210,13 @@ function ViewProfile() {
                         </>
                       )}
                     </ul>
+                    <button onClick={handleSendEmail}></button>
                   </Card.Body>
                 </div>
               )}
 
               <Card.Footer className="card-footer">
+               
                 <Button className="profile-btn">
                   <Image
                     className="profile-btn-icon"
