@@ -23,7 +23,6 @@
 .createPostPrompt {
   gap: 20px;
   background: aliceblue;
-  margin-top: 20px;
   justify-content: space-between;
   align-items: center;
 }
@@ -71,9 +70,24 @@
   margin-right: auto;
   width: 100%;
 }
-
+.post-info {
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+}
 .poster-username {
   margin: 0px;
+}
+.post-creation-time {
+  font-size: small;
+  margin: 0px;
+}
+
+.user-link {
+  color: black;
+  text-decoration: none;
 }
 
 .left-box,
@@ -183,7 +197,6 @@
   gap: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
-
 }
 
 .post-img {
@@ -234,17 +247,38 @@
   margin-bottom: 5px;
 }
 
-.comment-user, .comment-text {
+.comment-user,
+.comment-text {
   margin: 0px;
 }
 .comment-user {
   font-weight: bold;
 }
-
-
+.comment-info {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  flex-direction: column;
+}
+.comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  margin: 0px;
+  gap: 5px;
+}
 .comment-timestamp {
+  margin: 0px;
   font-size: 0.8rem;
   color: #888;
+}
+
+.comment-likes {
+  margin: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
 }
 
 #comment-btn {
