@@ -101,12 +101,12 @@ const Dropdown = ({ userId }) => {
                 >
                   Student
                 </button>
-                <button
+                {/* <button
                   className="dropdown-item"
                   onClick={() => onChange("tutor")}
                 >
                   Tutor
-                </button>
+                </button> */}
               </div>
             </div>
           </form>

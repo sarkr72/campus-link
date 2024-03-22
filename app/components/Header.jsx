@@ -1,6 +1,7 @@
 "use client";
 
 // import { withRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -43,6 +44,7 @@ function Header() {
   const [userId, setUserId] = useState("");
   const [userRole, setUserRole] = useState("");
   const auth = getAuth();
+  const pathname = usePathname();
 
   useEffect(() => {
     const auth = getAuth();
@@ -148,12 +150,33 @@ function Header() {
         >
           <Nav className="justify-content-end">
             {userId ? (
-              <Nav.Link href="/pages/mainTimeline">Home</Nav.Link>
+              <Nav.Link
+                href="/pages/mainTimeline"
+                className={`text-${
+                  pathname === "/pages/mainTimeline" ? "text-dark" : ""
+                } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
+              >
+                Home
+              </Nav.Link>
             ) : (
-              <Nav.Link href="/">Home</Nav.Link>
+              <Nav.Link
+                href="/"
+                className={`text-${pathname === "/" ? "text-dark" : ""} ${
+                  pathname === "/" ? "fw-bold" : ""
+                }`}
+              >
+                Home
+              </Nav.Link>
             )}
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
-              <Nav.Link href="/pages/admin">Admin</Nav.Link>
+              <Nav.Link
+                href="/pages/admin"
+                className={`text-${
+                  pathname === "/pages/admin" ? "text-dark" : ""
+                } ${pathname === "/pages/admin" ? "fw-bold" : ""}`}
+              >
+                Admin
+              </Nav.Link>
             )}
             <NavDropdown
               title="Tools"
@@ -165,36 +188,88 @@ function Header() {
             >
               {userId && (
                 <>
-                  <NavDropdown.Item href="/pages/profile">
+                  <NavDropdown.Item
+                    href="/pages/profile"
+                    className={`text-${
+                      pathname === "/pages/profile" ? "text-dark" : ""
+                    } ${pathname === "/pages/profile" ? "fw-bold" : ""}`}
+                  >
                     View Profile
                   </NavDropdown.Item>
-                  <NavDropdown.Item href="/pages/updateProfile">
+                  <NavDropdown.Item
+                    href="/pages/updateProfile"
+                    className={`text-${
+                      pathname === "/pages/updateProfile" ? "text-dark" : ""
+                    } ${pathname === "/pages/updateProfile" ? "fw-bold" : ""}`}
+                  >
                     Update Profile
                   </NavDropdown.Item>
 
-                  <NavDropdown.Item href="/pages/settings">
+                  <NavDropdown.Item
+                    href="/pages/settings"
+                    className={`text-${
+                      pathname === "/pages/settings" ? "text-dark" : ""
+                    } ${pathname === "/pages/settings" ? "fw-bold" : ""}`}
+                  >
                     Settings
                   </NavDropdown.Item>
 
                   {userRole && userRole.toLocaleLowerCase() === "admin" && (
                     <>
-                    <NavDropdown.Item href="/pages/addCourse">
-                      Add Course
-                    </NavDropdown.Item>
-                    <NavDropdown.Item href="/pages/createTutoringSession">
-                    Create Tutoring Session
-                  </NavDropdown.Item>
-                  </>
+                      <NavDropdown.Item
+                        href="/pages/addCourse"
+                        className={`text-${
+                          pathname === "/pages/addCourse" ? "text-dark" : ""
+                        } ${pathname === "/pages/addCourse" ? "fw-bold" : ""}`}
+                      >
+                        Add Course
+                      </NavDropdown.Item>
+                    </>
                   )}
+                  {userRole &&
+                    (userRole.toLocaleLowerCase() === "professor" ||
+                      userRole.toLocaleLowerCase() === "admin") && (
+                      <NavDropdown.Item
+                        href="/pages/createTutoringSession"
+                        className={`text-${
+                          pathname === "/pages/createTutoringSession"
+                            ? "dark"
+                            : ""
+                        } ${
+                          pathname === "/pages/createTutoringSession"
+                            ? "fw-bold"
+                            : ""
+                        }`}
+                      >
+                        Create Tutoring Session
+                      </NavDropdown.Item>
+                    )}
                 </>
               )}
-              <NavDropdown.Item href="/pages/tutors">Tutors</NavDropdown.Item>
-              <NavDropdown.Item href="/pages/mainTimeline">
+              <NavDropdown.Item
+                href="/pages/tutors"
+                className={`text-${
+                  pathname === "/pages/tutors" ? "text-dark" : ""
+                } ${pathname === "/pages/tutors" ? "fw-bold" : ""}`}
+              >
+                Tutors
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                href="/pages/mainTimeline"
+                className={`text-${
+                  pathname === "/pages/mainTimeline" ? "text-dark" : ""
+                } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
+              >
                 Timeline
               </NavDropdown.Item>
-              <NavDropdown.Item href="/pages/schedule">
+              {/* <NavDropdown.Item
+                href="/pages/schedule"
+                className={`text-${
+                  pathname === "/pages/schedule" ? "text-dark" : ""
+                } ${pathname === "/pages/schedule" ? "fw-bold" : ""}`}
+              >
                 Schedule
-              </NavDropdown.Item>
+              </NavDropdown.Item> */}
               <NavDropdown.Divider />
               {userId && (
                 <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
@@ -204,8 +279,22 @@ function Header() {
             </NavDropdown>
             {!userId && (
               <>
-                <Nav.Link href="/pages/logIn">Log In</Nav.Link>
-                <Nav.Link href="/pages/register">Register</Nav.Link>
+                <Nav.Link
+                  href="/pages/logIn"
+                  className={`text-${
+                    pathname === "/pages/logIn" ? "text-dark" : ""
+                  } ${pathname === "/pages/logIn" ? "fw-bold" : ""}`}
+                >
+                  Log In
+                </Nav.Link>
+                <Nav.Link
+                  href="/pages/register"
+                  className={`text-${
+                    pathname === "/pages/register" ? "text-dark" : ""
+                  } ${pathname === "/pages/register" ? "fw-bold" : ""}`}
+                >
+                  Register
+                </Nav.Link>
               </>
             )}
           </Nav>

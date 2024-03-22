@@ -25,6 +25,7 @@ import {
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import SearchPage from './SearchUsers'
 
 const MainTimelineFeed = () => {
   const [userRole, setUserRole] = useState("");
@@ -364,6 +365,7 @@ const MainTimelineFeed = () => {
       </div>
 
       <div className="col-md-6 center-box">
+        <SearchPage />
         <div className="createPostPrompt shadow-sm border rounded-5 p-3 bg-white shadow box-area">
           <div className="prompt-info">
             {imageUrl ? (
