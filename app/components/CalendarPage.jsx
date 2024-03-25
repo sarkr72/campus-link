@@ -28,6 +28,7 @@ const CalanderPage = ({ id }) => {
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [professors, setProfessors] = useState([]);
   const [userId, setUserId] = useState("");
+  const [user, setUser] = useState("");
   const [professorId, setProfessorId] = useState("");
   const [userTimeSlots, setUserTimeSlots] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -44,6 +45,7 @@ const CalanderPage = ({ id }) => {
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
               const userData = userDoc.data();
+              setUser(userData);
               const userTimeSlots = userData.sessions
                 ?.map((session) => session)
                 .flat();
@@ -52,17 +54,21 @@ const CalanderPage = ({ id }) => {
           } else {
             const email = id.replace("%40", "@");
             const usersCollection = collection(db, "users");
-            const userQuery = query(usersCollection, where("email", "==", email));
+            const userQuery = query(
+              usersCollection,
+              where("email", "==", email)
+            );
             const querySnapshot = await getDocs(userQuery);
 
             const userTimeSlots = [];
             querySnapshot?.forEach((doc) => {
               setProfessorId(doc?.id);
               const userData = doc?.data();
+              setUser(userData);
               const sessions = userData.sessions
                 ?.map((session) => session)
                 .flat();
-                console.log("sessions", sessions)
+              console.log("sessions", sessions);
               userTimeSlots.push(...sessions);
               setUserTimeSlots(userTimeSlots);
             });
@@ -70,7 +76,6 @@ const CalanderPage = ({ id }) => {
           }
         }
       });
-      
     };
 
     fetchUserTimeSlots();
@@ -81,20 +86,6 @@ const CalanderPage = ({ id }) => {
   }, [userTimeSlots, selectedDate, userTimeSlots]);
 
   useEffect(() => {
-    // Fetch courses
-    // const fetchCourses = async () => {
-    //   const coursesCollectionRef = collection(db, "courses");
-    //   const querySnapshot = await getDocs(coursesCollectionRef);
-    //   const courseInfo = querySnapshot.docs.flatMap((doc) => {
-    //     return Object.entries(doc.data()).map(([key, value]) => ({
-    //       key: key,
-    //       CourseName: value.CourseName,
-    //     }));
-    //   });
-    //   setCourses(courseInfo);
-    // };
-
-    // Fetch professors
     const fetchProfessors = async () => {
       const professorsCollectionRef = collection(db, "professors");
       const querySnapshot = await getDocs(professorsCollectionRef);
@@ -195,25 +186,25 @@ const CalanderPage = ({ id }) => {
 
   const handleSlotSelect = (e, slot) => {
     e.preventDefault();
-
-    const isSelected = selectedTimes.includes(slot);
-    if (isSelected) {
-      setSelectedTimes(
-        selectedTimes.filter((selectedSlot) => selectedSlot !== slot)
-      );
-    } else {
-      setSelectedTimes([...selectedTimes, slot]);
+    if (selectedTimes?.length < 3) {
+      const isSelected = selectedTimes.includes(slot);
+      if (isSelected) {
+        setSelectedTimes(
+          selectedTimes.filter((selectedSlot) => selectedSlot !== slot)
+        );
+      } else {
+        setSelectedTimes([...selectedTimes, slot]);
+      }
     }
   };
 
   const handleSaveSession = async () => {
     if (selectedTimes && selectedTimes?.length > 0 && selectedDate) {
       const session = {
+        professor: `${user?.firstName} ${user?.lastName},${user?.email}`,
         subject: selectedCourse
           ? selectedCourse
-          : userTimeSlots[0]?.subject?.key +
-            " " +
-            userTimeSlots[0]?.subject?.CourseName,
+          : `${userTimeSlots[0]?.subject?.key} ${userTimeSlots[0]?.subject?.CourseName}`,
         timeSlots: selectedTimes,
         date: selectedDate,
       };
@@ -279,10 +270,8 @@ const CalanderPage = ({ id }) => {
   };
 
   const handleCourseSelect = (e) => {
-    const selectedOption = {
-      key: e.target.selectedOptions[0].getAttribute("data-key"),
-      CourseName: e.target.value,
-    };
+    const selectedOption =
+      e.target.selectedOptions[0].getAttribute("data-key") + e.target.value;
     console.log("ddd", selectedOption);
     setSelectedCourse(selectedOption);
   };

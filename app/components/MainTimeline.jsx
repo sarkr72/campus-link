@@ -739,7 +739,6 @@ const MainTimelineFeed = () => {
 
       <div className="col-md-3 right-box">
         <p>Contacts</p>
-        <p>FriendRequests</p>
         <p>RecentActivity</p>
         <p>Notifications</p>
       </div>

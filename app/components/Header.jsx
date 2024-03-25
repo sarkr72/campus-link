@@ -30,6 +30,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import MyAppointments from "./MyAppointments";
 
 function Header() {
   const router = useRouter();
@@ -229,20 +230,37 @@ function Header() {
                   {userRole &&
                     (userRole.toLocaleLowerCase() === "professor" ||
                       userRole.toLocaleLowerCase() === "admin") && (
-                      <NavDropdown.Item
-                        href="/pages/createTutoringSession"
-                        className={`text-${
-                          pathname === "/pages/createTutoringSession"
-                            ? "dark"
-                            : ""
-                        } ${
-                          pathname === "/pages/createTutoringSession"
-                            ? "fw-bold"
-                            : ""
-                        }`}
-                      >
-                        Create Tutoring Session
-                      </NavDropdown.Item>
+                      <>
+                        <NavDropdown.Item
+                          href="/pages/myAppointments"
+                          className={`text-${
+                            pathname === "/pages/myAppointments"
+                              ? "dark"
+                              : ""
+                          } ${
+                            pathname === "/pages/myAppointments"
+                              ? "fw-bold"
+                              : ""
+                          }`}
+                        >
+                          My Appointments
+                        </NavDropdown.Item>
+
+                        <NavDropdown.Item
+                          href="/pages/createTutoringSession"
+                          className={`text-${
+                            pathname === "/pages/createTutoringSession"
+                              ? "dark"
+                              : ""
+                          } ${
+                            pathname === "/pages/createTutoringSession"
+                              ? "fw-bold"
+                              : ""
+                          }`}
+                        >
+                          Create Tutoring Session
+                        </NavDropdown.Item>
+                      </>
                     )}
                 </>
               )}

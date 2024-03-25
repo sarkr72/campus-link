@@ -200,8 +200,9 @@ const RegisterForm = () => {
 
           const user = userCredentials.user;
           const formDataCopy = {
-            firstName: data?.firstName,
-            lastName: data?.lastName,
+            id: user?.uid,
+            firstName: data?.firstName?.toLocaleLowerCase(),
+            lastName: data?.lastName?.toLocaleLowerCase(),
             email: data?.email,
             password: data?.password,
             phone: data?.phone,
