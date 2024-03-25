@@ -1,11 +1,11 @@
 import admin from 'firebase-admin';
-
-const serviceAccount = require('../key.json');
+import key from '@/key';
+// const serviceAccount = require('../key');
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(key),
     // databaseURL: 'https://your-project-id.firebaseio.com'
   });
 }
