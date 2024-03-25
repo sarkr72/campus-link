@@ -108,14 +108,16 @@ function ViewProfile() {
 
   const handleSendEmail = async (e) => {
     e.preventDefault();
-
+    const emailTo = "rinkusarkar353@gmail.com";
+    const message = `${user?.firstName} ${user?.lastName} has sent you a friend request!`;
+    const data = { message, emailTo };
     try {
       const response = await fetch("/api/sendEmail", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(emailData),
+        body: JSON.stringify(data),
       });
     } catch (error) {
       console.error("Error sending email:", error, response);
