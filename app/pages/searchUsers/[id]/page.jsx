@@ -7,35 +7,109 @@ import {
 } from "next/navigation";
 
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  orderBy,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
 import { db } from "../../../../utils/firebase";
 import Link from "next/link";
 import Image from "next/image";
 import defaultProfilePicture from "../../../resources/images/default-profile-picture.jpeg";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const SearchPage = () => {
   const { id } = useParams();
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState(id || "");
-  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
   const router = useRouter();
+  const [userId, setUserId] = useState("");
+  const [sentRequests, setSentRequests] = useState([]);
+  const usersRef = collection(db, "users");
+  const [friends, setFriends] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const usersRef = collection(db, "users");
-        const querySnapshot = await getDocs(usersRef);
-        const fetchedUsers = [];
-        querySnapshot.forEach((doc) => {
-          fetchedUsers.push({ id: doc.id, ...doc.data() });
+        const auth = getAuth();
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            setUserId(user.uid);
+            const userRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc?.data();
+            setFriends(userData?.friends);
+            setUser(userData);
+            if (userDoc.exists()) {
+              const updatedFriendRequests = userData?.friendRequestsSent?.map(
+                (request) => {
+                  const [, requestUserId] = request.split(",");
+                  return requestUserId;
+                }
+              );
+              setSentRequests(updatedFriendRequests || []);
+            }
+            const searchTerm = searchQuery.trim().toLowerCase();
+
+            const firstNameQuerySnapshot = await getDocs(
+              query(
+                usersRef,
+                where("firstName", ">=", searchTerm),
+                orderBy("firstName")
+              )
+            );
+
+            const lastNameQuerySnapshot = await getDocs(
+              query(
+                usersRef,
+                where("lastName", ">=", searchTerm),
+                orderBy("lastName")
+              )
+            );
+
+            const filteredUsersSet = new Set();
+            let filteredUsers = [];
+            try {
+              firstNameQuerySnapshot.forEach((doc) => {
+                const userData = doc?.data();
+                const fullName =
+                  `${userData?.firstName} ${userData?.lastName}`.toLowerCase();
+                if (
+                  fullName.includes(searchTerm) &&
+                  !filteredUsersSet.has(userData.id)
+                ) {
+                  filteredUsersSet.add(userData.id);
+                  filteredUsers.push(userData);
+                }
+              });
+
+              lastNameQuerySnapshot.forEach((doc) => {
+                const userData = doc?.data();
+                const fullName =
+                  `${userData?.firstName} ${userData?.lastName}`.toLowerCase();
+                if (
+                  fullName.includes(searchTerm) &&
+                  !filteredUsersSet.has(userData.id)
+                ) {
+                  filteredUsersSet.add(userData.id);
+                  filteredUsers.push(userData);
+                }
+              });
+            } catch (error) {
+              console.error("Error fetching users:", error);
+            }
+
+            setSearchResults(filteredUsers);
+          }
         });
-        setUsers(fetchedUsers);
-        const searchTerm = id?.trim().toLowerCase();
-        const filteredUsers = users.filter((user) => {
-          const fullName = `${user?.firstName} ${user?.lastName}`.toLowerCase();
-          return fullName.includes(searchTerm);
-        });
-        setSearchResults(filteredUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -49,17 +123,161 @@ const SearchPage = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim().length < 1) {
-      const searchTerm = searchQuery.toLowerCase();
-      const filteredUsers = users.filter((user) => {
-        const fullName = `${user?.firstName} ${user?.lastName}`.toLowerCase();
-        return fullName.includes(searchTerm);
-      });
+      const searchTerm = searchQuery.trim().toLowerCase();
+
+      const firstNameQuerySnapshot = await getDocs(
+        query(
+          usersRef,
+          where("firstName", ">=", searchTerm),
+          orderBy("firstName")
+        )
+      );
+
+      const lastNameQuerySnapshot = await getDocs(
+        query(
+          usersRef,
+          where("lastName", ">=", searchTerm),
+          orderBy("lastName")
+        )
+      );
+
+      const filteredUsersSet = new Set();
+      let filteredUsers = [];
+      try {
+        firstNameQuerySnapshot.forEach((doc) => {
+          const userData = doc?.data();
+          const fullName =
+            `${userData?.firstName} ${userData?.lastName}`.toLowerCase();
+          if (
+            fullName.includes(searchTerm) &&
+            !filteredUsersSet.has(userData.id)
+          ) {
+            filteredUsersSet.add(userData.id);
+            filteredUsers.push(userData);
+          }
+        });
+
+        lastNameQuerySnapshot.forEach((doc) => {
+          const userData = doc?.data();
+          const fullName =
+            `${userData?.firstName} ${userData?.lastName}`.toLowerCase();
+          if (
+            fullName.includes(searchTerm) &&
+            !filteredUsersSet.has(userData.id)
+          ) {
+            filteredUsersSet.add(userData.id);
+            filteredUsers.push(userData);
+          }
+        });
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+
       setSearchResults(filteredUsers);
     } else {
       setSearchResults([]);
+    }
+  };
+
+  const sendRequest = async (reciverId, name) => {
+    try {
+      const usersRef = doc(db, "users", reciverId);
+      const usersDoc = await getDoc(usersRef);
+
+      if (usersDoc.exists()) {
+        const friendRequests = usersDoc?.data()?.friendRequests || [];
+        const isRequestFound = friendRequests.some((request) => {
+          const [, requestUserId] = request.split(",");
+          return requestUserId === userId;
+        });
+
+        if (isRequestFound) {
+          const updatedFriendRequests = friendRequests.filter((request) => {
+            const [, requestUserId] = request.split(",");
+            return requestUserId !== userId;
+          });
+
+          await updateDoc(usersDoc.ref, {
+            friendRequests: updatedFriendRequests,
+          });
+          console.log("Friend request canceled successfully.");
+        } else {
+          console.log("namess", user.firstName, user.lastName, userId);
+          const updatedFriendRequests = [
+            ...friendRequests,
+            `${user?.firstName} ${user?.lastName},${userId}`,
+          ];
+          await updateDoc(usersDoc.ref, {
+            friendRequests: updatedFriendRequests,
+          });
+          console.log("Friend request sent successfully.");
+        }
+      } else {
+        console.log("No user found with the specified ID.");
+      }
+
+      const userRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        const friendRequestsSent = userDoc?.data()?.friendRequestsSent || [];
+        const isRequestFound = friendRequestsSent.some((request) => {
+          const [, requestUserId] = request.split(",");
+          return requestUserId === reciverId;
+        });
+
+        if (isRequestFound) {
+          const updatedFriendRequests = friendRequestsSent.filter((request) => {
+            const [, requestUserId] = request.split(",");
+            return requestUserId !== reciverId;
+          });
+          await updateDoc(userDoc.ref, {
+            friendRequestsSent: updatedFriendRequests,
+          });
+          console.log("Friend request canceled successfully.");
+        } else {
+          const updatedFriendRequests = [
+            ...friendRequestsSent,
+            `${name},${reciverId}`,
+          ];
+          await updateDoc(userDoc.ref, {
+            friendRequestsSent: updatedFriendRequests,
+          });
+
+          console.log("Friend request sent successfully.");
+        }
+      } else {
+        console.log("User document not found.");
+      }
+    } catch (error) {
+      console.error("Error sending/canceling friend request:", error);
+    }
+  };
+
+  const handleSendRequest = async (e, receiverId, name) => {
+    e.preventDefault();
+    if (
+      friends.some((request) => {
+        const [, requestId] = request.split(",");
+        return requestId === receiverId;
+      })
+    ) {
+
+    } else {
+      await sendRequest(receiverId, name);
+      if (sentRequests?.some((item) => item === receiverId)) {
+        setSentRequests((prevSentRequests) =>
+          prevSentRequests.filter((id) => id !== receiverId)
+        );
+      } else {
+        setSentRequests((prevSentRequests) => [
+          ...prevSentRequests,
+          receiverId,
+        ]);
+      }
     }
   };
 
@@ -88,7 +306,7 @@ const SearchPage = () => {
             className="list-group-item d-flex justify-content-between align-items-center"
           >
             <Link
-              href={`/pages/profile/${encodeURIComponent(user?.email)}`}
+              href={`/pages/profile/${encodeURIComponent(user?.id)}`}
               style={{ textDecoration: "none" }}
               className="d-flex align-items-center"
             >
@@ -113,7 +331,38 @@ const SearchPage = () => {
                 {user.firstName} {user.lastName}
               </span>
             </Link>
-            <button className="btn  btn-success">Send Request</button>
+            {user?.id !== userId && (
+              <>
+                <Button
+                  key={index}
+                  onClick={(e) =>
+                    handleSendRequest(
+                      e,
+                      user?.id,
+                      user?.firstName + " " + user?.lastName
+                    )
+                  }
+                  style={{
+                    backgroundColor: sentRequests.some((item) =>
+                      item.includes(user?.id)
+                    )
+                      ? "gray"
+                      : "green",
+                    color: "white",
+                    border: "none",
+                  }}
+                >
+                  {friends?.some((request) => {
+                    const [, requestId] = request.split(",");
+                    return requestId === user.id;
+                  })
+                    ? "Friend"
+                    : sentRequests?.some((item) => item.includes(user?.id))
+                    ? "Cancel"
+                    : "Send Request"}
+                </Button>
+              </>
+            )}
           </li>
         ))}
       </ul>
