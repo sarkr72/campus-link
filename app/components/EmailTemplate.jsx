@@ -28,9 +28,8 @@ export const emailTemplate = `
 </head>
 <body>
   <div class="container">
-    <h1>Hello, {{name}}!</h1>
-    <p>This is your email content.</p>
-    <p>Variable data can be inserted using Handlebars syntax.</p>
+    <h1>Hello!</h1>
+    <p>{{message}}.</p>
   </div>
 </body>
 </html>

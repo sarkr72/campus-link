@@ -198,7 +198,9 @@ const CalanderPage = ({ id }) => {
     }
   };
 
+  
   const handleSaveSession = async () => {
+
     if (selectedTimes && selectedTimes?.length > 0 && selectedDate) {
       const session = {
         professor: `${user?.firstName} ${user?.lastName},${user?.email}`,

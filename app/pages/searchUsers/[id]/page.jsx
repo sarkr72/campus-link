@@ -182,13 +182,33 @@ const SearchPage = () => {
     }
   };
 
+  const handleSendEmail = async (emailTo) => {
+    // e.preventDefault();
+    // const emailTo = "rinkusarkar353@gmail.com";
+    const message = `${user?.firstName} ${user?.lastName} has sent you a friend request!`;
+    const data = { message, emailTo };
+    try {
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error("Error sending email:", error, response);
+    }
+  };
+
   const sendRequest = async (reciverId, name) => {
     try {
       const usersRef = doc(db, "users", reciverId);
       const usersDoc = await getDoc(usersRef);
 
       if (usersDoc.exists()) {
-        const friendRequests = usersDoc?.data()?.friendRequests || [];
+        const data = usersDoc?.data();
+        handleSendEmail(data?.email);
+        const friendRequests = data?.friendRequests || [];
         const isRequestFound = friendRequests.some((request) => {
           const [, requestUserId] = request.split(",");
           return requestUserId === userId;
@@ -199,6 +219,7 @@ const SearchPage = () => {
             const [, requestUserId] = request.split(",");
             return requestUserId !== userId;
           });
+          
 
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,

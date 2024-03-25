@@ -2,11 +2,12 @@ import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 import { emailTemplate } from "@/app/components/EmailTemplate";
 
-export async function POST(req, res) {
+export async function POST(request, res) {
   try {
-    const { user_name, user_location, user_city, user_email, user_phone } =
-      await req.json();
-
+    // const  requestBody   = await req.json();
+    const requestData = await request.json();
+    const text = requestData.message;
+    const emailTo = requestData.emailTo;
     const transporter = nodemailer.createTransport({
       host: process.env.NEXT_PUBLIC_SMTP_HOST_API,
       port: parseInt(process.env.NEXT_PUBLIC_SMTP_PORT_API, 10),
@@ -19,9 +20,9 @@ export async function POST(req, res) {
 
     const mailOptions = {
       from: process.env.NEXT_PUBLIC_SMTP_USER_API,
-      to: "rinkusarkar353@gmail.com",
+      to: emailTo,
       subject: "testing email",
-      html: emailTemplate.replace("{{name}}", "John"),
+      html: emailTemplate.replace("{{message}}", text),
     };
 
     const info = await transporter.sendMail(mailOptions);
