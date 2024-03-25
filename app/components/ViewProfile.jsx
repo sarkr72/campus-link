@@ -129,7 +129,7 @@ function ViewProfile() {
 
   const handleFollowers = async (e) => {
     e.preventDefault();
-    window.location.href = `/pages/followers/${userId}`;
+    // window.location.href = `/pages/followers/${userId}`;
   };
 
   return (
