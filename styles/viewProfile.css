@@ -1,0 +1,106 @@
+.profile-container {
+  font-size: medium;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+}
+
+.bg-light {
+  background-color: #f8f9fa;
+}
+
+.profile-pic {
+  clip-path: circle();
+}
+
+.user {
+  gap: 3px;
+}
+.name {
+  font-size: larger;
+}
+
+.username {
+  font-size: large;
+  margin: 0px;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: aliceblue;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 5px;
+  margin-top: 10px;
+  background-color: aliceblue;
+}
+
+.card-text {
+  margin-bottom: 0.5rem;
+}
+
+.container {
+  width: 100%;
+}
+
+.profile-btn {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: row;
+  gap: 5px;
+  width: 150px;
+}
+
+.btn {
+  background-color: #3586ff;
+  color: white;
+}
+
+.btn:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: white;
+  color: #3586ff;
+  border: 1px solid black;
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 960px;
+  }
+}
+
+@media (min-width: 992px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1320px;
+  }
+}
