@@ -17,7 +17,7 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import styles from "../../styles/timeSlot.css";
 import { toast } from "react-toastify";
 import styless from "../../styles/timeSlot.css";
@@ -45,8 +45,7 @@ const TimeSlotPicker = () => {
           const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            const userTimeSlots = userData.sessions
-              .map((session) => session)
+            const userTimeSlots = userData?.sessions?.map((session) => session)
               .flat();
             setUserTimeSlots(userTimeSlots);
           }
@@ -95,7 +94,7 @@ const TimeSlotPicker = () => {
   const fetchTimeSlots = () => {
     const mockTimeSlots = Array.from({ length: 24 }, (_, index) => {
       let startTime, endTime;
-
+      let isBooked = "false";
       if (index === 0) {
         // 11 AM to 12 PM
         startTime = "12:00 PM";
@@ -125,7 +124,7 @@ const TimeSlotPicker = () => {
         startTime = "12:00 PM";
         endTime = "01:00 AM";
       }
-      return { startTime, endTime };
+      return { startTime, endTime, isBooked };
     });
 
     const filteredSet = new Set();
@@ -134,7 +133,7 @@ const TimeSlotPicker = () => {
       const slot = mockTimeSlots[i];
       let isDuplicate = false;
 
-      for (let j = 0; j < userTimeSlots.length; j++) {
+      for (let j = 0; j < userTimeSlots?.length; j++) {
         const userSlot = userTimeSlots[j];
         const { timeSlots } = userSlot;
         const userSlotDateObj = userSlot.date.toDate();
@@ -184,10 +183,11 @@ const TimeSlotPicker = () => {
   };
 
   const handleSaveSession = async () => {
+    if(selectedCourse){
     const session = {
+      subject: selectedCourse,
       timeSlots: selectedTimes,
       date: selectedDate,
-      active: "true",
     };
 
     const userRef = doc(db, "users", userId);
@@ -201,6 +201,9 @@ const TimeSlotPicker = () => {
     setTimeout(() => {
       toast.success("Session saved successfully!");
     }, 5000);
+  }else{
+    toast.error("Course is not selected!")
+  }
   };
 
   const handleCourseSelect = (e) => {
@@ -242,7 +245,12 @@ const TimeSlotPicker = () => {
               as="select"
               onChange={handleCourseSelect}
               multiple={false}
+              required
+              defaultValue=""
             >
+              <option value="" disabled>
+                Select a course
+              </option>
               {courses.map((course, index) => (
                 <option
                   key={index}

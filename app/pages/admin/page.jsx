@@ -12,7 +12,7 @@ import GrowSpinner from "../../components/Spinner";
 // import config from "../../../aws-exports";
 // import "@aws-amplify/ui-react/styles.css";
 // Amplify.configure(config);
-import { db } from "../../../firebase";
+import { db } from "../../../utils/firebase";
 import {
   collection,
   deleteDoc,

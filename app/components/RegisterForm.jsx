@@ -21,7 +21,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from "firebase/auth";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import {
   collection,
   deleteDoc,
@@ -200,8 +200,9 @@ const RegisterForm = () => {
 
           const user = userCredentials.user;
           const formDataCopy = {
-            firstName: data?.firstName,
-            lastName: data?.lastName,
+            id: user?.uid,
+            firstName: data?.firstName?.toLocaleLowerCase(),
+            lastName: data?.lastName?.toLocaleLowerCase(),
             email: data?.email,
             password: data?.password,
             phone: data?.phone,
@@ -397,9 +398,9 @@ const RegisterForm = () => {
                     required
                   >
                     <option value="">Select your role</option>
-                    <option value="Student">Student</option>
-                    <option value="Professor">Professor</option>
-                    <option value="Admin">Admin</option>
+                    <option value="student">Student</option>
+                    <option value="professor">Professor</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </div>
                 <div className="input-group">

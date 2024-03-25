@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import GrowSpinner from "./Spinner";
 import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 
 const Dropdown = ({ userId }) => {
   const [isLoading, setLoading] = useState(false);
@@ -101,12 +101,12 @@ const Dropdown = ({ userId }) => {
                 >
                   Student
                 </button>
-                <button
+                {/* <button
                   className="dropdown-item"
                   onClick={() => onChange("tutor")}
                 >
                   Tutor
-                </button>
+                </button> */}
               </div>
             </div>
           </form>

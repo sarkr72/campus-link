@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import GrowSpinner from "../../components/Spinner";
 import styles from "../../../styles/updateProfile.css";
-import { db } from "../../../firebase";
+import { db } from "../../../utils/firebase";
 import {
   collection,
   deleteDoc,
@@ -74,7 +74,7 @@ const UpdateProfilePage = () => {
                 email: userData?.email || "",
                 password: userData?.password || "",
                 phone: userData?.phone || "",
-                profilePicture: userData?.profilePicture?.url,
+                profilePicture: userData?.profilePicture?.url || "",
                 bio: userData?.bio || "",
                 major: userData?.major || "",
                 isTutor: userData?.isTutor || false, 

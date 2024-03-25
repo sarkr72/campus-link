@@ -33,7 +33,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from "firebase/auth";
-import { db } from "../../firebase";
+import { db } from "../../utils/firebase";
 import {
   collection,
   deleteDoc,
@@ -66,50 +66,76 @@ function ViewProfile() {
     tutor: "",
     role: "",
   });
+  const [emailData, setEmailData] = useState({
+    user_name: "",
+    user_location: "",
+    user_city: "",
+    user_email: "",
+    user_phone: "",
+  });
   const [userId, setUserId] = useState("");
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
-      if (user.email) {
+      if (user && user.email) {
         setUserId(user.uid);
-        if (user.email) {
-          const usersCollection = collection(db, "users");
-          const userQuery = query(
-            usersCollection,
-            where("email", "==", user.email)
-          );
-          const querySnapshot = await getDocs(userQuery);
+        const userRef = doc(db, "users", user.uid); // Assuming userId is the document ID
+        const userDoc = await getDoc(userRef);
 
-          querySnapshot?.forEach((doc) => {
-            const data2 = doc?.data();
-            console.log("ddd", data2.profilePicture);
-            if (data) {
-              setData((prevData) => ({
-                ...prevData,
-                firstName: data2?.firstName,
-                lastName: data2?.lastName,
-                email: data2?.email,
-                password: data2?.password,
-                phone: data2?.phone,
-                profilePicture: data2?.profilePicture?.url,
-                bio: data2?.bio,
-                major: data2?.major,
-                tutor: data2?.isTutor,
-                role: data2?.role,
-              }));
-            }
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setData({
+            firstName: userData?.firstName,
+            lastName: userData?.lastName,
+            email: userData?.email,
+            password: userData?.password,
+            phone: userData?.phone,
+            profilePicture: userData?.profilePicture?.url,
+            bio: userData?.bio,
+            major: userData?.major,
+            tutor: userData?.isTutor,
+            role: userData?.role,
           });
-          setUser(data);
+          setUser(userData);
+        } else {
+          console.log("User document not found.");
         }
       }
     });
-  }, []);
+  }, [userId]);
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(emailData),
+      });
+    } catch (error) {
+      console.error("Error sending email:", error, response);
+    }
+  };
+
+  const handleSendRequest = async (e) => {
+    e.preventDefault();
+    window.location.href =`/pages/friendsRequests/${userId}`;
+  };
+
+  const handleFollowers = async (e) => {
+    e.preventDefault();
+    window.location.href = `/pages/followers/${userId}`;
+  };
 
   return (
     <div className="profile-container container">
-      <Row >
+      <button onClick={handleSendEmail}> send email testing</button>
+      <Row>
         <Breadcrumb className="bg-light rounded-3">
           <Breadcrumb.Item href="/pages/mainTimeline">Home</Breadcrumb.Item>
           <Breadcrumb.Item href="#">User</Breadcrumb.Item>
@@ -152,13 +178,31 @@ function ViewProfile() {
                     {user.email ? user.email.split("@")[0] : ""}
                   </p>
                 </div>
-                <button
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="profile-btn btn"
+
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                  {" "}
-                  Profile Detail
-                </button>
+                      <Button
+                      onClick={handleSendRequest}
+                        style={{ marginRight: "1rem" }}
+                      >
+                        View Requests
+                      </Button>
+                      
+                      <Button
+                      onClick={handleFollowers}
+                        style={{ marginRight: "1rem" }}
+                      >
+                        Followers
+                      </Button>
+                      <Button
+                        onClick={() => setShowDetails(!showDetails)}
+                        className="profile-btn btn"
+                      >
+                        Profile Detail
+                      </Button>
+                  
+                </div>
               </Card.Header>
 
               {showDetails && (
@@ -214,8 +258,6 @@ function ViewProfile() {
           <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
         </div>
       </>
-
-      
     </div>
   );
 }
