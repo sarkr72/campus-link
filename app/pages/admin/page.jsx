@@ -86,7 +86,7 @@ export default function Home() {
       console.log("delete id:", deleteUserId);
       setShowConfirmModal(false);
 
-      const response = await fetch(`/api/users/${deleteUserEmail}`, {
+      const response = await fetch(`/api/users`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
