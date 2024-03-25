@@ -397,12 +397,11 @@ const MainTimelineFeed = () => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
-        const email = await getUserEmailById(user.uid);
         setEmail(user.email);
 
         if (user.email) {
           const usersCollection = collection(db, "users");
-          const userQuery = query(usersCollection, where("email", "==", email));
+          const userQuery = query(usersCollection, where("email", "==", user.email));
           const querySnapshot = await getDocs(userQuery);
 
           querySnapshot.forEach((doc) => {
@@ -424,23 +423,6 @@ const MainTimelineFeed = () => {
       }
     });
   }, [sortBy]);
-  const getUserEmailById = async (userId) => {
-    try {
-      console.log("id: ", userId);
-      const userDocRef = doc(db, "users", userId);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const userData = userDocSnapshot.data();
-        const userEmail = userData.email;
-        setCurrentEmail(userEmail);
-        return userEmail;
-      } else {
-        throw new Error("User not found");
-      }
-    } catch (error) {
-      console.error("Error retrieving user email:", error);
-    }
-  };
 
   return (
     <div className={`timeLine-container ${styles.mainTimeline}`}>
