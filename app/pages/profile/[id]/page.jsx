@@ -80,14 +80,16 @@ function ViewProfile() {
               const userData = userDoc?.data();
               setCurrentUser(userData);
               setFriends(userData?.friends);
-              if (userDoc.exists()) {
-                const updatedFriendRequests = userData?.friendRequestsSent.map(
-                  (request) => {
-                    const [, requestUserId] = request.split(",");
-                    return requestUserId;
-                  }
-                );
-                setSentRequests(updatedFriendRequests || []);
+              if (userData) {
+                setFriends(userData?.friends);
+                if (userDoc.exists()) {
+                  const updatedFriendRequests =
+                    userData?.friendRequestsSent?.map((request) => {
+                      const [, requestUserId] = request.split(",");
+                      return requestUserId;
+                    });
+                  setSentRequests(updatedFriendRequests || []);
+                }
               }
             }
           });
@@ -328,7 +330,8 @@ function ViewProfile() {
                         }
                         style={{ marginRight: "1rem" }}
                       >
-                        {friends.some((request) => {
+                        {Array.isArray(friends) &&
+                        friends.some((request) => {
                           const [, requestId] = request.split(",");
                           return requestId === user.id;
                         })
