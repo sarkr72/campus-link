@@ -23,6 +23,7 @@ import {
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import defaultProfilePicture from "../../resources/images/default-profile-picture.jpeg";
 
 const UpdateProfilePage = () => {
   // const [currnetEmail, setCurrentEmail] = useState("");
@@ -77,7 +78,7 @@ const UpdateProfilePage = () => {
                 profilePicture: userData?.profilePicture?.url || "",
                 bio: userData?.bio || "",
                 major: userData?.major || "",
-                isTutor: userData?.isTutor || false, 
+                isTutor: userData?.isTutor || false,
                 role: userData?.role || "",
               });
             }
@@ -128,7 +129,7 @@ const UpdateProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
- if(image){
+    if (image) {
       const storage = getStorage();
       const storageRef = ref(storage, `images/profilepicture/${image?.name}`);
       await uploadBytes(storageRef, image);
@@ -139,20 +140,22 @@ const UpdateProfilePage = () => {
       };
       data.profilePicture = image2;
     }
-      await updateDoc(doc(db, "users", userId), {
-        firstName: data?.firstName,
-        lastName: data?.lastName,
-        email: data?.email,
-        password: data?.password,
-        phone: data?.phone,
-        profilePicture: (image) ? data?.profilePicture : { url: data?.profilePicture},
-        bio: data?.bio,
-        major: data?.major,
-        isTutor: data?.isTutor,
-        role: data?.role,
-      });
-      router.push("/pages/profile/");
-      setIsLoading(false);
+    await updateDoc(doc(db, "users", userId), {
+      firstName: data?.firstName,
+      lastName: data?.lastName,
+      email: data?.email,
+      password: data?.password,
+      phone: data?.phone,
+      profilePicture: image
+        ? data?.profilePicture
+        : { url: data?.profilePicture },
+      bio: data?.bio,
+      major: data?.major,
+      isTutor: data?.isTutor,
+      role: data?.role,
+    });
+    router.push("/pages/profile/");
+    setIsLoading(false);
   };
 
   return (
@@ -164,17 +167,15 @@ const UpdateProfilePage = () => {
         <div className={`row border rounded-5 p-3 bg-white shadow }`}>
           {/* Left */}
           <div className="col-md-6 rounded-4 left-box">
-            {imageUrl && (
-              <div>
-                <Image
-                  className="profile-pic featured-image"
-                  src={imageUrl}
-                  alt="User"
-                  height={300}
-                  width={300}
-                />
-              </div>
-            )}
+            <div>
+              <Image
+                src={data.profilePicture || defaultProfilePicture}
+                alt="Profile Picture"
+                className="profile-pic"
+                width={300}
+                height={300}
+              />
+            </div>
           </div>
           {/* Right */}
           <div className="col-md-6 right-box">
@@ -281,7 +282,7 @@ const UpdateProfilePage = () => {
                   />{" "}
                 </label>
               </div>
-            
+
               <div className="input-group">
                 <label style={{ marginRight: "10px", marginTop: "5px" }}>
                   Role:{" "}
