@@ -5,7 +5,6 @@ import {
   useSearchParams,
   usePathname,
 } from "next/navigation";
-import { BsCheck, BsSignNoRightTurnFill } from "react-icons/bs";
 import { useState, useEffect } from "react";
 import {
   collection,

@@ -11,7 +11,9 @@
   position: absolute;
   z-index: 9999; /* Ensure the search results appear on top of other content */
 }
-
+.card-footer {
+  align-items: unset;
+}
 .left-box {
   background: linear-gradient(to bottom, #eef5ff, #ffffff);
 }
@@ -106,15 +108,14 @@
 }
 
 .center-box {
-  flex-grow: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: center;
   justify-content: start;
-  width: 50%;
-  margin: 20px;
+  width: 65%;
+  margin: auto;
 }
 
 #createPost-btn {
@@ -137,6 +138,7 @@
 .post-header {
   display: flex;
   align-items: center;
+  flex-direction: row;
   justify-content: space-between;
   padding-bottom: 10px;
   border-bottom: 1px solid #ddd;
