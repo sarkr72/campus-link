@@ -92,7 +92,11 @@ const FriendRequests = () => {
     await updateDoc(
       userDoc.ref,
       {
-        friends: arrayUnion({ name: name, id: id, profilePicture: profilePicture?.url || null }),
+        friends: arrayUnion({
+          name: name,
+          id: id,
+          profilePicture: profilePicture?.url || null,
+        }),
         friendRequests: updatedFriendRequests,
       },
       { merge: true }
@@ -108,7 +112,11 @@ const FriendRequests = () => {
     await updateDoc(
       userrDoc.ref,
       {
-        friends: arrayUnion({name: user?.firstName + " " + user?.lastName, id: userId, profilePicture: user?.profilePicture?.url || null}),
+        friends: arrayUnion({
+          name: user?.firstName + " " + user?.lastName,
+          id: userId,
+          profilePicture: user?.profilePicture?.url || null,
+        }),
         friendRequestsSent: updateddFriendRequests2,
       },
       { merge: true }

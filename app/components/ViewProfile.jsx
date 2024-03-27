@@ -81,7 +81,7 @@ function ViewProfile() {
     onAuthStateChanged(auth, async (user) => {
       if (user && user.email) {
         setUserId(user.uid);
-        const userRef = doc(db, "users", user.uid); // Assuming userId is the document ID
+        const userRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userRef);
 
         if (userDoc.exists()) {
@@ -184,26 +184,25 @@ function ViewProfile() {
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                      <Button
-                      onClick={handleSendRequest}
-                        style={{ marginRight: "1rem" }}
-                      >
-                        View Requests
-                      </Button>
-                      
-                      <Button
-                      onClick={handleFollowers}
-                        style={{ marginRight: "1rem" }}
-                      >
-                        Followers
-                      </Button>
-                      <Button
-                        onClick={() => setShowDetails(!showDetails)}
-                        className="profile-btn btn"
-                      >
-                        Profile Detail
-                      </Button>
-                  
+                  <Button
+                    onClick={handleSendRequest}
+                    style={{ marginRight: "1rem" }}
+                  >
+                    View Requests
+                  </Button>
+
+                  <Button
+                    onClick={handleFollowers}
+                    style={{ marginRight: "1rem" }}
+                  >
+                    Followers
+                  </Button>
+                  <Button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="profile-btn btn"
+                  >
+                    Profile Detail
+                  </Button>
                 </div>
               </Card.Header>
 
@@ -233,8 +232,9 @@ function ViewProfile() {
                 </div>
               )}
 
-              <Card.Footer className="card-footer">
-                <Button className="profile-btn">
+              <Card.Footer style={{display: "flex", flexDirection: "column"}}>
+                <div style={{display: "flex"}}>
+                <Button className="profile-btn" style={{marginRight: "20px"}}>
                   <Image
                     className="profile-btn-icon"
                     src={messageIcon}
@@ -254,6 +254,23 @@ function ViewProfile() {
                   />{" "}
                   Report
                 </Button>
+                </div>
+                <div>
+                {user?.friends?.map((friend, index) => (
+                  <Card key={index}>
+                    <Card.Body>
+                      <Card.Title>{friend?.name}</Card.Title>
+                      <Image
+                        src={friend?.profilePicture ? friend.profilePicture : defaultProfilePicture}
+                        alt="Profile Picture"
+                        height={100}
+                        width={100}
+                        roundedCircle
+                      />
+                    </Card.Body>
+                  </Card>
+                ))}
+                </div>
               </Card.Footer>
             </Card>
           </div>
