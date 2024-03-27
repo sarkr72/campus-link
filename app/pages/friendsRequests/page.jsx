@@ -5,7 +5,6 @@ import {
   useSearchParams,
   usePathname,
 } from "next/navigation";
-import { BsCheck } from "react-icons/bs";
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -25,6 +24,7 @@ import Image from "next/image";
 import defaultProfilePicture from "../../resources/images/default-profile-picture.jpeg";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 const FriendRequests = () => {
   const router = useRouter();
   const [userId, setUserId] = useState("");
@@ -78,7 +78,7 @@ const FriendRequests = () => {
     fetchUsers();
   }, []);
 
-  const handleConfirm = async (e, id, name) => {
+  const handleConfirm = async (e, id, name, profilePicture) => {
     e.preventDefault();
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
@@ -86,12 +86,12 @@ const FriendRequests = () => {
       const [, requestUserId] = request.split(",");
       return requestUserId !== id;
     });
-    handleSendEmail();
+    handleSendEmail(e);
     setRetrivedRequests(updatedFriendRequests);
     await updateDoc(
       userDoc.ref,
       {
-        friends: arrayUnion(`${name},${id}`),
+        friends: arrayUnion({ name: name, id: id, profilePicture: profilePicture?.url || null }),
         friendRequests: updatedFriendRequests,
       },
       { merge: true }
@@ -107,7 +107,7 @@ const FriendRequests = () => {
     await updateDoc(
       userrDoc.ref,
       {
-        friends: arrayUnion(`${user?.firstName} ${user?.lastName},${userId}`),
+        friends: arrayUnion({name: user?.firstName + " " + user?.lastName, id: userId, profilePicture: user?.profilePicture?.url || null}),
         friendRequestsSent: updateddFriendRequests2,
       },
       { merge: true }
@@ -140,7 +140,6 @@ const FriendRequests = () => {
     console.log("Friend request canceled successfully.");
   };
 
-  
   const handleSendEmail = async (e) => {
     e.preventDefault();
     const emailTo = "rinkusarkar353@gmail.com";
@@ -158,7 +157,6 @@ const FriendRequests = () => {
       console.error("Error sending email:", error, response);
     }
   };
-
 
   return (
     <div style={{ minHeight: "100vh", maxWidth: "800px", margin: "0 auto" }}>
@@ -223,7 +221,8 @@ const FriendRequests = () => {
                         handleConfirm(
                           e,
                           user?.id,
-                          user?.firstName + " " + user?.lastName
+                          user?.firstName + " " + user?.lastName,
+                          user?.profilePicture
                         )
                       }
                       style={{
@@ -234,18 +233,7 @@ const FriendRequests = () => {
                     >
                       Confirm
                     </Button>
-                  ) : (
-                    <Button
-                      key={`${index}-confirm`}
-                      style={{
-                        backgroundColor: "green",
-                        color: "black",
-                        border: "none",
-                      }}
-                    >
-                      <BsCheck />
-                    </Button>
-                  );
+                  ) : null;
                 })}
               </div>
             )}

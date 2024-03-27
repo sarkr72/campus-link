@@ -136,7 +136,7 @@ function ViewProfile() {
 
   return (
     <div className="profile-container container">
-      <button onClick={handleSendEmail}> send email testing</button>
+      {/* <button onClick={handleSendEmail}> send email testing</button> */}
       <Row>
         <Breadcrumb className="bg-light rounded-3">
           <Breadcrumb.Item href="/pages/mainTimeline">Home</Breadcrumb.Item>

@@ -222,8 +222,8 @@ function ViewProfile() {
     e.preventDefault();
     console.log("ffff", friends);
     if (
-      friends.some((request) => {
-        const [, requestId] = request.split(",");
+      friends?.some((request) => {
+        const requestId = request?.id;
         return requestId === receiverId;
       })
     ) {
@@ -250,8 +250,9 @@ function ViewProfile() {
     setOpenModal(false);
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
-    const updatedFriends = friends?.filter((friend) => {
-      const [, friendId] = friend.split(",");
+
+    const updatedFriends = userDoc?.data()?.friends?.filter((friend) => {
+      const friendId = friend?.id;
       return friendId !== id;
     });
     setFriends(updatedFriends);
@@ -260,14 +261,21 @@ function ViewProfile() {
     });
     const userRef2 = doc(db, "users", userId);
     const userDoc2 = await getDoc(userRef2);
-    const friends = userDoc2?.data();
+    const friends = userDoc2?.data()?.friends;
     const updatedFriends2 = friends?.filter((friend) => {
-      const [, friendId] = friend.split(",");
+      const friendId = friend?.id;
       return friendId !== userId;
     });
+    const receiverId = id;
+    if (sentRequests?.some((item) => item === receiverId)) {
+      setSentRequests((prevSentRequests) =>
+        prevSentRequests.filter((id) => id !== receiverId)
+      );
+    }
     await updateDoc(userDoc.ref, {
       friends: updatedFriends2,
     });
+   
   };
 
   return (
@@ -330,9 +338,8 @@ function ViewProfile() {
                         }
                         style={{ marginRight: "1rem" }}
                       >
-                        {Array.isArray(friends) &&
-                        friends.some((request) => {
-                          const [, requestId] = request.split(",");
+                        {friends?.some((request) => {
+                          const requestId = request?.id;
                           return requestId === user.id;
                         })
                           ? "Friends"

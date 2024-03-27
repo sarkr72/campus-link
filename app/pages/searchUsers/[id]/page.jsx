@@ -280,13 +280,8 @@ const SearchPage = () => {
 
   const handleSendRequest = async (e, receiverId, name) => {
     e.preventDefault();
-    if (
-      friends?.some((request) => {
-        const [, requestId] = request.split(",");
-        return requestId === receiverId;
-      })
-    ) {
-
+    const exists = friends?.some(request => request?.id === receiverId);
+    if (exists) {
     } else {
       await sendRequest(receiverId, name);
       if (sentRequests?.some((item) => item === receiverId)) {
@@ -374,7 +369,7 @@ const SearchPage = () => {
                   }}
                 >
                   {friends?.some((request) => {
-                    const [, requestId] = request.split(",");
+                    const requestId = request?.id;
                     return requestId === user.id;
                   })
                     ? "Friend"

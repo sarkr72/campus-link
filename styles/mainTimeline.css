@@ -173,14 +173,14 @@
   width: 150px;
 }
 
-.profile-info,
+/* .profile-info,
 .prompt-info {
   display: flex;
   gap: 10px;
   align-items: center;
   justify-content: center;
   flex-direction: row;
-}
+} */
 
 .default-profile-pic,
 .profile-pic {
