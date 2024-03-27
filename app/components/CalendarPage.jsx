@@ -52,26 +52,18 @@ const CalanderPage = ({ id }) => {
               setUserTimeSlots(userTimeSlots);
             }
           } else {
-            const email = id.replace("%40", "@");
-            const usersCollection = collection(db, "users");
-            const userQuery = query(
-              usersCollection,
-              where("email", "==", email)
-            );
-            const querySnapshot = await getDocs(userQuery);
-
-            const userTimeSlots = [];
-            querySnapshot?.forEach((doc) => {
-              setProfessorId(doc?.id);
-              const userData = doc?.data();
+            const userRef = doc(db, "users", id);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc?.data();
+            const sessions = userData?.sessions;
+              setProfessorId(userData?.id);
               setUser(userData);
-              const sessions = userData.sessions
+              const userTimeSlots = sessions
                 ?.map((session) => session)
                 .flat();
-              console.log("sessions", sessions);
-              userTimeSlots.push(...sessions);
+              console.log("sessions", userTimeSlots);
               setUserTimeSlots(userTimeSlots);
-            });
+
             setUserTimeSlots(userTimeSlots);
           }
         }
@@ -198,7 +190,9 @@ const CalanderPage = ({ id }) => {
     }
   };
 
+  
   const handleSaveSession = async () => {
+
     if (selectedTimes && selectedTimes?.length > 0 && selectedDate) {
       const session = {
         professor: `${user?.firstName} ${user?.lastName},${user?.email}`,

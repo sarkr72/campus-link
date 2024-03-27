@@ -50,7 +50,7 @@ const RegisterForm = () => {
     password: "",
     confirmPassword: "",
     phone: "",
-    profilePicture: "",
+    profilePicture: null,
     bio: "",
     major: "",
     isTutor: false,
@@ -181,24 +181,10 @@ const RegisterForm = () => {
             );
             await uploadBytes(storageRef, image);
             imageUrl = await getDownloadURL(storageRef);
-            // const usersCollection = collection(db, "users");
-            // const userQuery = query(
-            //   usersCollection,
-            //   where("email", "==", data.email)
-            // );
-            // const querySnapshot = await getDocs(userQuery);
-            // querySnapshot.forEach(async (doc) => {
-            //   await updateDoc(doc.ref, {
-            //     image: {
-            //       url: imageUrl,
-            //       path: `images/profilepicture/${image.name}`,
-            //     },
-            //   });
-            // });
           }
           setImage(null);
 
-          const user = userCredentials.user;
+          const user = userCredentials?.user;
           const formDataCopy = {
             id: user?.uid,
             firstName: data?.firstName?.toLocaleLowerCase(),
@@ -206,11 +192,13 @@ const RegisterForm = () => {
             email: data?.email,
             password: data?.password,
             phone: data?.phone,
-            profilePicture: {
-              name: image?.name,
-              url: imageUrl,
-              path: `images/profilepicture/${image?.name}`,
-            },
+            profilePicture: image
+              ? {
+                  name: image?.name,
+                  url: imageUrl ? imageUrl : null,
+                  path: `images/profilepicture/${image?.name}`,
+                }
+              : null,
             role: data?.role,
             bio: data?.bio,
             major: data?.major,
@@ -221,7 +209,11 @@ const RegisterForm = () => {
           delete formDataCopy.password;
           formDataCopy.timestamp = serverTimestamp();
           await setDoc(doc(db, "users", user.uid), formDataCopy);
+          console.log(formDataCopy);
+          setIsLoading(false);
+          
         } else {
+          console.log("failed to register.");
         }
       } catch (error) {
         console.error("Error creating user:", error);
@@ -417,15 +409,13 @@ const RegisterForm = () => {
                   </label>
                 </div>
                 <div className="input-group d-flex flex-column align-items-center">
-  <button type="submit" className="btn btn-primary w-100 mb-2">
-    Submit
-  </button>
-  <div style={{ marginTop: "5px" }}>
-    <OAuth />
-  </div>
-</div>
-
-                
+                  <button type="submit" className="btn btn-primary w-100 mb-2">
+                    Submit
+                  </button>
+                  <div style={{ marginTop: "5px" }}>
+                    <OAuth />
+                  </div>
+                </div>
               </form>
             </div>
           </div>
