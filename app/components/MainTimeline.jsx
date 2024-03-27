@@ -431,7 +431,7 @@ const MainTimelineFeed = ({ userEmail }) => {
         fetchPosts(userEmail); // Pass the userEmail prop to fetchPosts
       }
     });
-  }, [userEmail]);
+  }, [userEmail, sortBy]);
   const getUserEmailById = async (userId) => {
     try {
       console.log("id: ", userId);
