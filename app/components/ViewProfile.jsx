@@ -126,12 +126,12 @@ function ViewProfile() {
 
   const handleSendRequest = async (e) => {
     e.preventDefault();
-    window.location.href = `/pages/friendsRequests/${userId}`;
+    router.push(`/pages/friendsRequests`);
   };
 
   const handleFollowers = async (e) => {
     e.preventDefault();
-    window.location.href = `/pages/followers/${userId}`;
+    // window.location.href = `/pages/followers/${userId}`;
   };
 
   return (
