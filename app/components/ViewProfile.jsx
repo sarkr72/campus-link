@@ -5,6 +5,7 @@ import defaultProfilePicture from "../resources/images/default-profile-picture.j
 import reportIcon from "../resources/images/flag.svg";
 import messageIcon from "../resources/images/comment.svg";
 import styles2 from "/styles/mainTimeline.css";
+import MainTimeline from "./MainTimeline.jsx";
 import {
   Container,
   Row,
@@ -51,6 +52,7 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 function ViewProfile() {
+  const [userEmail, setUserEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [user, setUser] = useState("");
@@ -99,25 +101,24 @@ function ViewProfile() {
             role: userData?.role,
           });
           setUser(userData);
+          setUserEmail(userData.email);
         } else {
           console.log("User document not found.");
         }
       }
     });
-  }, [userId]);
+  }, []);
 
   const handleSendEmail = async (e) => {
     e.preventDefault();
-    const emailTo = "rinkusarkar353@gmail.com";
-    const message = `${user?.firstName} ${user?.lastName} has sent you a friend request!`;
-    const data = { message, emailTo };
+
     try {
       const response = await fetch("/api/sendEmail", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(emailData),
       });
     } catch (error) {
       console.error("Error sending email:", error, response);
@@ -146,7 +147,7 @@ function ViewProfile() {
       </Row>
       <>
         <div className="row justify-content-center">
-          <div className="col-md-8 viewProfile-right-box">
+          <div className="col-md-8 top-box">
             <Card className="mb-4 text-center">
               <Card.Header>
                 {data?.profilePicture ? (
@@ -184,6 +185,25 @@ function ViewProfile() {
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
+                  <Button
+                    onClick={handleSendRequest}
+                    style={{ marginRight: "1rem" }}
+                  >
+                    View Requests
+                  </Button>
+
+                  <Button
+                    onClick={handleFollowers}
+                    style={{ marginRight: "1rem" }}
+                  >
+                    Followers
+                  </Button>
+                  <Button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="profile-btn btn"
+                  >
+                    Profile Detail
+                  </Button>
                   <Button
                     onClick={handleSendRequest}
                     style={{ marginRight: "1rem" }}
@@ -274,7 +294,10 @@ function ViewProfile() {
               </Card.Footer>
             </Card>
           </div>
-          <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
+
+          <div className="bottom-box">
+            <MainTimeline userEmail={userEmail} />
+          </div>
         </div>
       </>
     </div>
