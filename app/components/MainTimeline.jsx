@@ -10,6 +10,8 @@ import shareIcon from "../resources/images/share.svg";
 import { db } from "../../utils/firebase";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { FaThumbsUp } from "react-icons/fa";
+
 import {
   collection,
   doc,
@@ -30,39 +32,28 @@ import SearchPage from "./SearchUsers";
 const MainTimelineFeed = () => {
   // const router = useRouter();
   const [sortBy, setSortBy] = useState("recent");
-  const [userRole, setUserRole] = useState("");
   const [showAllComments, setShowAllComments] = useState(false);
   const [viewCommentsModalShow, setViewCommentsModalShow] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [selectedPostComments, setSelectedPostComments] = useState([]);
+  // const [selectedPostComments, setSelectedPostComments] = useState([]);
   const [comment, setComment] = useState("");
   const [commentingPostId, setCommentingPostId] = useState(null);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [content, setContent] = useState("");
   const [postImage, setPostImage] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [dislikes, setDislikes] = useState([]);
-  const [dislikedByUser, setDislikedByUser] = useState([]);
   const [likes, setLikes] = useState([]);
   const [likedByUser, setLikedByUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState("");
-  const [image, setImage] = useState(null);
-  const [data, setData] = useState({
-    email: "",
-    profilePicture: "",
-  });
-  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [userId, setUserId] = useState("");
-  const [currentEmail, setCurrentEmail] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [allComments, setAllComments] = useState([]);
   const handleCreatePost = async () => {
     const newPost = {
-      email: user.email,
-      username: user.email ? user.email.split("@")[0] : "",
-      userProfilePicture: imageUrl,
+      email: user?.email,
+      username: user?.email ? user.email.split("@")[0] : "",
+      userProfilePicture: user?.profilePicture?.url ? user.profilePicture?.url : null,
       comment: content,
       image: postImage,
       creationTime: Timestamp.now(),
@@ -71,18 +62,17 @@ const MainTimelineFeed = () => {
       dislikes: 0,
       dislikedBy: [],
       comments: [],
+      userId: userId,
     };
 
-    // Save the new post to Firestore
     const postsCollection = collection(db, "posts");
     const docRef = await addDoc(postsCollection, newPost);
+    const newPostWithID = { ...newPost, id: docRef.id };
+    await updateDoc(doc(postsCollection, docRef.id), newPostWithID);
 
-    // Update the local state
     setPosts([{ ...newPost, id: docRef.id }, ...posts]);
     setLikes([...likes, 0]);
     setLikedByUser([...likedByUser, false]);
-    setDislikes([...dislikes, 0]);
-    setDislikedByUser([...dislikedByUser, false]);
     setContent("");
     setPostImage("");
     setShowCreatePostModal(false);
@@ -126,70 +116,52 @@ const MainTimelineFeed = () => {
     }
   };
 
-  const handleLikePost = async (postId, reactionType) => {
+  const handleLikePost = async (e, postId) => {
+    e.preventDefault();
     try {
-      const postIndex = posts.findIndex((post) => post.id === postId);
-      const post = posts[postIndex];
-      let updatedPosts = [...posts];
-      let updatedPost = { ...post };
+      const postDocRef = doc(db, "posts", postId);
+      const postDocSnap = await getDoc(postDocRef);
+      if (postDocSnap.exists()) {
+        const postData = postDocSnap.data();
+        const isLiked = postData?.likedBy?.includes(userId);
+        let newLikedBy = [];
 
-      // Initialize likedBy and dislikedBy arrays if they are undefined
-      if (!updatedPost.likedBy) updatedPost.likedBy = [];
-      if (!updatedPost.dislikedBy) updatedPost.dislikedBy = [];
+        if (isLiked) {
+          newLikedBy = postData?.likedBy?.filter((id) => id !== userId);
+        } else {
+          newLikedBy = [...postData?.likedBy, userId];
+        }
 
-      if (reactionType === "like") {
-        if (!updatedPost.likedBy.includes(userId)) {
-          // If the user's ID is not present in likedBy array, add it
-          updatedPost.likedBy.push(userId);
-          // Remove user's ID from dislikedBy array if present
-          updatedPost.dislikedBy = updatedPost.dislikedBy.filter(
-            (dislikedUserId) => dislikedUserId !== userId
-          );
+        await updateDoc(postDocRef, { likedBy: newLikedBy });
+        setLikedByUser(newLikedBy);
+        if (likes?.length > 0) {
+          setLikes((prevLikes) => {
+            const exists = prevLikes.map((item) => item.id).includes(postId);
+            const index = prevLikes.findIndex((item) => item.id === postId);
+            if (isLiked) {
+              const updatedLikedBy = prevLikes[index].likedBy.filter(
+                (id) => id !== userId
+              );
+              return [
+                ...prevLikes.slice(0, index),
+                { ...prevLikes[index], likedBy: updatedLikedBy },
+                ...prevLikes.slice(index + 1),
+              ];
+            } else {
+              const updatedLikedBy = [...prevLikes[index]?.likedBy, userId];
+              return [
+                ...prevLikes.slice(0, index),
+                { ...prevLikes[index], likedBy: updatedLikedBy },
+                ...prevLikes.slice(index + 1),
+              ];
+            }
+          });
         } else {
-          // If the user's ID is already present in likedBy array, remove it
-          updatedPost.likedBy = updatedPost.likedBy.filter(
-            (likedUserId) => likedUserId !== userId
-          );
+          setLikes([{ id: postId, likedBy: newLikedBy }]);
         }
-      } else if (reactionType === "dislike") {
-        if (!updatedPost.dislikedBy.includes(userId)) {
-          // If the user's ID is not present in dislikedBy array, add it
-          updatedPost.dislikedBy.push(userId);
-          // Remove user's ID from likedBy array if present
-          updatedPost.likedBy = updatedPost.likedBy.filter(
-            (likedUserId) => likedUserId !== userId
-          );
-        } else {
-          // If the user's ID is already present in dislikedBy array, remove it
-          updatedPost.dislikedBy = updatedPost.dislikedBy.filter(
-            (dislikedUserId) => dislikedUserId !== userId
-          );
-        }
+      } else {
+        console.log("Post not found");
       }
-
-      // Update the likes and dislikes count in the updated post object
-      updatedPost.likes = updatedPost.likedBy.length;
-      updatedPost.dislikes = updatedPost.dislikedBy.length;
-
-      // Update the likedBy and dislikedBy arrays in Firestore
-      await updateDoc(doc(db, "posts", postId), {
-        likedBy: updatedPost.likedBy,
-        dislikedBy: updatedPost.dislikedBy,
-        likes: updatedPost.likes,
-        dislikes: updatedPost.dislikes,
-      });
-
-      // Update the local state
-      updatedPosts[postIndex] = updatedPost;
-      setPosts(updatedPosts);
-      setLikedByUser({
-        ...likedByUser,
-        [postId]: updatedPost.likedBy.includes(userId),
-      });
-      setDislikedByUser({
-        ...dislikedByUser,
-        [postId]: updatedPost.dislikedBy.includes(userId),
-      });
     } catch (error) {
       console.error("Error handling like:", error);
     }
@@ -203,8 +175,6 @@ const MainTimelineFeed = () => {
 
       if (sortBy === "likes") {
         postsQuery = query(postsCollection, orderBy("likes", "desc"));
-      } else if (sortBy === "dislikes") {
-        postsQuery = query(postsCollection, orderBy("dislikes", "desc"));
       } else if (sortBy === "oldest") {
         postsQuery = query(postsCollection, orderBy("creationTime", "asc"));
       } else {
@@ -216,29 +186,34 @@ const MainTimelineFeed = () => {
       const fetchedPosts = [];
       const fetchedLikes = [];
       const fetchedLikedByUser = [];
+      const fetchComments = [];
       const fetchedDislikes = [];
       const fetchedDislikedByUser = [];
 
       querySnapshot.forEach((doc) => {
-        const postData = doc.data();
-        fetchedPosts.push({ ...postData, id: doc.id });
-        fetchedLikes.push(postData.likedBy ? postData.likedBy.length : 0);
-        fetchedDislikes.push(
-          postData.dislikedBy ? postData.dislikedBy.length : 0
-        );
+        const postData = doc?.data();
+        const likes = { id: doc.id, likedBy: postData?.likedBy };
+        fetchedPosts.push(postData);
+        fetchedLikes.push(likes);
+        const comments = postData?.comments;
+        fetchComments.push(comments);
+        // fetchedDislikes.push(
+        //   postData.dislikedBy ? postData.dislikedBy.length : 0
+        // );
         // Check if the current user has liked or disliked the post
         const userLiked = postData.likedBy && postData.likedBy.includes(userId);
-        const userDisliked =
-          postData.dislikedBy && postData.dislikedBy.includes(userId);
+        // const userDisliked =
+        //   postData.dislikedBy && postData.dislikedBy.includes(userId);
         fetchedLikedByUser.push(userLiked);
-        fetchedDislikedByUser.push(userDisliked);
+        // fetchedDislikedByUser.push(userDisliked);
       });
 
       setPosts(fetchedPosts);
       setLikes(fetchedLikes);
-      setDislikes(fetchedDislikes);
+      setAllComments(fetchComments);
+      // setDislikes(fetchedDislikes);
       setLikedByUser(fetchedLikedByUser);
-      setDislikedByUser(fetchedDislikedByUser);
+      // setDislikedByUser(fetchedDislikedByUser);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
@@ -252,14 +227,17 @@ const MainTimelineFeed = () => {
 
   const handleViewComments = async (postId) => {
     try {
-      const postRef = doc(db, "posts", postId);
-      const postSnapshot = await getDoc(postRef);
-      const postData = postSnapshot.data();
-      setSelectedPost({ ...postData, id: postSnapshot.id });
-
-      if (postData.comments) {
-        setSelectedPostComments(postData.comments);
+      // const postRef = doc(db, "posts", postId);
+      // const postSnapshot = await getDoc(postRef);
+      // const postData = postSnapshot.data();
+      if (posts) {
+        const foundPost = posts?.find((post) => post.id === postId);
+        setSelectedPost(foundPost);
       }
+
+      // if (postData.comments) {
+      //   setSelectedPostComments(postData.comments);
+      // }
       setShowAllComments(true);
       setViewCommentsModalShow(true);
     } catch (error) {
@@ -285,144 +263,199 @@ const MainTimelineFeed = () => {
   const handleCloseViewCommentsModal = () => {
     setViewCommentsModalShow(false);
     setSelectedPost(null);
-    setSelectedPostComments([]);
+    // setSelectedPostComments([]);
   };
 
-  const handleAddComment = async (postId, commentText) => {
+  const handleAddComment = async (postId, commentText, postUserId) => {
     try {
       const post = posts.find((post) => post.id === postId);
       if (!post) {
         console.error(`Post with ID ${postId} not found`);
         return;
       }
-      // Initialize comments as an array if it's undefined
-      if (!Array.isArray(post.comments)) {
-        post.comments = [];
+      const commentsArray = Array.isArray(post.comments) ? post.comments : [];
+      const userCommentMap = commentsArray.find(
+        (commentMap) => commentMap.userId === postUserId
+      );
+      if (!userCommentMap) {
+        console.log("hereww")
+        const newCommentMap = {
+          userId: userId,
+          userComments: [
+            {
+              text: commentText,
+              timestamp: Timestamp.now(),
+            },
+          ],
+          profilePicture: user?.profilePicture?.url
+            ? user?.profilePicture?.url
+            : "",
+          name: user?.firstName + " " + user?.lastName,
+        };
+        console.log("ssdsd", newCommentMap)
+        await updateDoc(doc(db, "posts", postId), {
+          comments: [newCommentMap],
+        });
+      } else {
+        const updatedUserComments = [
+          ...userCommentMap.userComments,
+          {
+            text: commentText,
+            timestamp: Timestamp.now(),
+          },
+        ];
+        const updatedComments = commentsArray.map((commentMap) =>
+          commentMap.userId === userId
+            ? { ...commentMap, userComments: updatedUserComments }
+            : commentMap
+        );
+        await updateDoc(doc(db, "posts", postId), {
+          comments: updatedComments,
+        });
       }
-      const comment = {
-        text: commentText,
-        userId: userId,
-        email: user.email,
-        username: user.email ? user.email.split("@")[0] : "",
-        userProfilePicture: imageUrl,
-        timestamp: Timestamp.now(),
-      };
-      // Update the post document in Firestore with the new comment
-      const postRef = doc(db, "posts", postId);
-      await updateDoc(postRef, {
-        comments: [...post.comments, comment],
-      });
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   };
 
   // Function to handle posting comments
-  const handlePostComment = async (postId) => {
+  const handlePostComment = async (postId, postUserId) => {
     if (comment.trim() !== "") {
-      await handleAddComment(postId, comment);
+      await handleAddComment(postId, comment, postUserId);
       setComment("");
       fetchPosts();
     }
   };
   // Note: does not work just yet
-  const handleLikeComment = async (commentId, reactionType) => {
-    try {
-      const commentRef = doc(db, "comments", commentId);
-      const commentDoc = await getDoc(commentRef);
-      if (commentDoc.exists()) {
-        const commentData = commentDoc.data();
+  const handleLikeComment = async (e, postId, commentIndex, selectedPostUserId) => {
+    e.preventDefault();
+    const postDocRef = doc(db, "posts", postId);
+    const postDocSnap = await getDoc(postDocRef);
+    const postData = postDocSnap?.data();
 
-        // Check if the necessary fields exist and initialize them if they don't
-        if (!commentData.likes) {
-          commentData.likes = 0;
+    if (postData) {
+      const commentWithUserId = postData.comments.find(
+        (comment) => comment.userId === selectedPostUserId
+      );
+      if (commentWithUserId) {
+        const userComment = commentWithUserId?.userComments[commentIndex];
+        if (!userComment?.likes) {
+          userComment.likes = [];
         }
-        if (!commentData.dislikes) {
-          commentData.dislikes = 0;
-        }
-        if (!commentData.likedBy) {
-          commentData.likedBy = [];
-        }
-        if (!commentData.dislikedBy) {
-          commentData.dislikedBy = [];
-        }
-
-        // Update like/dislike arrays and counts based on reactionType
-        if (reactionType === "like") {
-          if (!commentData.likedBy) {
-            commentData.likedBy = [];
-          }
-          if (!commentData.likedBy.includes(userId)) {
-            commentData.likedBy.push(userId);
-            const dislikedIndex = commentData.dislikedBy?.indexOf(userId);
-            if (dislikedIndex !== undefined && dislikedIndex !== -1) {
-              commentData.dislikedBy.splice(dislikedIndex, 1); // Remove from dislikedBy if present
-            }
-            commentData.likes++;
-          }
-        } else if (reactionType === "dislike") {
-          if (!commentData.dislikedBy) {
-            commentData.dislikedBy = [];
-          }
-          if (!commentData.dislikedBy.includes(userId)) {
-            commentData.dislikedBy.push(userId);
-            const likedIndex = commentData.likedBy?.indexOf(userId);
-            if (likedIndex !== undefined && likedIndex !== -1) {
-              commentData.likedBy.splice(likedIndex, 1); // Remove from likedBy if present
-            }
-            commentData.dislikes++;
+        if (!userComment?.likes?.includes(userId)) {
+          userComment.likes.push(userId); 
+        } else {
+          const userIndex = userComment.likes.indexOf(userId);
+          if (userIndex !== -1) {
+            userComment.likes.splice(userIndex, 1);
           }
         }
-
-        // Update the comment document in Firestore
-        await updateDoc(commentRef, {
-          likes: commentData.likes,
-          dislikes: commentData.dislikes,
-          likedBy: commentData.likedBy,
-          dislikedBy: commentData.dislikedBy,
+        const updatedPosts = posts?.map(post => {
+          if (post.id === postId) {
+            const updatedComments = post?.comments?.map(comment => {
+              if (comment?.userId === selectedPostUserId) {
+                if(comment?.userComments[commentIndex]?.likes){
+                comment.userComments[commentIndex].likes = userComment.likes;
+                }
+              }
+              return comment;
+            });
+            return {...post, comments: updatedComments};
+          }
+          return post;
         });
-      } else {
-        console.error("Comment document not found");
+        setPosts(updatedPosts);
+
+        await updateDoc(postDocRef, postData);
       }
-    } catch (error) {
-      console.error("Error handling like/dislike for comment:", error);
     }
+
+    // try {
+    //   const commentRef = doc(db, "comments", commentId);
+    //   const commentDoc = await getDoc(commentRef);
+    //   if (commentDoc.exists()) {
+    //     const commentData = commentDoc.data();
+
+    //     // Check if the necessary fields exist and initialize them if they don't
+    //     if (!commentData.likes) {
+    //       commentData.likes = 0;
+    //     }
+    //     if (!commentData.dislikes) {
+    //       commentData.dislikes = 0;
+    //     }
+    //     if (!commentData.likedBy) {
+    //       commentData.likedBy = [];
+    //     }
+    //     if (!commentData.dislikedBy) {
+    //       commentData.dislikedBy = [];
+    //     }
+
+    //     // Update like/dislike arrays and counts based on reactionType
+    //     if (reactionType === "like") {
+    //       if (!commentData.likedBy) {
+    //         commentData.likedBy = [];
+    //       }
+    //       if (!commentData.likedBy.includes(userId)) {
+    //         commentData.likedBy.push(userId);
+    //         const dislikedIndex = commentData.dislikedBy?.indexOf(userId);
+    //         if (dislikedIndex !== undefined && dislikedIndex !== -1) {
+    //           commentData.dislikedBy.splice(dislikedIndex, 1); // Remove from dislikedBy if present
+    //         }
+    //         commentData.likes++;
+    //       }
+    //     } else if (reactionType === "dislike") {
+    //       if (!commentData.dislikedBy) {
+    //         commentData.dislikedBy = [];
+    //       }
+    //       if (!commentData.dislikedBy.includes(userId)) {
+    //         commentData.dislikedBy.push(userId);
+    //         const likedIndex = commentData.likedBy?.indexOf(userId);
+    //         if (likedIndex !== undefined && likedIndex !== -1) {
+    //           commentData.likedBy.splice(likedIndex, 1); // Remove from likedBy if present
+    //         }
+    //         commentData.dislikes++;
+    //       }
+    //     }
+
+    //     // Update the comment document in Firestore
+    //     await updateDoc(commentRef, {
+    //       likes: commentData.likes,
+    //       dislikes: commentData.dislikes,
+    //       likedBy: commentData.likedBy,
+    //       dislikedBy: commentData.dislikedBy,
+    //     });
+    //   } else {
+    //     console.error("Comment document not found");
+    //   }
+    // } catch (error) {
+    //   console.error("Error handling like/dislike for comment:", error);
+    // }
   };
 
   const handleCommentChange = (e) => {
     setCommentText(e.target.value);
   };
+
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
-        setEmail(user.email);
 
         if (user.email) {
-          const usersCollection = collection(db, "users");
-          const userQuery = query(usersCollection, where("email", "==", user.email));
-          const querySnapshot = await getDocs(userQuery);
-
-          querySnapshot.forEach((doc) => {
-            const userData = doc.data();
-            if (userData) {
-              setData({
-                email: userData?.email,
-                profilePicture: userData?.profilePicture?.url,
-              });
-              setImageUrl(userData?.profilePicture?.url); // Set imageUrl here
-              setUser(user); // Set the user state here
-              setUserRole(userData?.role || "");
-            }
-          });
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          const userData = userDocSnap?.data();
+          if (userData) {
+            setUser(userData);
+          }
         } else {
           console.log("Failed to fetch user data", response);
         }
         fetchPosts();
       }
     });
-  }, [sortBy]);
+  }, []);
 
   return (
     <div className={`timeLine-container ${styles.mainTimeline}`}>
@@ -442,9 +475,9 @@ const MainTimelineFeed = () => {
               href={`/pages/profile/${encodeURIComponent(user?.email)}`}
               style={{ textDecoration: "none" }}
             >
-              {imageUrl ? (
+              {user?.profilePicture?.url ? (
                 <Image
-                  src={imageUrl}
+                  src={user?.profilePicture?.url}
                   alt="Profile pic"
                   className="profile-pic"
                   width={50}
@@ -475,6 +508,7 @@ const MainTimelineFeed = () => {
             Create Post
           </Button>
         </div>
+
         <Dropdown>
           <Dropdown.Toggle
             variant="secondary"
@@ -510,7 +544,7 @@ const MainTimelineFeed = () => {
                 >
                   <div className="profile-info">
                     <Image
-                      src={post.userProfilePicture || defaultProfilePicture}
+                      src={post?.userProfilePicture|| defaultProfilePicture}
                       alt="Profile Picture"
                       className="profile-pic"
                       width={50}
@@ -529,7 +563,7 @@ const MainTimelineFeed = () => {
                     <span style={{ fontSize: "1.5em" }}>•••</span>
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {userRole === "Admin" && (
+                    {user?.role.toLowerCase() === "admin" && (
                       <Dropdown.Item
                         onClick={() => handleDeletePost(post.id)}
                         className="text-danger"
@@ -562,27 +596,17 @@ const MainTimelineFeed = () => {
               </Card.Body>
               <Card.Footer className="post-footer">
                 <div className="post-footer-icons">
-                  <Button className="social-btn rounded-5" variant="btn">
-                    <Image
-                      onClick={() => handleLikePost(post.id, "like")}
-                      className="social-btn-icon"
-                      src={likeIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                    Likes (
-                    {(post.likedBy?.length || 0) -
-                      (post.dislikedBy?.length || 0)}
+                  <Button
+                    onClick={(e) => handleLikePost(e, post?.id)}
+                    className="social-btn rounded-5"
+                    variant="btn"
+                  >
+                    <FaThumbsUp /> Likes (
+                    {likes?.some((item) => item?.id === post?.id)
+                      ? likes?.find((item) => item?.id === post?.id)?.likedBy
+                          ?.length
+                      : 0}
                     )
-                    <Image
-                      onClick={() => handleLikePost(post.id, "dislike")}
-                      className="social-btn-icon"
-                      src={dislikeIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
                   </Button>
                   <Button
                     className="social-btn rounded-5"
@@ -618,7 +642,7 @@ const MainTimelineFeed = () => {
                       style={{ textDecoration: "none" }}
                     >
                       <Image
-                        src={imageUrl || defaultProfilePicture}
+                        src={user?.profilePicture?.url || defaultProfilePicture}
                         alt="Profile Picture"
                         className="profile-pic"
                         width={50}
@@ -635,7 +659,7 @@ const MainTimelineFeed = () => {
                     <Button
                       className="rounded-4"
                       variant="primary"
-                      onClick={() => handlePostComment(post.id)}
+                      onClick={() => handlePostComment(post.id, post.userId)}
                     >
                       Post
                     </Button>
@@ -645,64 +669,78 @@ const MainTimelineFeed = () => {
                 <div className="comment-section">
                   {post.comments &&
                     post.comments.length > 0 &&
-                    post.comments.slice(0, 2).map((comment, index) => (
-                      <div key={index} className="">
-                        <div className="comment rounded-5">
-                          <Link
-                            className="user-link"
-                            href={`/pages/profile/${encodeURIComponent(
-                              comment?.email
-                            )}`}
-                            style={{ textDecoration: "none" }}
+                    post.comments.slice(0, 1).map((comment, index) => (
+                      <div key={index} className="rounded-5">
+                      {comment?.userComments?.length > 0 && (
+                        <div>
+                          {/* Display only the first comment from userComments array */}
+                          <div
+                            style={{
+                              alignItems: "center",
+                              backgroundColor: "white",
+                              paddingLeft: "10px",
+                              borderRadius: "10px",
+                              marginBottom: "12px",
+                            }}
                           >
-                            <Image
-                              src={
-                                comment.userProfilePicture ||
-                                defaultProfilePicture
-                              }
-                              alt="Profile Picture"
-                              className="profile-pic"
-                              width={75}
-                              height={75}
-                            />
-                          </Link>
-                          <div className="comment-info">
-                            <div className="comment-header">
-                              <p className="comment-user">{comment.username}</p>
-                              <p className="comment-timestamp">
-                                {comment.timestamp &&
-                                  comment.timestamp.toDate().toLocaleString()}
-                              </p>
+                            <div className="profile-info" style={{ marginRight: "10px" }}>
+                              <Image
+                                src={comment?.profilePicture || defaultProfilePicture}
+                                alt="Profile Picture"
+                                className="profile-pic"
+                                width={40}
+                                height={40}
+                                style={{ marginRight: "10px" }}
+                              />
+                              <span
+                                className="poster-username"
+                                style={{
+                                  maxWidth: "150px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                {comment?.name}
+                              </span>
                             </div>
-                            <p className="comment-text">{comment.text}</p>
-                            <div className="comment-likes">
-                              <Image
-                                onClick={() =>
-                                  handleLikeComment(comment.id, "like")
-                                }
-                                className="social-btn-icon"
-                                src={likeIcon}
-                                alt="Like Icon"
-                                width={20}
-                                height={20}
-                              />
-                              Likes (
-                              {(comment.likes || 0) - (comment.dislikes || 0)}
-                              )
-                              <Image
-                                onClick={() =>
-                                  handleLikeComment(comment.id, "dislike")
-                                }
-                                className="social-btn-icon"
-                                src={dislikeIcon}
-                                alt="Dislike Icon"
-                                width={20}
-                                height={20}
-                              />
+                            <div
+                              style={{
+                                maxWidth: "400px",
+                                borderRadius: "10px",
+                                textAlign: "left",
+                              }}
+                            >
+                              <Button
+                                // onClick={(e) =>
+                                //   handleLikeComment(e, post.id, comment.userId, 0) // Pass index 0 to select the first comment
+                                // }
+                                className="rounded-5"
+                                variant="btn"
+                                style={{
+                                  maxHeight: "20px",
+                                  padding: "0 5px",
+                                  fontSize: "12px",
+                                  marginBottom: "3px",
+                                }}
+                                disabled
+                              >
+                                {comment.userComments[0].likes ? comment.userComments[0].likes.length : 0} Likes
+                              </Button>
+                              <span style={{ marginLeft: "17px" }}>
+                                {comment.userComments[0].text}
+                              </span>
+                              <span style={{ marginLeft: "5px", fontSize: "11px" }}>
+                                {comment.userComments[0].timestamp
+                                  ?.toDate()
+                                  .toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      )}
+                    </div>
                     ))}
                   {/* View all comments */}
                   {post.comments &&
@@ -795,7 +833,7 @@ const MainTimelineFeed = () => {
                     <span style={{ fontSize: "1.5em" }}>•••</span>
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {userRole === "Admin" && (
+                    {user?.role?.toLowerCase() === "admin" && (
                       <Dropdown.Item
                         onClick={() => handleDeletePost(selectedPost.id)}
                         className="text-danger"
@@ -829,7 +867,7 @@ const MainTimelineFeed = () => {
                 )}
               </Card.Body>
               <Card.Footer className="post-footer">
-                <div className="post-footer-icons">
+                {/* <div className="post-footer-icons">
                   <Button className="social-btn rounded-5" variant="btn">
                     <Image
                       onClick={() => handleLikePost(selectedPost.id, "like")}
@@ -862,12 +900,12 @@ const MainTimelineFeed = () => {
                     />{" "}
                     Share
                   </Button>
-                </div>
+                </div> */}
                 {/* Add comment section */}
                 <div>
                   <Form className="comment-prompt rounded-5">
                     <Image
-                      src={imageUrl || defaultProfilePicture}
+                      src={user?.profilePicture?.url || defaultProfilePicture}
                       alt="Profile Picture"
                       className="profile-pic"
                       width={50}
@@ -883,7 +921,7 @@ const MainTimelineFeed = () => {
                     <Button
                       className="rounded-"
                       variant="primary"
-                      onClick={() => handlePostComment(selectedPost.id)}
+                      onClick={() => handlePostComment(selectedPost.id, selectedPost.userId)}
                     >
                       Post
                     </Button>
@@ -892,23 +930,95 @@ const MainTimelineFeed = () => {
                 {/* Display comments */}
                 <div className="comment-section">
                   <h5>Comments:</h5>
-                  {selectedPost.comments &&
-                    selectedPost.comments.map((comment, index) => (
-                      <div key={index} className="comment rounded-5">
-                        <div className="profile-info">
-                          <Image
-                            src={
-                              comment.userProfilePicture ||
-                              defaultProfilePicture
-                            }
-                            alt="Profile Picture"
-                            className="profile-pic"
-                            width={50}
-                            height={50}
-                          />
-                          <p className="poster-username">{comment.username}</p>
-                        </div>
-                        <p className="comment-text">{comment.text}</p>
+                  {selectedPost?.comments &&
+                    selectedPost?.comments?.map((comment, index) => (
+                      <div key={index} className=" rounded-5">
+                        {comment.userComments.map((userComment, index) => (
+                          <>
+                            <div
+                              key={index}
+                              style={{
+                                alignItems: "center",
+                                backgroundColor: "white",
+                                paddingLeft: "10px",
+                                borderRadius: "10px",
+                                marginBottom: "12px",
+                              }}
+                            >
+                              <div
+                                className="profile-info"
+                                style={{ marginRight: "10px" }}
+                              >
+                                <Image
+                                  src={
+                                    comment?.profilePicture ||
+                                    defaultProfilePicture
+                                  }
+                                  alt="Profile Picture"
+                                  className="profile-pic"
+                                  width={40}
+                                  height={40}
+                                  style={{ marginRight: "10px" }}
+                                />
+                                <span
+                                  className="poster-username"
+                                  style={{
+                                    maxWidth: "150px",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {comment?.name}
+                                </span>
+                              </div>
+
+                              <div
+                                style={{
+                                  maxWidth: "400px",
+                                  borderRadius: "10px",
+                                  textAlign: "left",
+                                }}
+                              >
+                                <Button
+                                  onClick={(e) =>
+                                    handleLikeComment(
+                                      e,
+                                      selectedPost?.id,
+                                      index,
+                                      selectedPost?.userId
+                                    )
+                                  }
+                                  className=" rounded-5"
+                                  variant="btn"
+                                  style={{
+                                    // maxWidth: "70px",
+                                    maxHeight: "20px",
+                                    padding: "0 5px",
+                                    fontSize: "12px",
+                                    marginBottom: "3px",
+                                  }}
+                                >
+                                  {selectedPost?.comments?.find(comment => comment.userId === selectedPost?.userId)?.userComments[index]?.likes?.length ?? 0} Likes
+                                </Button>
+                                <span style={{ marginLeft: "17px" }}>
+                                  {userComment.text}
+                                </span>
+                                <span
+                                  style={{
+                                    marginLeft: "5px",
+                                    fontSize: "11px",
+                                  }}
+                                >
+                                  {userComment.timestamp
+                                    ?.toDate()
+                                    .toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        ))}
                       </div>
                     ))}
                 </div>

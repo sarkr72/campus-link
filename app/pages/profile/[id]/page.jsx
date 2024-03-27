@@ -328,7 +328,7 @@ function ViewProfile() {
                         }
                         style={{ marginRight: "1rem" }}
                       >
-                        {friends.some((request) => {
+                        {friends?.some((request) => {
                           const [, requestId] = request.split(",");
                           return requestId === user.id;
                         })
