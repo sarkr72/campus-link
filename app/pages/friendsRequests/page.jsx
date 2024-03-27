@@ -19,10 +19,10 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
-import { db } from "../../../../utils/firebase";
+import { db } from "../../../utils/firebase";
 import Link from "next/link";
 import Image from "next/image";
-import defaultProfilePicture from "../../../resources/images/default-profile-picture.jpeg";
+import defaultProfilePicture from "../../resources/images/default-profile-picture.jpeg";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 const FriendRequests = () => {
@@ -49,7 +49,7 @@ const FriendRequests = () => {
             if (userDoc.exists()) {
               updatedFriendRequests = userDoc
                 ?.data()
-                ?.friendRequests.map((request) => {
+                ?.friendRequests?.map((request) => {
                   retrivedRequestsArray.push(request);
                   const [, requestUserId] = request.split(",");
                   return requestUserId;
