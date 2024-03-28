@@ -219,7 +219,6 @@ const SearchPage = () => {
             const [, requestUserId] = request.split(",");
             return requestUserId !== userId;
           });
-          
 
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
@@ -280,7 +279,7 @@ const SearchPage = () => {
 
   const handleSendRequest = async (e, receiverId, name) => {
     e.preventDefault();
-    const exists = friends?.some(request => request?.id === receiverId);
+    const exists = friends?.some((request) => request?.id === receiverId);
     if (exists) {
     } else {
       await sendRequest(receiverId, name);
@@ -322,7 +321,11 @@ const SearchPage = () => {
             className="list-group-item d-flex justify-content-between align-items-center"
           >
             <Link
-              href={`/pages/profile/${encodeURIComponent(user?.id)}`}
+              href={
+                user?.id === userId
+                  ? `/pages/profile`
+                  : `/pages/profile/${encodeURIComponent(user?.id)}`
+              }
               style={{ textDecoration: "none" }}
               className="d-flex align-items-center"
             >

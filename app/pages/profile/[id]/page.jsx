@@ -16,6 +16,7 @@ import logoImage from "../../../resources/images/logo.png";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -245,7 +246,7 @@ function ViewProfile() {
     }
   };
 
-  const handleConfirmation = async (e, id) => {
+  const handleConfirmation = async (e) => {
     e.preventDefault();
     setOpenModal(false);
     const userRef = doc(db, "users", userId);
@@ -259,23 +260,22 @@ function ViewProfile() {
     await updateDoc(userDoc.ref, {
       friends: updatedFriends,
     });
-    const userRef2 = doc(db, "users", userId);
+
+    const userRef2 = doc(db, "users", id);
     const userDoc2 = await getDoc(userRef2);
     const friends = userDoc2?.data()?.friends;
     const updatedFriends2 = friends?.filter((friend) => {
       const friendId = friend?.id;
       return friendId !== userId;
     });
-    const receiverId = id;
-    if (sentRequests?.some((item) => item === receiverId)) {
+    if (sentRequests?.some((item) => item === id)) {
       setSentRequests((prevSentRequests) =>
-        prevSentRequests.filter((id) => id !== receiverId)
+        prevSentRequests.filter((item) => item !== id)
       );
     }
-    await updateDoc(userDoc.ref, {
+    await updateDoc(userDoc2.ref, {
       friends: updatedFriends2,
     });
-   
   };
 
   return (
@@ -327,7 +327,6 @@ function ViewProfile() {
                 >
                   {user?.id !== userId && (
                     <>
-                      {console.log("sent", sentRequests)}
                       <Button
                         onClick={(e) =>
                           handleSendRequest(
@@ -351,7 +350,6 @@ function ViewProfile() {
                       </Button>
                       <Button
                         onClick={() => setShowDetails(!showDetails)}
-                        className="profile-btn btn"
                       >
                         Profile Detail
                       </Button>
@@ -381,7 +379,7 @@ function ViewProfile() {
                           </Button>
                           <Button
                             variant="primary"
-                            onClick={(e) => handleConfirmation(e, user?.id)}
+                            onClick={(e) => handleConfirmation(e)}
                           >
                             Remove
                           </Button>
@@ -418,31 +416,81 @@ function ViewProfile() {
                 </div>
               )}
 
-              <Card.Footer className="card-footer">
-                <Button className="profile-btn" onClick={handleAppointment}>
-                  <FaCalendarAlt className="text-black" />
-                  Appointment
-                </Button>
-                <Button className="profile-btn">
-                  <Image
-                    className="profile-btn-icon"
-                    src={messageIcon}
-                    alt="Profile Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Message
-                </Button>
-                <Button className="profile-btn btn">
-                  <Image
-                    className="profile-btn-icon"
-                    src={reportIcon}
-                    alt="Profile Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Report
-                </Button>
+              <Card.Footer style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
+                  <Button
+                    className="profile-btn"
+                    style={{ marginRight: "20px" }}
+                  >
+                    <Image
+                      className="profile-btn-icon"
+                      src={messageIcon}
+                      alt="Profile Icon"
+                      width={20}
+                      height={20}
+                    />{" "}
+                    Message
+                  </Button>
+                  <Button className="profile-btn btn">
+                    <Image
+                      className="profile-btn-icon"
+                      src={reportIcon}
+                      alt="Profile Icon"
+                      width={20}
+                      height={20}
+                    />{" "}
+                    Report
+                  </Button>
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #ccc",
+                    fontWeight: "bold",
+                    alignSelf: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  Friends
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    // flexDirection: "column",
+                  }}
+                >
+                  {user?.friends?.length > 0 &&
+                    user?.friends?.slice(0, 4).map((friend, index) => (
+                      <button
+                        key={index}
+                        className="btn bg-white text-black shadow d-flex flex-column align-items-center position-relative"
+                        style={{ width: "120px", marginRight: "10px" }}
+                        onClick={(e) => friendProfile(e, friend?.id)}
+                      >
+                        <div
+                          className="font-weight-bold text-center text-truncate"
+                          style={{ maxWidth: "100%", fontSize: "11px" }}
+                        >
+                          {friend?.name}
+                        </div>
+                        <div className="d-flex justify-content-center">
+                          <Image
+                            src={
+                              friend?.profilePicture
+                                ? friend.profilePicture
+                                : defaultProfilePicture
+                            }
+                            alt="Profile Picture"
+                            height={80}
+                            width={100}
+                          />
+                        </div>
+                      </button>
+                    ))}
+                </div>
+                <div style={{ alignSelf: "flex-end" }}>
+                  {" "}
+                  <Link href={`/pages/friends/${id}`}> View All Friends</Link>
+                </div>
               </Card.Footer>
             </Card>
           </div>

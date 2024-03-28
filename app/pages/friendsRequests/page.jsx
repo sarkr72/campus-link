@@ -16,6 +16,7 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  serverTimestamp
 } from "firebase/firestore";
 import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
 import { db } from "../../../utils/firebase";
@@ -91,7 +92,12 @@ const FriendRequests = () => {
     await updateDoc(
       userDoc.ref,
       {
-        friends: arrayUnion({ name: name, id: id, profilePicture: profilePicture?.url || null }),
+        friends: arrayUnion({
+          name: name,
+          id: id,
+          profilePicture: profilePicture?.url || null,
+          timestamp: new Date(),
+        }),
         friendRequests: updatedFriendRequests,
       },
       { merge: true }
@@ -107,7 +113,12 @@ const FriendRequests = () => {
     await updateDoc(
       userrDoc.ref,
       {
-        friends: arrayUnion({name: user?.firstName + " " + user?.lastName, id: userId, profilePicture: user?.profilePicture?.url || null}),
+        friends: arrayUnion({
+          name: user?.firstName + " " + user?.lastName,
+          id: userId,
+          profilePicture: user?.profilePicture?.url || null,
+          timestamp: new Date(),
+        }),
         friendRequestsSent: updateddFriendRequests2,
       },
       { merge: true }

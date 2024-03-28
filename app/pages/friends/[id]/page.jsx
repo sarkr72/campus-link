@@ -19,10 +19,10 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
-import { db } from "../../../utils/firebase";
+import { db } from "../../../../utils/firebase";
 import Link from "next/link";
 import Image from "next/image";
-import defaultProfilePicture from "../../resources/images/default-profile-picture.jpeg";
+import defaultProfilePicture from "../../../resources/images/default-profile-picture.jpeg";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 const FriendRequests = () => {
@@ -40,17 +40,15 @@ const FriendRequests = () => {
     const fetchUser = async () => {
       if (id) {
         try {
-          const auth = getAuth();
-          onAuthStateChanged(auth, async (user) => {
-            if (user) {
-              setUserId(user.uid);
-              const userRef = doc(db, "users", user.uid);
+
+
+              const userRef = doc(db, "users", id);
               const userDoc = await getDoc(userRef);
               const userData = userDoc?.data();
-              setCurrentUser(userData);
+            //   setCurrentUser(userData);
               setFriends(userData?.friends);
-            }
-          });
+        
+   
         } catch (error) {
           console.error("Error fetching user:", error);
         }
@@ -62,9 +60,9 @@ const FriendRequests = () => {
 
   return (
     <div style={{ minHeight: "100vh", maxWidth: "800px", margin: "0 auto" }}>
-      <h4>FriendRequests</h4>
+      <h4>Friends</h4>
       <ul className="list-group">
-        {users.map((user, index) => (
+        {friends?.map((user, index) => (
           <li
             key={index}
             className="list-group-item d-flex justify-content-between align-items-center"
@@ -72,11 +70,11 @@ const FriendRequests = () => {
             <Link
               href={`/pages/profile/${encodeURIComponent(user?.id)}`}
               style={{ textDecoration: "none" }}
-              className="d-flex align-items-center"
+              className="d-flex align-items-center text-black"
             >
-              {user?.profilePicture?.url ? (
+              {user?.profilePicture ? (
                 <Image
-                  src={user?.profilePicture?.url}
+                  src={user?.profilePicture}
                   alt="Profile pic"
                   className="profile-pic rounded-5"
                   width={50}
@@ -92,7 +90,7 @@ const FriendRequests = () => {
                 />
               )}
               <span className="ms-2">
-                {user.firstName} {user.lastName}
+                {user?.name}
               </span>
             </Link>
           </li>
