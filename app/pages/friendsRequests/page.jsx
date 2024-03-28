@@ -16,6 +16,7 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  serverTimestamp
 } from "firebase/firestore";
 import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
 import { db } from "../../../utils/firebase";
@@ -95,6 +96,7 @@ const FriendRequests = () => {
           name: name,
           id: id,
           profilePicture: profilePicture?.url || null,
+          timestamp: new Date(),
         }),
         friendRequests: updatedFriendRequests,
       },
@@ -115,6 +117,7 @@ const FriendRequests = () => {
           name: user?.firstName + " " + user?.lastName,
           id: userId,
           profilePicture: user?.profilePicture?.url || null,
+          timestamp: new Date(),
         }),
         friendRequestsSent: updateddFriendRequests2,
       },
