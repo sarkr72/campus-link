@@ -8,13 +8,8 @@ import styles2 from "/styles/mainTimeline.css";
 import { useParams, useSearchParams, usePathname } from "next/navigation";
 
 import { Row, Breadcrumb, Card, Modal, Button } from "react-bootstrap";
-import likeIcon from "../../../resources/images/like.svg";
-import dislikeIcon from "../../../resources/images/dislike.svg";
-import commentIcon from "../../../resources/images/comment.svg";
-import shareIcon from "../../../resources/images/share.svg";
-import logoImage from "../../../resources/images/logo.png";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import React, { useState } from "react";
 import Link from "next/link";
 import {
@@ -38,6 +33,7 @@ import {
   updateDoc,
   serverTimestamp,
   limit,
+  arrayUnion,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -67,6 +63,8 @@ function ViewProfile() {
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [currentUser, setCurrentUser] = useState("");
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -80,9 +78,8 @@ function ViewProfile() {
               const userDoc = await getDoc(userRef);
               const userData = userDoc?.data();
               setCurrentUser(userData);
-              setFriends(userData?.friends);
+              setFollowing(userData?.following);
               if (userData) {
-                setFriends(userData?.friends);
                 if (userDoc.exists()) {
                   const updatedFriendRequests =
                     userData?.friendRequestsSent?.map((request) => {
@@ -100,6 +97,8 @@ function ViewProfile() {
 
           if (userDocSnapshot.exists()) {
             const userData = userDocSnapshot?.data();
+
+            setFollowers(userData?.followers);
             setData({
               firstName: userData?.firstName,
               lastName: userData?.lastName,
@@ -221,9 +220,8 @@ function ViewProfile() {
 
   const handleSendRequest = async (e, receiverId, name) => {
     e.preventDefault();
-    console.log("ffff", friends);
     if (
-      friends?.some((request) => {
+      currentUser?.friends?.some((request) => {
         const requestId = request?.id;
         return requestId === receiverId;
       })
@@ -278,6 +276,91 @@ function ViewProfile() {
     });
   };
 
+  const handleFollow = async (e, id, name) => {
+    e.preventDefault();
+    setOpenModal(false);
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    const userRef2 = doc(db, "users", id);
+    const userDoc2 = await getDoc(userRef2);
+
+    const isYourIdInFriendFollowers = following?.some(
+      (follower) => follower.id === id
+    );
+
+    if (isYourIdInFriendFollowers) {
+      const updatedFollowing = following?.filter((friend) => {
+        const friendId = friend?.id;
+        return friendId !== id;
+      });
+
+      setFollowing(updatedFollowing);
+      await updateDoc(userDoc.ref, {
+        following: updatedFollowing,
+      });
+
+      const updatedFollowers = followers?.filter((friend) => {
+        const friendId = friend?.id;
+        return friendId !== userId;
+      });
+      setFollowers(updatedFollowers);
+      await updateDoc(userDoc2.ref, {
+        followers: updatedFollowers,
+      });
+    } else {
+      {
+        console.log("here");
+      }
+      setFollowing((prevFollowing) => {
+        if (!Array.isArray(prevFollowing)) {
+          prevFollowing = []; 
+        }
+        return [
+          ...prevFollowing,
+          {
+            name,
+            id,
+            profilePicture: user?.profilePicture?.url || null,
+            timestamp: new Date(),
+          },
+        ];
+      });
+      
+      setFollowers((prevFollowing) => {
+        if (!Array.isArray(prevFollowing)) {
+          prevFollowing = []; 
+        }
+        return [
+          ...prevFollowing,
+          {
+            name: currentUser?.firstName + " " + currentUser?.lastName,
+            id: userId,
+            profilePicture: currentUser?.profilePicture?.url || null,
+            timestamp: new Date(),
+          },
+        ];
+      });
+      await Promise.all([
+        updateDoc(userDoc.ref, {
+          following: arrayUnion({
+            name: name,
+            id: id,
+            profilePicture: user?.profilePicture?.url || null,
+            timestamp: new Date(),
+          }),
+        }),
+        updateDoc(userDoc2.ref, {
+          followers: arrayUnion({
+            name: currentUser?.firstName + " " + currentUser?.lastName,
+            id: currentUser?.id,
+            profilePicture: currentUser?.profilePicture?.url || null,
+            timestamp: new Date(),
+          }),
+        }),
+      ]);
+    }
+  };
+
   return (
     <div className="profile-container container">
       <Row>
@@ -317,9 +400,9 @@ function ViewProfile() {
                     <li className="list-group-item">{data.role}</li>
                   )}
                   {data?.tutor && <li className="list-group-item">Tutor</li>}
-                  <p className="username">
-                    {user.email ? user.email.split("@")[0] : ""}
-                  </p>
+                  <Link href={`/pages/followers/${id}`} className="text-dark">
+                    {followers?.length || 0} followers
+                  </Link>
                 </div>
 
                 <div
@@ -337,7 +420,7 @@ function ViewProfile() {
                         }
                         style={{ marginRight: "1rem" }}
                       >
-                        {friends?.some((request) => {
+                        {currentUser?.friends?.some((request) => {
                           const requestId = request?.id;
                           return requestId === user.id;
                         })
@@ -349,8 +432,23 @@ function ViewProfile() {
                           : "Send Request"}
                       </Button>
                       <Button
-                        onClick={() => setShowDetails(!showDetails)}
+                        onClick={(e) =>
+                          handleFollow(
+                            e,
+                            user?.id,
+                            user?.firstName + " " + user?.lastName
+                          )
+                        }
+                        style={{ marginRight: "1rem" }}
                       >
+                        {following?.some((follower) => {
+                          const followerId = follower?.id;
+                          return followerId === user.id;
+                        })
+                          ? "Following"
+                          : "Follow"}
+                      </Button>
+                      <Button onClick={() => setShowDetails(!showDetails)}>
                         Profile Detail
                       </Button>
                       <Modal
@@ -417,7 +515,18 @@ function ViewProfile() {
               )}
 
               <Card.Footer style={{ display: "flex", flexDirection: "column" }}>
-                <div style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    alignSelf: "center",
+                  }}
+                >
+                  <Button className="profile-btn" style={{marginRight: "18px"}} onClick={handleAppointment}>
+                    <FaCalendarAlt className="text-black" />
+                    Appointment
+                  </Button>
+
                   <Button
                     className="profile-btn"
                     style={{ marginRight: "20px" }}
@@ -487,9 +596,9 @@ function ViewProfile() {
                       </button>
                     ))}
                 </div>
-                <div style={{ alignSelf: "flex-end" }}>
+                <div style={{ alignSelf: "flex-end"}}>
                   {" "}
-                  <Link href={`/pages/friends/${id}`}> View All Friends</Link>
+                  <Link href={`/pages/friends/${id}`} className="text-black"> View All Friends</Link>
                 </div>
               </Card.Footer>
             </Card>

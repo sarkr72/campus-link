@@ -138,9 +138,9 @@ function ViewProfile() {
     }
   };
 
-  const handleFollowers = async (e) => {
+  const handleFollow = async (e) => {
     e.preventDefault();
-    // window.location.href = `/pages/followers/${userId}`;
+      router.push(`/pages/following}`);
   };
 
   return (
@@ -183,9 +183,12 @@ function ViewProfile() {
                     <li className="list-group-item">{data.role}</li>
                   )}
                   {data?.tutor && <li className="list-group-item">Tutor</li>}
-                  <p className="username">
-                    {user.email ? user.email.split("@")[0] : ""}
-                  </p>
+                  <Link href="/pages/followers" className="text-dark">
+                    {user?.followers?.length || 0} followers
+                  </Link>
+                  <Link href="/pages/following" className="text-dark" style={{marginLeft: "10px"}}>
+                    {user?.following?.length || 0} Following
+                  </Link>
                 </div>
 
                 <div
@@ -197,16 +200,8 @@ function ViewProfile() {
                   >
                     View Requests
                   </Button>
-
-                  <Button
-                    onClick={handleFollowers}
-                    style={{ marginRight: "1rem" }}
-                  >
-                    Followers
-                  </Button>
-                  <Button
-                    onClick={() => setShowDetails(!showDetails)}
-                  >
+                  
+                  <Button onClick={() => setShowDetails(!showDetails)}>
                     Profile Detail
                   </Button>
                 </div>
@@ -239,7 +234,14 @@ function ViewProfile() {
               )}
 
               <Card.Footer style={{ display: "flex", flexDirection: "column" }}>
-                <div style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    alignSelf: "center",
+                  }}
+                >
+                  
                   <Button
                     className="profile-btn"
                     style={{ marginRight: "20px" }}
@@ -312,7 +314,7 @@ function ViewProfile() {
                 </div>
                 <div style={{ alignSelf: "flex-end" }}>
                   {" "}
-                  <Link href="/pages/friends"> View All Friends</Link>
+                  <Link href="/pages/friends" className="text-black"> View All Friends</Link>
                 </div>
               </Card.Footer>
             </Card>
