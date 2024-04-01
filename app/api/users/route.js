@@ -6,8 +6,10 @@ import { NextResponse } from "next/server";
 // const prisma = new PrismaClient();
 
 // import { createConnection } from "mysql2/promise";
+import { auth } from "@/app/utils/firebase";
 import { admin } from "../../utils/firebaseAdmin";
 const db = admin.firestore();
+
 // import { createConnection } from "mysql2/promise";
 //
 // Function to establish MySQL connection
@@ -84,6 +86,7 @@ const db = admin.firestore();
 // Function to delete a student
 export async function DELETE(request, { params }) {
   try {
+    console.log(auth)
     // const email = params.id;
     const requestData = await request.json();
     const userId = requestData.deleteUserId;
