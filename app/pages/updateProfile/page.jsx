@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import GrowSpinner from "../../components/Spinner";
 import styles from "../../../styles/updateProfile.css";
-import { db } from "../../../utils/firebase";
+import { db } from "../../utils/firebase";
 import {
   collection,
   deleteDoc,

@@ -1,13 +1,12 @@
 // import { NestResponse } from "next";
 // import { PrismaClient } from "@prisma/client";
-import { Allura } from "next/font/google";
 import { NextResponse } from "next/server";
 // import { getConnection } from "../../../utils/db";
 
 // const prisma = new PrismaClient();
 
 // import { createConnection } from "mysql2/promise";
-import { admin } from "../../../utils/firebaseAdmin";
+import { admin } from "../../utils/firebaseAdmin";
 const db = admin.firestore();
 // import { createConnection } from "mysql2/promise";
 //

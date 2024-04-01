@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import { useLayoutEffect } from "react";
 import Image from "next/image";
 import logoImage from "../resources/images/logo.png";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
 import {
   collection,
   deleteDoc,
