@@ -244,6 +244,10 @@ function ViewProfile() {
     }
   };
 
+  const friendProfile = async (e, id) => {
+    e.preventDefault();
+    router.push(`/pages/profile/${id}`);
+  }
   const handleConfirmation = async (e) => {
     e.preventDefault();
     setOpenModal(false);
