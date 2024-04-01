@@ -18,11 +18,11 @@ import student2 from "./resources/images/student2.jpeg";
 import teacher from "./resources/images/teacher.jpeg";
 import edgar from "./resources/images/stonehenge.jpeg";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/app/utils/firebase";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
   let id = 2;
-  const auth = getAuth(app);
   return (
     <div>
       {console.log(auth)}
