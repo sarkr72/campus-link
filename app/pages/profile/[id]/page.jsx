@@ -243,8 +243,7 @@ function ViewProfile() {
       }
     }
   };
-
-  const friendProfile = async (e, id) => {
+const friendProfile = async (e, id) => {
     e.preventDefault();
     router.push(`/pages/profile/${id}`);
   }

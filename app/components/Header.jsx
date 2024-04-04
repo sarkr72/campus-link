@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import { useLayoutEffect } from "react";
 import Image from "next/image";
 import logoImage from "../resources/images/logo.png";
-import { db } from "../utils/firebase";
+import { db } from "../../utils/firebase";
 import {
   collection,
   deleteDoc,
@@ -157,7 +157,14 @@ function Header() {
                   pathname === "/pages/mainTimeline" ? "text-dark" : ""
                 } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
               >
-                Home
+                <Image
+                  onClick={() => handleLikePost(post.id, "dislike")}
+                  className="social-btn-icon"
+                  src={homeIcon}
+                  alt="Home Icon"
+                  width={20}
+                  height={20}
+                />{" "}
               </Nav.Link>
             ) : (
               <Nav.Link
@@ -166,7 +173,29 @@ function Header() {
                   pathname === "/" ? "fw-bold" : ""
                 }`}
               >
-                Home
+                <Image
+                  className="social-btn-icon"
+                  src={homeIcon}
+                  alt="Home Icon"
+                  width={20}
+                  height={20}
+                />{" "}
+              </Nav.Link>
+            )}
+            {userId && (
+              <Nav.Link
+                href="/pages/messages"
+                className={`text-${
+                  pathname === "/pages/messages" ? "text-dark" : ""
+                } ${pathname === "/pages/messages" ? "fw-bold" : ""}`}
+              >
+                <Image
+                  className="social-btn-icon"
+                  src={chatIcon}
+                  alt="Home Icon"
+                  width={20}
+                  height={20}
+                />{" "}
               </Nav.Link>
             )}
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
@@ -176,11 +205,27 @@ function Header() {
                   pathname === "/pages/admin" ? "text-dark" : ""
                 } ${pathname === "/pages/admin" ? "fw-bold" : ""}`}
               >
-                Admin
+                <Image
+                  className="social-btn-icon"
+                  src={adminIcon}
+                  alt="Admin Icon"
+                  width={20}
+                  height={20}
+                />{" "}
               </Nav.Link>
             )}
             <NavDropdown
-              title="Tools"
+              title={
+                <>
+                  <Image
+                    className="social-btn-icon"
+                    src={toolsIcon}
+                    alt="Admin Icon"
+                    width={20}
+                    height={20}
+                  />{" "}
+                </>
+              }
               id="basic-nav-dropdown"
               onSelect={handleDropdownSelect} // Close dropdown on select
               show={dropdownOpen} // Control visibility of dropdown
@@ -234,9 +279,7 @@ function Header() {
                         <NavDropdown.Item
                           href="/pages/myAppointments"
                           className={`text-${
-                            pathname === "/pages/myAppointments"
-                              ? "dark"
-                              : ""
+                            pathname === "/pages/myAppointments" ? "dark" : ""
                           } ${
                             pathname === "/pages/myAppointments"
                               ? "fw-bold"

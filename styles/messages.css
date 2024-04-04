@@ -1,0 +1,154 @@
+.messages-container {
+  min-height: 100vh;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  gap: 30px;
+  padding: 30px;
+
+}
+.chat {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  background-color: aliceblue;
+  height: 60px;
+}
+.chat-card {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  width: 90%;
+}
+
+.chat-card:hover {
+  background-color: #f5f5f5;
+}
+
+.chat-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.chat-details {
+  flex-grow: 1;
+}
+
+.chat-name {
+  font-weight: bold;
+}
+
+.chat-message {
+  color: #555;
+  font-size: 14px;
+}
+
+.chat-actions {
+  display: flex;
+  align-items: center;
+}
+
+.chat-action {
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.chat-action:hover {
+  color: #007bff;
+}
+
+.chat-modal {
+  margin: auto;
+  max-width: 800px;
+  margin-left: 25%;
+}
+
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  overflow-y: auto;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.user-message {
+  align-items: flex-end;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.message-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.message-username {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.message-timestamp {
+  font-size: 12px;
+  color: #777;
+}
+
+.message-content {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 60%;
+}
+
+.user-message .message-content {
+  background-color: #007bff;
+  color: #fff;
+  align-self: flex-end;
+}
+
+.message-form {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.chat-input Form {
+  display: flex;
+  flex-grow: 1;
+}
+
+.chat-input Form .form-group {
+  margin-right: 10px;
+  flex-grow: 1;
+}
