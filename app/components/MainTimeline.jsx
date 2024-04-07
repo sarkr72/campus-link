@@ -200,13 +200,9 @@ const MainTimelineFeed = ({ userEmail }) => {
     try {
       const postsCollection = collection(db, "posts");
       let postsQuery = query(postsCollection);
-
-      // Filter posts by user's email if provided
       if (userEmail) {
         postsQuery = query(postsQuery, where("email", "==", userEmail));
       }
-
-      // Sort posts based on selected option
       if (sortBy === "likes") {
         postsQuery = query(postsQuery, orderBy("likes", "desc"));
       } else if (sortBy === "dislikes") {

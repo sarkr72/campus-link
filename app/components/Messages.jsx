@@ -114,10 +114,12 @@ const Messages = ({ userEmail }) => {
         // Create a new chat document in Firestore
         const chatRef = await addDoc(collection(db, "chats"), {
           users: updatedSelectedUsers.map((user) => user.email),
+          name: chatName,
         });
         console.log("Chat created with ID: ", chatRef.id);
         setShowPrompt(false);
         setSelectedUsers([]);
+        setChatName("");
       } else {
         console.error("Current user not found or does not have an email");
       }
@@ -125,25 +127,40 @@ const Messages = ({ userEmail }) => {
       console.error("Error creating chat: ", error);
     }
   };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
     if (newMessage.trim() !== "" && selectedChat) {
+      // Fetch the profile picture URL from Firebase
+      const currentUserData = await getDoc(doc(db, "users", currentUser.uid));
+      const currentUserProfile = currentUserData.data();
+      const senderProfilePicture =
+        currentUserProfile.profilePicture?.url || defaultProfilePicture;
+
       const messageData = {
         id: `${Date.now()}-${Math.random()}`,
         sender: currentUser.email,
-        senderProfilePicture:
-          currentUser.profilePicture || defaultProfilePicture,
+        senderProfilePicture: senderProfilePicture,
         content: newMessage.trim(),
         timestamp: Timestamp.fromDate(new Date()),
       };
 
       try {
         const chatRef = doc(db, "chats", selectedChat.id);
-        await updateDoc(chatRef, {
-          messages: [...(selectedChat.messages || []), messageData],
-        });
-        // Update selectedChat state with the new message
+        const chatSnapshot = await getDoc(chatRef);
+        const chatData = chatSnapshot.data();
+
+        if (chatData && chatData.messages) {
+          await updateDoc(chatRef, {
+            messages: [...chatData.messages, messageData],
+          });
+        } else {
+          await updateDoc(chatRef, {
+            messages: [messageData],
+          });
+        }
+
         setSelectedChat((prevSelectedChat) => ({
           ...prevSelectedChat,
           messages: [...(prevSelectedChat.messages || []), messageData],
@@ -179,6 +196,14 @@ const Messages = ({ userEmail }) => {
           <Modal.Title>Start a New Conversation</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <Form.Group controlId="name" className="chat-name-form">
+            <Form.Control
+              type="text"
+              placeholder="Enter a name for this chat"
+              value={chatName}
+              onChange={(e) => setChatName(e.target.value)}
+            />
+          </Form.Group>
           {/* Display all users with an "Add to Conversation" button */}
           {users.map((user) => (
             <Card key={user.email} className="mb-2">
@@ -238,11 +263,12 @@ const Messages = ({ userEmail }) => {
                 className="chat-action"
                 id={`dropdown-${chat.id}`}
               >
-                &#8230;
+                <span style={{ fontSize: "1.5em" }}>•••</span>
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item>Leave Conversation</Dropdown.Item>
-                <Dropdown.Item>Mute Conversation</Dropdown.Item>
+                <Dropdown.Item className="text-danger">
+                  Leave Conversation
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </div>
@@ -261,17 +287,33 @@ const Messages = ({ userEmail }) => {
           </Modal.Header>
           <Modal.Body className="chat-body">
             <div className="chat-messages">
-              {selectedChat.messages &&
-                selectedChat.messages.map((message, index) => (
-                  <div
-                    key={`${message.id}-${index}`}
-                    className={`message ${
-                      message.sender === currentUser.email ? "user-message" : ""
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                ))}
+              {selectedChat && selectedChat.messages
+                ? selectedChat.messages.map((message) => (
+                    <div key={message.id} className="message">
+                      <Image
+                        src={
+                          message.senderProfilePicture?.url ||
+                          defaultProfilePicture
+                        }
+                        alt="Profile Pic"
+                        className="message-avatar"
+                        width={50}
+                        height={50}
+                      />
+                      <div className="message-details">
+                        <div className="message-header">
+                          <span className="message-username">
+                            {message.sender ? message.sender.split("@")[0] : ""}{" "}
+                          </span>
+                          <span className="message-timestamp">
+                            {message.timestamp.toDate().toLocaleString()}{" "}
+                          </span>
+                        </div>
+                        <div className="message-content">{message.content}</div>
+                      </div>
+                    </div>
+                  ))
+                : "No messages yet."}
             </div>
           </Modal.Body>
           <Modal.Footer className="chat-input">
