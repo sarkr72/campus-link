@@ -16,6 +16,7 @@ import { useLayoutEffect } from "react";
 import Image from "next/image";
 import logoImage from "../resources/images/logo.png";
 import { db } from "../utils/firebase";
+import { Modal, Button } from "react-bootstrap";
 import { FaHome, FaTools, FaUserShield, FaComments } from "react-icons/fa";
 import {
   collection,
@@ -32,6 +33,8 @@ import {
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import MyAppointments from "./MyAppointments";
+import { FaBell } from "react-icons/fa";
+import Notifications from "./Notifications";
 
 function Header() {
   const router = useRouter();
@@ -47,6 +50,11 @@ function Header() {
   const [userRole, setUserRole] = useState("");
   const auth = getAuth();
   const pathname = usePathname();
+  const [showPanel, setShowPanel] = useState(false);
+
+  const togglePanel = () => {
+    setShowPanel(!showPanel);
+  };
 
   useEffect(() => {
     const auth = getAuth();
@@ -79,6 +87,7 @@ function Header() {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        setUser(userDoc?.data());
         setUserRole(userData.role);
       } else {
         console.log("User document not found.");
@@ -168,7 +177,7 @@ function Header() {
                   pathname === "/" ? "fw-bold" : ""
                 }`}
               >
-                <FaHome className="social-btn-icon" alt="Home Icon" size={20} />
+                <FaHome className="social-btn-icon" alt="Home Icon" size={20} />{" "}
                 Home
               </Nav.Link>
             )}
@@ -201,7 +210,9 @@ function Header() {
               id="basic-nav-dropdown"
               onSelect={handleDropdownSelect} // Close dropdown on select
               show={dropdownOpen} // Control visibility of dropdown
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onClick={
+                !showPanel ? () => setDropdownOpen(!dropdownOpen) : undefined
+              }
               style={{ zIndex: 9999 }}
             >
               {userId && (
@@ -309,12 +320,9 @@ function Header() {
                 Schedule
               </NavDropdown.Item> */}
               <NavDropdown.Divider />
-              {userId && (
-                <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
-                  Logout
-                </NavDropdown.Item>
-              )}
+              
             </NavDropdown>
+
             {!userId && (
               <>
                 <Nav.Link
@@ -335,6 +343,51 @@ function Header() {
                 </Nav.Link>
               </>
             )}
+
+            {userId && (
+              <>
+                <div className="notification-container">
+                  <button
+                    onClick={togglePanel}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      marginLeft: "-8px",
+                    }}
+                  >
+                    <FaBell /> Notifications
+                  </button>
+
+                  <Modal show={showPanel} onHide={togglePanel}>
+              <Modal.Header closeButton>
+                <Modal.Title>Notifications</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Notifications />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={togglePanel}>
+                  Close
+                </Button>
+              </Modal.Footer>
+            </Modal>
+                </div>
+              </>
+            )}
+
+            <Nav.Link
+              href="/pages/findCourses"
+              className={`text-${
+                pathname === "/pages/findCourses" ? "text-dark" : ""
+              } ${pathname === "/pages/findCourses" ? "fw-bold" : ""}`}
+            >
+              Find courses
+            </Nav.Link>
+            {userId && (
+                <Nav.Link href="#blankForNow" onClick={handleSignOut}>
+                  Logout
+                </Nav.Link>
+              )}
           </Nav>
         </Navbar.Collapse>
       </Container>

@@ -18,7 +18,6 @@ import {
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const Messages = ({ userEmail }) => {
-  const auth = getAuth();
   const [newMessage, setNewMessage] = useState([]);
   const [currentUser, setCurrentUser] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
