@@ -225,13 +225,22 @@ const SearchPage = () => {
           });
           console.log("Friend request canceled successfully.");
         } else {
-          console.log("namess", user.firstName, user.lastName, userId);
+          const notifications = {
+            senderId: userId,
+            message: " sent you a friend request.",
+            senderProfilePicture: user?.profilePicture || null,
+            senderName: user?.firstName + " " + user?.lastName,
+            date: new Date(),
+          };
+          const currentNotifications = user?.notifications || [];
+          const updatedNotifications = [...currentNotifications, notifications];
           const updatedFriendRequests = [
             ...friendRequests,
             `${user?.firstName} ${user?.lastName},${userId}`,
           ];
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
+            notifications: updatedNotifications,
           });
           console.log("Friend request sent successfully.");
         }
