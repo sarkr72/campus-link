@@ -7,7 +7,7 @@ import likeIcon from "../resources/images/like.svg";
 import dislikeIcon from "../resources/images/dislike.svg";
 import commentIcon from "../resources/images/comment.svg";
 import shareIcon from "../resources/images/share.svg";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -200,13 +200,9 @@ const MainTimelineFeed = ({ userEmail }) => {
     try {
       const postsCollection = collection(db, "posts");
       let postsQuery = query(postsCollection);
-
-      // Filter posts by user's email if provided
       if (userEmail) {
         postsQuery = query(postsQuery, where("email", "==", userEmail));
       }
-
-      // Sort posts based on selected option
       if (sortBy === "likes") {
         postsQuery = query(postsQuery, orderBy("likes", "desc"));
       } else if (sortBy === "dislikes") {

@@ -6,7 +6,7 @@ import {
   doc,
   serverTimestamp
 } from "firebase/firestore";
-import { db } from "../../../utils/firebase";
+import { db } from "../../utils/firebase";
 import Link from "next/link";
 import Image from "next/image";
 import defaultProfilePicture from "../../resources/images/default-profile-picture.jpeg";

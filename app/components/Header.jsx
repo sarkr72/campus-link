@@ -15,11 +15,8 @@ import { toast } from "react-toastify";
 import { useLayoutEffect } from "react";
 import Image from "next/image";
 import logoImage from "../resources/images/logo.png";
-import homeIcon from "../resources/images/home.svg";
-import adminIcon from "../resources/images/admin.svg";
-import toolsIcon from "../resources/images/settings.svg";
-import chatIcon from "../resources/images/comment.svg";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
+import { FaHome, FaTools, FaUserShield, FaComments } from "react-icons/fa";
 import {
   collection,
   deleteDoc,
@@ -161,14 +158,8 @@ function Header() {
                   pathname === "/pages/mainTimeline" ? "text-dark" : ""
                 } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
               >
-                <Image
-                  onClick={() => handleLikePost(post.id, "dislike")}
-                  className="social-btn-icon"
-                  src={homeIcon}
-                  alt="Home Icon"
-                  width={20}
-                  height={20}
-                />{" "}
+                <FaHome className="social-btn-icon" alt="Home Icon" size={20} />{" "}
+                Home
               </Nav.Link>
             ) : (
               <Nav.Link
@@ -177,13 +168,8 @@ function Header() {
                   pathname === "/" ? "fw-bold" : ""
                 }`}
               >
-                <Image
-                  className="social-btn-icon"
-                  src={homeIcon}
-                  alt="Home Icon"
-                  width={20}
-                  height={20}
-                />{" "}
+                <FaHome className="social-btn-icon" alt="Home Icon" size={20} />
+                Home
               </Nav.Link>
             )}
             {userId && (
@@ -193,13 +179,7 @@ function Header() {
                   pathname === "/pages/messages" ? "text-dark" : ""
                 } ${pathname === "/pages/messages" ? "fw-bold" : ""}`}
               >
-                <Image
-                  className="social-btn-icon"
-                  src={chatIcon}
-                  alt="Home Icon"
-                  width={20}
-                  height={20}
-                />{" "}
+                <FaComments className="social-btn-icon" size={20} /> Chats
               </Nav.Link>
             )}
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
@@ -209,25 +189,13 @@ function Header() {
                   pathname === "/pages/admin" ? "text-dark" : ""
                 } ${pathname === "/pages/admin" ? "fw-bold" : ""}`}
               >
-                <Image
-                  className="social-btn-icon"
-                  src={adminIcon}
-                  alt="Admin Icon"
-                  width={20}
-                  height={20}
-                />{" "}
+                <FaUserShield className="social-btn-icon" size={20} /> Admin
               </Nav.Link>
             )}
             <NavDropdown
               title={
                 <>
-                  <Image
-                    className="social-btn-icon"
-                    src={toolsIcon}
-                    alt="Admin Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
+                  <FaTools className="social-btn-icon" size={20} /> Tools
                 </>
               }
               id="basic-nav-dropdown"
@@ -304,6 +272,11 @@ function Header() {
                               ? "fw-bold"
                               : ""
                           }`}
+                          style={{
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
                         >
                           Create Tutoring Session
                         </NavDropdown.Item>
@@ -319,14 +292,14 @@ function Header() {
               >
                 Tutors
               </NavDropdown.Item>
-              <NavDropdown.Item
+              {/* <NavDropdown.Item
                 href="/pages/mainTimeline"
                 className={`text-${
                   pathname === "/pages/mainTimeline" ? "text-dark" : ""
                 } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
               >
                 Timeline
-              </NavDropdown.Item>
+              </NavDropdown.Item> */}
               {/* <NavDropdown.Item
                 href="/pages/schedule"
                 className={`text-${

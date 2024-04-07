@@ -35,7 +35,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from "firebase/auth";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
 import {
   collection,
   deleteDoc,

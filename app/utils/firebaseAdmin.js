@@ -1,3 +1,4 @@
+import { app } from './firebase';
 import admin from 'firebase-admin';
 import key from '@/key';
 // const serviceAccount = require('../key');

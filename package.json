@@ -34,8 +34,7 @@
     "react-dom": "^18",
     "react-icons": "^5.0.1",
     "react-toastify": "^10.0.4",
-    "sharp": "^0.33.2",
-    "update": "^0.7.4"
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@types/react-datepicker": "^6.0.3",
