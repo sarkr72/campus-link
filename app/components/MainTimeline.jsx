@@ -525,6 +525,7 @@ const MainTimelineFeed = ({ userEmail }) => {
           {posts.map((post, index) => (
             <Card key={index} className="mb-3">
               <Card.Header className="post-header">
+              
                 <Link
                   className="user-link"
                   href={`/pages/profile/${encodeURIComponent(post?.email)}`}
