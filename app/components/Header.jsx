@@ -146,7 +146,7 @@ function Header() {
       onToggle={handleToggleNavbar}
     >
       <Container>
-        <div className="brand d-flex justify-content-center align-items-center">
+        <div className="header brand d-flex justify-content-center align-items-center">
           <Image
             src={logoImage}
             alt="Logo"
@@ -303,25 +303,38 @@ function Header() {
               >
                 Tutors
               </NavDropdown.Item>
-              {/* <NavDropdown.Item
-                href="/pages/mainTimeline"
-                className={`text-${
-                  pathname === "/pages/mainTimeline" ? "text-dark" : ""
-                } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
-              >
-                Timeline
-              </NavDropdown.Item> */}
-              {/* <NavDropdown.Item
-                href="/pages/schedule"
-                className={`text-${
-                  pathname === "/pages/schedule" ? "text-dark" : ""
-                } ${pathname === "/pages/schedule" ? "fw-bold" : ""}`}
-              >
-                Schedule
-              </NavDropdown.Item> */}
+
               <NavDropdown.Divider />
-              
             </NavDropdown>
+
+            {userId && (
+              <>
+                <button
+                  onClick={togglePanel}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    marginLeft: "-8px",
+                  }}
+                >
+                  <FaBell /> Notifications
+                </button>
+
+                <Modal show={showPanel} onHide={togglePanel}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Notifications</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Notifications />
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={togglePanel}>
+                      Close
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+              </>
+            )}
 
             {!userId && (
               <>
@@ -344,37 +357,6 @@ function Header() {
               </>
             )}
 
-            {userId && (
-              <>
-                <div className="notification-container">
-                  <button
-                    onClick={togglePanel}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      marginLeft: "-8px",
-                    }}
-                  >
-                    <FaBell /> Notifications
-                  </button>
-
-                  <Modal show={showPanel} onHide={togglePanel}>
-              <Modal.Header closeButton>
-                <Modal.Title>Notifications</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <Notifications />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={togglePanel}>
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-                </div>
-              </>
-            )}
-
             <Nav.Link
               href="/pages/findCourses"
               className={`text-${
@@ -384,10 +366,10 @@ function Header() {
               Find courses
             </Nav.Link>
             {userId && (
-                <Nav.Link href="#blankForNow" onClick={handleSignOut}>
-                  Logout
-                </Nav.Link>
-              )}
+              <Nav.Link href="#blankForNow" onClick={handleSignOut}>
+                Logout
+              </Nav.Link>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>
