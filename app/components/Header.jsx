@@ -169,6 +169,18 @@ function Header() {
                 Home
               </Nav.Link>
             )}
+
+            {userId && (
+              <Nav.Link
+              href="/pages/tutoringCenterPage"
+              className={`text-${
+                pathname === "/pages/tutoringCenterPage" ? "text-dark" : ""
+              } ${pathname === "/pages/tutoringCenterPage" ? "fw-bold" : ""}`}
+              >
+              Tutoring Center
+              </Nav.Link>
+            )}
+
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
               <Nav.Link
                 href="/pages/admin"
