@@ -306,7 +306,13 @@ const SearchPage = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", maxWidth: "800px", margin: "0 auto" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        maxWidth: "800px",
+        margin: "30px auto 0 auto",
+      }}
+    >
       <h4>Search results:</h4>
       <form onSubmit={handleSearch}>
         <div className="input-group mb-3">

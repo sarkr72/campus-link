@@ -6,7 +6,7 @@ import reportIcon from "../../../resources/images/flag.svg";
 import messageIcon from "../../../resources/images/comment.svg";
 import styles2 from "/styles/mainTimeline.css";
 import { useParams, useSearchParams, usePathname } from "next/navigation";
-
+import MainTimeline from "../../../components/MainTimeline";
 import { Row, Breadcrumb, Card, Modal, Button } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import { use, useEffect } from "react";
@@ -39,6 +39,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaCalendarAlt } from "react-icons/fa";
 
 function ViewProfile() {
+  const [userEmail, setUserEmail] = useState("");
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -606,7 +607,9 @@ const friendProfile = async (e, id) => {
               </Card.Footer>
             </Card>
           </div>
-          <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
+          <div className="bottom-box">
+            <MainTimeline userEmail={data.email} />
+          </div>
         </div>
       </>
     </div>

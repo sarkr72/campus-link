@@ -73,7 +73,7 @@ const Messages = ({ userEmail }) => {
 
   const handleClose = () => {
     setShowPrompt(false);
-    setSelectedUsers([]); // Clear selected users when closing the prompt
+    setSelectedUsers([]);
   };
 
   const handleShow = () => setShowPrompt(true);
@@ -100,16 +100,16 @@ const Messages = ({ userEmail }) => {
           updatedSelectedUsers.push({ email: currentUserEmail });
         }
 
-        // Create a new chat document in Firestore
+        // Create a new chat in DB
         const chatDocRef = await addDoc(collection(db, "chats"), {
           users: updatedSelectedUsers.map((user) => user.email),
           name: chatName,
         });
 
-        // Get the ID of the newly created document
+        // Get the ID
         const chatId = chatDocRef.id;
 
-        // Update the document with the generated ID
+        // Update doc
         await updateDoc(doc(db, "chats", chatId), { id: chatId });
 
         console.log("Chat created with ID: ", chatId);
@@ -130,12 +130,12 @@ const Messages = ({ userEmail }) => {
       const chatData = chatSnapshot.data();
 
       if (chatData && chatData.users) {
-        // Remove the current user from the users array
+        // Remove the user from the users array
         const updatedUsers = chatData.users.filter(
           (userEmail) => userEmail !== currentUser.email
         );
 
-        // Update the chat document in Firestore
+        // Update  chat
         await updateDoc(chatRef, {
           users: updatedUsers,
         });
@@ -166,8 +166,6 @@ const Messages = ({ userEmail }) => {
     e.preventDefault();
 
     if (newMessage.trim() !== "" && selectedChat) {
-      // Fetch the profile picture URL from Firebase
-
       const currentUserProfile = currentUserData.data();
       const senderProfilePicture =
         currentUserProfile.profilePicture?.url || defaultProfilePicture;
@@ -249,18 +247,16 @@ const Messages = ({ userEmail }) => {
 
   return (
     <div>
-      <div className="prompt">
-        <Button variant="primary" onClick={handleShow}>
-          Start a Conversation
-        </Button>
-      </div>
       <div className="convo-container">
         {/* Conversations */}
         <div className="conversations-container">
+          <Button className="rounded-5" variant="primary" onClick={handleShow}>
+            Start a New Chat
+          </Button>
           {/* Convos */}
           {chats.map((chat, index) => (
             <div
-              className="conversation"
+              className="conversation rounded-5"
               key={`${chat.id}-${index}`}
               onClick={() => handleChatSelect(chat)}
             >
@@ -304,48 +300,106 @@ const Messages = ({ userEmail }) => {
         </div>
 
         {/* Messages) */}
-        <div className="chat-container">
+        <div className="chat-container rounded-3">
           <div className="messages-container">
-            {selectedChat && (
+            {selectedChat ? (
               <div className="chat-messages">
-                {selectedChat.messages.map((message, index) => (
-                  <div
-                    key={`${message?.id}-${index}`}
-                    className={`message ${
-                      message.sender === currentUser.email
-                        ? "user-message"
-                        : "other-message"
-                    }`}
-                  >
-                    <Image
-                      src={
-                        message.senderProfilePicture || defaultProfilePicture
-                      }
-                      alt="Profile Pic"
-                      className="message-avatar"
-                      width={50}
-                      height={50}
-                    />
-                    <div className="message-details">
-                      <div className="message-header">
-                        <span className="message-username">
-                          {message.sender ? message.sender.split("@")[0] : ""}
-                        </span>
-                        <span className="message-timestamp">
-                          {message.timestamp.toDate().toLocaleString()}
-                        </span>
+                {selectedChat.messages && selectedChat.messages.length > 0 ? (
+                  selectedChat.messages.map((message, index) => (
+                    <div
+                      key={`${message?.id}-${index}`}
+                      className={`message ${
+                        message.sender === currentUser.email
+                          ? "user-message"
+                          : "other-message"
+                      }`}
+                    >
+                      <Image
+                        src={
+                          message.senderProfilePicture || defaultProfilePicture
+                        }
+                        alt="Profile Pic"
+                        className="message-avatar"
+                        width={50}
+                        height={50}
+                      />
+                      <div className="message-details">
+                        <div className="message-header">
+                          <span className="message-username">
+                            {message.sender ? message.sender.split("@")[0] : ""}
+                          </span>
+                          <span className="message-timestamp">
+                            {message.timestamp.toDate().toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="message-content rounded-4">
+                          {message.content}
+                        </div>
                       </div>
-                      <div className="message-content">{message.content}</div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="no-messages">No messages yet</div>
+                )}
+              </div>
+            ) : (
+              <div className="no-chat-selected">
+                Select a chat to start messaging
               </div>
             )}
           </div>
+          {/* Start Conversation Modal */}
+          <Modal show={showPrompt} onHide={handleClose}>
+            <Modal.Header closeButton>
+              <Modal.Title>Start a New Conversation</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form.Group controlId="name" className="chat-name-form">
+                <Form.Control
+                  type="text"
+                  placeholder="Enter a name for this chat"
+                  value={chatName}
+                  onChange={(e) => setChatName(e.target.value)}
+                />
+              </Form.Group>
+              {/* Display all users with an "Add to Conversation" button */}
+              {users.map((user, index) => (
+                <Card key={`${user.email}-${index}`} className="mb-2">
+                  <Card.Body className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center">
+                      <Image
+                        src={user.profilePicture?.url || defaultProfilePicture}
+                        alt="Profile Pic"
+                        width={50}
+                        height={50}
+                        className="rounded-circle me-2"
+                      />
+                      {`${user.firstName} ${user.lastName}`}
+                    </div>
+                    <Button
+                      variant={user.added ? "danger" : "outline-primary"}
+                      onClick={() => handleAddToConversation(user)}
+                    >
+                      {user.added ? "Cancel" : "Add to Conversation"}
+                    </Button>
+                  </Card.Body>
+                </Card>
+              ))}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleClose}>
+                Close
+              </Button>
+              <Button variant="primary" onClick={handleStartConversation}>
+                Start Conversation
+              </Button>
+            </Modal.Footer>
+          </Modal>
           <div className="send-prompt">
             <Form className="message-form" onSubmit={handleSendMessage}>
               <Form.Group controlId="message">
                 <Form.Control
+                  className="rounded-5"
                   type="text"
                   placeholder="Type your message..."
                   value={newMessage}
@@ -353,7 +407,7 @@ const Messages = ({ userEmail }) => {
                   maxLength={200}
                 />
               </Form.Group>
-              <Button variant="primary" type="submit">
+              <Button className="rounded-4" variant="primary" type="submit">
                 Send
               </Button>
             </Form>
