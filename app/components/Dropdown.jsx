@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import GrowSpinner from "./Spinner";
 import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
 
 const Dropdown = ({ userId }) => {
   const [isLoading, setLoading] = useState(false);

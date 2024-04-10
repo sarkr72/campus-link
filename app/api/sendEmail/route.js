@@ -9,17 +9,17 @@ export async function POST(request, res) {
     const text = requestData.message;
     const emailTo = requestData.emailTo;
     const transporter = nodemailer.createTransport({
-      host: process.env.NEXT_PUBLIC_SMTP_HOST_API,
-      port: parseInt(process.env.NEXT_PUBLIC_SMTP_PORT_API, 10),
+      host: process.env.SMTP_HOST_API,
+      port: parseInt(process.env.SMTP_PORT_API, 10),
       secure: true,
       auth: {
-        user: process.env.NEXT_PUBLIC_SMTP_USER_API,
-        pass: process.env.NEXT_PUBLIC_SMTP_PASS_API,
+        user: process.env.SMTP_USER_API,
+        pass: process.env.SMTP_PASS_API,
       },
     });
 
     const mailOptions = {
-      from: process.env.NEXT_PUBLIC_SMTP_USER_API,
+      from: process.env.SMTP_USER_API,
       to: emailTo,
       subject: "testing email",
       html: emailTemplate.replace("{{message}}", text),

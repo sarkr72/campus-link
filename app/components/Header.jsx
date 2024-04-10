@@ -15,7 +15,9 @@ import { toast } from "react-toastify";
 import { useLayoutEffect } from "react";
 import Image from "next/image";
 import logoImage from "../resources/images/logo.png";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
+import { Modal, Button } from "react-bootstrap";
+import { FaHome, FaTools, FaUserShield, FaComments } from "react-icons/fa";
 import {
   collection,
   deleteDoc,
@@ -31,6 +33,8 @@ import {
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import MyAppointments from "./MyAppointments";
+import { FaBell } from "react-icons/fa";
+import Notifications from "./Notifications";
 
 function Header() {
   const router = useRouter();
@@ -46,6 +50,11 @@ function Header() {
   const [userRole, setUserRole] = useState("");
   const auth = getAuth();
   const pathname = usePathname();
+  const [showPanel, setShowPanel] = useState(false);
+
+  const togglePanel = () => {
+    setShowPanel(!showPanel);
+  };
 
   useEffect(() => {
     const auth = getAuth();
@@ -78,6 +87,7 @@ function Header() {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        setUser(userDoc?.data());
         setUserRole(userData.role);
       } else {
         console.log("User document not found.");
@@ -136,7 +146,7 @@ function Header() {
       onToggle={handleToggleNavbar}
     >
       <Container>
-        <div className="brand d-flex justify-content-center align-items-center">
+        <div className="header brand d-flex justify-content-center align-items-center">
           <Image
             src={logoImage}
             alt="Logo"
@@ -157,6 +167,7 @@ function Header() {
                   pathname === "/pages/mainTimeline" ? "text-dark" : ""
                 } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
               >
+                <FaHome className="social-btn-icon" alt="Home Icon" size={20} />{" "}
                 Home
               </Nav.Link>
             ) : (
@@ -166,20 +177,21 @@ function Header() {
                   pathname === "/" ? "fw-bold" : ""
                 }`}
               >
+                <FaHome className="social-btn-icon" alt="Home Icon" size={20} />{" "}
                 Home
               </Nav.Link>
             )}
-
             {userId && (
               <Nav.Link
-              href="/pages/tutoringCenterPage"
-              className={`text-${
-                pathname === "/pages/tutoringCenterPage" ? "text-dark" : ""
-              } ${pathname === "/pages/tutoringCenterPage" ? "fw-bold" : ""}`}
+                href="/pages/messages"
+                className={`text-${
+                  pathname === "/pages/messages" ? "text-dark" : ""
+                } ${pathname === "/pages/messages" ? "fw-bold" : ""}`}
               >
-              Tutoring Center
+                <FaComments className="social-btn-icon" size={20} /> Chats
               </Nav.Link>
             )}
+            
 
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
               <Nav.Link
@@ -188,15 +200,21 @@ function Header() {
                   pathname === "/pages/admin" ? "text-dark" : ""
                 } ${pathname === "/pages/admin" ? "fw-bold" : ""}`}
               >
-                Admin
+                <FaUserShield className="social-btn-icon" size={20} /> Admin
               </Nav.Link>
             )}
             <NavDropdown
-              title="Tools"
+              title={
+                <>
+                  <FaTools className="social-btn-icon" size={20} /> Tools
+                </>
+              }
               id="basic-nav-dropdown"
               onSelect={handleDropdownSelect} // Close dropdown on select
               show={dropdownOpen} // Control visibility of dropdown
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onClick={
+                !showPanel ? () => setDropdownOpen(!dropdownOpen) : undefined
+              }
               style={{ zIndex: 9999 }}
             >
               {userId && (
@@ -246,9 +264,7 @@ function Header() {
                         <NavDropdown.Item
                           href="/pages/myAppointments"
                           className={`text-${
-                            pathname === "/pages/myAppointments"
-                              ? "dark"
-                              : ""
+                            pathname === "/pages/myAppointments" ? "dark" : ""
                           } ${
                             pathname === "/pages/myAppointments"
                               ? "fw-bold"
@@ -269,6 +285,11 @@ function Header() {
                               ? "fw-bold"
                               : ""
                           }`}
+                          style={{
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
                         >
                           Create Tutoring Session
                         </NavDropdown.Item>
@@ -284,29 +305,56 @@ function Header() {
               >
                 Tutors
               </NavDropdown.Item>
-              <NavDropdown.Item
-                href="/pages/mainTimeline"
-                className={`text-${
-                  pathname === "/pages/mainTimeline" ? "text-dark" : ""
-                } ${pathname === "/pages/mainTimeline" ? "fw-bold" : ""}`}
-              >
-                Timeline
-              </NavDropdown.Item>
-              {/* <NavDropdown.Item
-                href="/pages/schedule"
-                className={`text-${
-                  pathname === "/pages/schedule" ? "text-dark" : ""
-                } ${pathname === "/pages/schedule" ? "fw-bold" : ""}`}
-              >
-                Schedule
-              </NavDropdown.Item> */}
+
               <NavDropdown.Divider />
-              {userId && (
-                <NavDropdown.Item href="#blankForNow" onClick={handleSignOut}>
-                  Logout
-                </NavDropdown.Item>
-              )}
             </NavDropdown>
+
+            {userId && (
+              <div
+                style={{ marginTop: isNavbarCollapsed ? "margintop" : "7px" }}
+              >
+                <button
+                  onClick={togglePanel}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    marginLeft: "-8px",
+                  }}
+                >
+                  <FaBell /> Notifications
+                </button>
+
+                <Modal show={showPanel} onHide={togglePanel}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Notifications</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Notifications />
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={togglePanel}>
+                      Close
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+              </div>
+            )}
+
+{userRole &&
+              (userRole.toLocaleLowerCase() === "admin" ||
+                userRole.toLocaleLowerCase() === "professor") && (
+                <Nav.Link
+                  href="/pages/tutoringCenterPage"
+                  className={`text-${
+                    pathname === "/pages/tutoringCenterPage" ? "dark" : ""
+                  } ${
+                    pathname === "/pages/tutoringCenterPage" ? "fw-bold" : ""
+                  }`}
+                >
+                  Tutoring Center
+                </Nav.Link>
+              )}
+              
             {!userId && (
               <>
                 <Nav.Link
@@ -326,6 +374,20 @@ function Header() {
                   Register
                 </Nav.Link>
               </>
+            )}
+
+            <Nav.Link
+              href="/pages/findCourses"
+              className={`text-${
+                pathname === "/pages/findCourses" ? "text-dark" : ""
+              } ${pathname === "/pages/findCourses" ? "fw-bold" : ""}`}
+            >
+              Find courses
+            </Nav.Link>
+            {userId && (
+              <Nav.Link href="#blankForNow" onClick={handleSignOut}>
+                Logout
+              </Nav.Link>
             )}
           </Nav>
         </Navbar.Collapse>

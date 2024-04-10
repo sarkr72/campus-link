@@ -18,7 +18,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
-import { db } from "../../../../utils/firebase";
+import { db } from "../../../utils/firebase";
 import Link from "next/link";
 import Image from "next/image";
 import defaultProfilePicture from "../../../resources/images/default-profile-picture.jpeg";
@@ -219,20 +219,28 @@ const SearchPage = () => {
             const [, requestUserId] = request.split(",");
             return requestUserId !== userId;
           });
-          
 
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
           });
           console.log("Friend request canceled successfully.");
         } else {
-          console.log("namess", user.firstName, user.lastName, userId);
+          const notifications = {
+            senderId: userId,
+            message: " sent you a friend request.",
+            senderProfilePicture: user?.profilePicture || null,
+            senderName: user?.firstName + " " + user?.lastName,
+            date: new Date(),
+          };
+          const currentNotifications = user?.notifications || [];
+          const updatedNotifications = [...currentNotifications, notifications];
           const updatedFriendRequests = [
             ...friendRequests,
             `${user?.firstName} ${user?.lastName},${userId}`,
           ];
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
+            notifications: updatedNotifications,
           });
           console.log("Friend request sent successfully.");
         }
@@ -280,13 +288,8 @@ const SearchPage = () => {
 
   const handleSendRequest = async (e, receiverId, name) => {
     e.preventDefault();
-    if (
-      friends.some((request) => {
-        const [, requestId] = request.split(",");
-        return requestId === receiverId;
-      })
-    ) {
-
+    const exists = friends?.some((request) => request?.id === receiverId);
+    if (exists) {
     } else {
       await sendRequest(receiverId, name);
       if (sentRequests?.some((item) => item === receiverId)) {
@@ -303,7 +306,13 @@ const SearchPage = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", maxWidth: "800px", margin: "0 auto" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        maxWidth: "800px",
+        margin: "30px auto 0 auto",
+      }}
+    >
       <h4>Search results:</h4>
       <form onSubmit={handleSearch}>
         <div className="input-group mb-3">
@@ -327,7 +336,11 @@ const SearchPage = () => {
             className="list-group-item d-flex justify-content-between align-items-center"
           >
             <Link
-              href={`/pages/profile/${encodeURIComponent(user?.id)}`}
+              href={
+                user?.id === userId
+                  ? `/pages/profile`
+                  : `/pages/profile/${encodeURIComponent(user?.id)}`
+              }
               style={{ textDecoration: "none" }}
               className="d-flex align-items-center"
             >
@@ -374,7 +387,7 @@ const SearchPage = () => {
                   }}
                 >
                   {friends?.some((request) => {
-                    const [, requestId] = request.split(",");
+                    const requestId = request?.id;
                     return requestId === user.id;
                   })
                     ? "Friend"
