@@ -50,10 +50,10 @@ const FriendRequests = () => {
       setFilteredFriends([...friends]);
     } else {
       const filtered = friends.filter((user) =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       const unFiltered = friends.filter(
-        (user) => !user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (user) => !user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       const sortedFiltered = filtered.sort((a, b) =>
         a.name.localeCompare(b.name)
