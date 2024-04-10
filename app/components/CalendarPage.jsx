@@ -276,7 +276,7 @@ const CalanderPage = ({ id }) => {
         <div>
           <Row className="mb-3 mt-3">
             <Col>
-              <h4 className="text-center">Select Available Time Slot</h4>
+              <h4 className="text-center">Join a Tutoring Session!</h4>
             </Col>
           </Row>
           <Row className="mb-3">

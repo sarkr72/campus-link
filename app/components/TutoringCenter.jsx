@@ -9,7 +9,7 @@ const TutoringCenter = ({ id }) => {
 
   return (
     <Container>
-      <Row>
+      <Row className="mt-4">
         <Col md={6}>
           <CalanderPage />
         </Col>
