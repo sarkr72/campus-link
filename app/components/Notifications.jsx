@@ -12,7 +12,7 @@ import {
   orderBy,
   updateDoc,
   arrayUnion,
-  serverTimestamp
+  serverTimestamp,
 } from "firebase/firestore";
 
 const Notifications = () => {
@@ -107,7 +107,7 @@ const Notifications = () => {
     <div>
       {user && user?.notifications && (
         <ListGroup>
-          {user.notifications.map((notification, index) => (
+          {user?.notifications.map((notification, index) => (
             <ListGroup.Item key={index}>
               <div className="d-flex align-items-center">
                 <Image
@@ -120,17 +120,45 @@ const Notifications = () => {
                 />
                 <div>
                   <div>
-                    <strong>{notification.senderName}</strong> {notification?.message}{" "}
-                    {notification.date ? notification.date.toDate().toLocaleString() : ""}
+                    <strong>{notification.senderName}</strong>{" "}
+                    {notification?.message}{" "}
+                    {notification.date
+                      ? notification.date.toDate().toLocaleString()
+                      : ""}
                   </div>
-                  <div className="mt-2">
-                    <Button variant="primary" className="me-2" onClick={(e) => handleConfirm(e, notification?.senderId, notification?.senderName, notification?.senderProfilePicture?.url)}>
-                      Confirm
-                    </Button>
-                    <Button variant="light" className="bg-gray me-2" onClick={(e) => handleDelete(e, notification?.senderId)}>
-                      Delete
-                    </Button>
-                  </div>
+                  {retrivedRequests?.map((request, index) => {
+                    const [, requestId] = request.split(",");
+                    if (requestId === notification?.senderId) {
+                      return (
+                        <div className="mt-2" key={index}>
+                          <Button
+                            variant="primary"
+                            className="me-2"
+                            onClick={(e) =>
+                              handleConfirm(
+                                e,
+                                notification?.senderId,
+                                notification?.senderName,
+                                notification?.senderProfilePicture?.url
+                              )
+                            }
+                          >
+                            Confirm
+                          </Button>
+                          <Button
+                            variant="light"
+                            className="bg-gray me-2"
+                            onClick={(e) =>
+                              handleDelete(e, notification?.senderId)
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
                 </div>
               </div>
             </ListGroup.Item>
@@ -139,7 +167,6 @@ const Notifications = () => {
       )}
     </div>
   );
-  
 };
 
 export default Notifications;

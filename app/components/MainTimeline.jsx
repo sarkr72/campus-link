@@ -26,9 +26,11 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import SearchPage from "./SearchUsers";
+import { RiEarthLine, RiUserLine, RiLockLine } from "react-icons/ri";
 
 const MainTimelineFeed = ({ userEmail }) => {
   // const router = useRouter();
+  const [privacy, setPrivacy] = useState("Friends");
   const [sortBy, setSortBy] = useState("recent");
   const [userRole, setUserRole] = useState("");
   const [showAllComments, setShowAllComments] = useState(false);
@@ -53,11 +55,13 @@ const MainTimelineFeed = ({ userEmail }) => {
     email: "",
     profilePicture: "",
   });
+  const [currentUser, setCurrentUser] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [userId, setUserId] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+
   const handleCreatePost = async () => {
     const newPost = {
       email: user.email,
@@ -71,6 +75,8 @@ const MainTimelineFeed = ({ userEmail }) => {
       dislikes: 0,
       dislikedBy: [],
       comments: [],
+      userId: userId,
+      privacy: privacy,
     };
 
     // Save the new post to Firestore
@@ -196,7 +202,7 @@ const MainTimelineFeed = ({ userEmail }) => {
   };
 
   // Fetch posts function
-  const fetchPosts = async (userEmail) => {
+  const fetchPosts = async (userEmail, id) => {
     try {
       const postsCollection = collection(db, "posts");
       let postsQuery = query(postsCollection);
@@ -224,7 +230,10 @@ const MainTimelineFeed = ({ userEmail }) => {
 
       querySnapshot.forEach((doc) => {
         const postData = doc.data();
-        fetchedPosts.push({ ...postData, id: doc.id });
+        // setUserId(id);
+        // if ( postData.userId === userId) {
+          fetchedPosts.push({ ...postData, id: doc.id });
+        // }
         fetchedLikes.push(postData.likedBy ? postData.likedBy.length : 0);
         fetchedDislikes.push(
           postData.dislikedBy ? postData.dislikedBy.length : 0
@@ -396,6 +405,7 @@ const MainTimelineFeed = ({ userEmail }) => {
   const handleCommentChange = (e) => {
     setCommentText(e.target.value);
   };
+
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
@@ -403,7 +413,11 @@ const MainTimelineFeed = ({ userEmail }) => {
         setUserId(user.uid);
         const email = await getUserEmailById(user.uid);
         setEmail(user.email);
-
+        const userRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+          setCurrentUser(docSnap.data());
+        }
         if (user.email) {
           const usersCollection = collection(db, "users");
           const userQuery = query(usersCollection, where("email", "==", email));
@@ -424,10 +438,11 @@ const MainTimelineFeed = ({ userEmail }) => {
         } else {
           console.log("Failed to fetch user data", response);
         }
-        fetchPosts(userEmail); // Pass the userEmail prop to fetchPosts
+        fetchPosts(userEmail, user.uid); // Pass the userEmail prop to fetchPosts
       }
     });
   }, [userEmail, sortBy]);
+
   const getUserEmailById = async (userId) => {
     try {
       console.log("id: ", userId);
@@ -443,6 +458,30 @@ const MainTimelineFeed = ({ userEmail }) => {
       }
     } catch (error) {
       console.error("Error retrieving user email:", error);
+    }
+  };
+
+  const handlePrivacyChange = async (privacy, postId) => {
+    try {
+      const post = posts.find((post) => post.id === postId);
+      if (!post) {
+        console.error(`Post with ID ${postId} not found`);
+        return;
+      }
+      const updatedPosts = posts.map((post) => {
+        if (post.id === postId) {
+          return { ...post, privacy: privacy };
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
+
+      const postRef = doc(db, "posts", postId);
+      await updateDoc(postRef, {
+        privacy: privacy,
+      });
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -522,10 +561,12 @@ const MainTimelineFeed = ({ userEmail }) => {
         </Dropdown>
 
         <div className="feed">
-          {posts.map((post, index) => (
-            <Card key={index} className="mb-3">
+          {posts?.map((post, index) => (
+            (post?.privacy !== "Private" &&  ((currentUser?.friends?.some((friend) => friend.id === post.userId))) || post?.privacy === "Public" || post.userId === userId) && (
+            <>
+            {console.log("2nd,", post.userId, userId)}
+            <Card key={`${post.id}-${index}`} className="mb-3">
               <Card.Header className="post-header">
-              
                 <Link
                   className="user-link"
                   href={`/pages/profile/${encodeURIComponent(post?.email)}`}
@@ -541,9 +582,41 @@ const MainTimelineFeed = ({ userEmail }) => {
                     />
                     <div className="post-info">
                       <p className="poster-username">{post.username}</p>
-                      <p className="post-creation-time">
-                        {new Date(post.creationTime?.toDate()).toLocaleString()}
-                      </p>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <p className="post-creation-time">
+                          {new Date(post.creationTime?.toDate()).toLocaleString(
+                            undefined,
+                            {
+                              month: "numeric",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )}{" "}
+                          {new Date(post.creationTime?.toDate()).toLocaleString(
+                            undefined,
+                            {
+                              hour: "numeric",
+                              minute: "numeric",
+                              hour12: true,
+                            }
+                          )}
+                        </p>
+                        {post?.privacy === "Public" && (
+                          <RiEarthLine
+                            style={{ marginLeft: "5px", cursor: "default" }}
+                          />
+                        )}
+                        {post?.privacy === "Friends" && (
+                          <RiUserLine
+                            style={{ marginLeft: "5px", cursor: "default" }}
+                          />
+                        )}
+                        {post?.privacy === "Private" && (
+                          <RiLockLine
+                            style={{ marginLeft: "5px", cursor: "default" }}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -552,7 +625,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                     <span style={{ fontSize: "1.5em" }}>•••</span>
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {userRole === "Admin" && (
+                    {userRole.toLocaleLowerCase() === "admin" && (
                       <Dropdown.Item
                         onClick={() => handleDeletePost(post.id)}
                         className="text-danger"
@@ -563,6 +636,40 @@ const MainTimelineFeed = ({ userEmail }) => {
                     <Dropdown.Item className="text-warning">
                       <strong>Report Post</strong>
                     </Dropdown.Item>
+
+                    {post.userId === userId.toString() && (
+                      <>
+                        <Dropdown.Divider />
+                        <Dropdown.Item disabled>
+                          <strong>Edit Privacy</strong>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handlePrivacyChange("Public", post.id)}
+                        >
+                          <strong>
+                            <RiEarthLine /> Public
+                          </strong>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() =>
+                            handlePrivacyChange("Friends", post.id)
+                          }
+                        >
+                          <strong>
+                            <RiUserLine /> Friends
+                          </strong>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() =>
+                            handlePrivacyChange("Private", post.id)
+                          }
+                        >
+                          <strong>
+                            <RiLockLine /> Only me
+                          </strong>
+                        </Dropdown.Item>
+                      </>
+                    )}
                   </Dropdown.Menu>
                 </Dropdown>
               </Card.Header>
@@ -738,6 +845,8 @@ const MainTimelineFeed = ({ userEmail }) => {
                 </div>
               </Card.Footer>
             </Card>
+            </>
+          )
           ))}
         </div>
       </div>
@@ -754,7 +863,62 @@ const MainTimelineFeed = ({ userEmail }) => {
         className="createPostTemplate"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Create Post</Modal.Title>
+          <Modal.Title>
+            {/* <div style={{ display: "flex", alignItems: "center" }}> */}
+              <p style={{ margin: 0 }}>Create Post</p>
+              <Dropdown style={{ marginLeft: "10px"}}>
+                <Dropdown.Toggle
+                  variant="light"
+                  id="dropdown-basic"
+                  style={{
+                    maxHeight: "25px",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0px",
+                    backgroundColor: "transparent",
+                    color: "black"
+                  }}
+                > 
+                <strong>Privacy:</strong>&nbsp;
+                  {privacy === "Friends" && (
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      <RiUserLine/> {privacy}
+                    </span>
+                  )}
+                  {privacy === "Public" && (
+                    <>
+                      <RiEarthLine style={{ marginRight: "5px" }} /> {privacy}
+                    </>
+                  )}
+                  {privacy === "Private" && (
+                    <>
+                      <RiLockLine style={{ marginRight: "5px" }} /> Only me
+                    </>
+                  )}
+                </Dropdown.Toggle>
+                <Dropdown.Menu style={{ padding: "0px" }}>
+                  <Dropdown.Item
+                    style={{ padding: "0px" }}
+                    onClick={() => setPrivacy("Public")}
+                  >
+                    <RiEarthLine /> Public
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    style={{ padding: "0px" }}
+                    onClick={() => setPrivacy("Friends")}
+                  >
+                    <RiUserLine /> Friends
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    style={{ padding: "0px" }}
+                    onClick={() => setPrivacy("Private")}
+                  >
+                    <RiLockLine /> Only me
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            {/* </div> */}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>

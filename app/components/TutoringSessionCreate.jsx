@@ -22,17 +22,17 @@ import styles from "../../styles/timeSlot.css";
 import { toast } from "react-toastify";
 import styless from "../../styles/timeSlot.css";
 
-const CalanderPage = ({ id }) => {
+const TutoringSessionCreate = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [timeSlots, setTimeSlots] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedTimes, setSelectedTimes] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [professors, setProfessors] = useState([]);
   const [userId, setUserId] = useState("");
-  const [user, setUser] = useState("");
-  const [professorId, setProfessorId] = useState("");
+  const [email, setEmail] = useState("");
   const [userTimeSlots, setUserTimeSlots] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
+
   useEffect(() => {
     // Fetch user time slots
     const fetchUserTimeSlots = async () => {
@@ -40,30 +40,13 @@ const CalanderPage = ({ id }) => {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           setUserId(user.uid);
-          if (!id) {
-            const userRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userRef);
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              setUser(userData);
-              const userTimeSlots = userData.sessions
-                ?.map((session) => session)
-                .flat();
-              setUserTimeSlots(userTimeSlots);
-            }
-          } else {
-            const userRef = doc(db, "users", id);
-            const userDoc = await getDoc(userRef);
-            const userData = userDoc?.data();
-            const sessions = userData?.sessions;
-              setProfessorId(userData?.id);
-              setUser(userData);
-              const userTimeSlots = sessions
-                ?.map((session) => session)
-                .flat();
-              console.log("sessions", userTimeSlots);
-              setUserTimeSlots(userTimeSlots);
-
+          setEmail(user.email);
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const userTimeSlots = userData?.sessions?.map((session) => session)
+              .flat();
             setUserTimeSlots(userTimeSlots);
           }
         }
@@ -71,13 +54,27 @@ const CalanderPage = ({ id }) => {
     };
 
     fetchUserTimeSlots();
-  }, [id]);
+  }, []);
 
   useEffect(() => {
     fetchTimeSlots();
   }, [userTimeSlots, selectedDate, userTimeSlots]);
 
   useEffect(() => {
+    // Fetch courses
+    const fetchCourses = async () => {
+      const coursesCollectionRef = collection(db, "courses");
+      const querySnapshot = await getDocs(coursesCollectionRef);
+      const courseInfo = querySnapshot.docs.flatMap((doc) => {
+        return Object.entries(doc.data()).map(([key, value]) => ({
+          key: key,
+          CourseName: value.CourseName,
+        }));
+      });
+      setCourses(courseInfo);
+    };
+
+    // Fetch professors
     const fetchProfessors = async () => {
       const professorsCollectionRef = collection(db, "professors");
       const querySnapshot = await getDocs(professorsCollectionRef);
@@ -85,7 +82,7 @@ const CalanderPage = ({ id }) => {
       setProfessors(fetchedProfessors);
     };
 
-    // fetchCourses();
+    fetchCourses();
     fetchProfessors();
   }, []);
 
@@ -97,7 +94,7 @@ const CalanderPage = ({ id }) => {
   const fetchTimeSlots = () => {
     const mockTimeSlots = Array.from({ length: 24 }, (_, index) => {
       let startTime, endTime;
-
+      let isBooked = "false";
       if (index === 0) {
         // 11 AM to 12 PM
         startTime = "12:00 PM";
@@ -127,7 +124,7 @@ const CalanderPage = ({ id }) => {
         startTime = "12:00 PM";
         endTime = "01:00 AM";
       }
-      return { startTime, endTime };
+      return { startTime, endTime, isBooked };
     });
 
     const filteredSet = new Set();
@@ -135,7 +132,7 @@ const CalanderPage = ({ id }) => {
     for (let i = 0; i < mockTimeSlots.length; i++) {
       const slot = mockTimeSlots[i];
       let isDuplicate = false;
-      let timeSlot2 = "";
+
       for (let j = 0; j < userTimeSlots?.length; j++) {
         const userSlot = userTimeSlots[j];
         const { timeSlots } = userSlot;
@@ -143,7 +140,7 @@ const CalanderPage = ({ id }) => {
         const userSlotYear = userSlotDateObj.getFullYear();
         const userSlotMonth = userSlotDateObj.getMonth() + 1;
         const userSlotDay = userSlotDateObj.getDate();
-        const subject = userSlot;
+
         const selectedYear = selectedDate.getFullYear();
         const selectedMonth = selectedDate.getMonth() + 1;
         const selectedDay = selectedDate.getDate();
@@ -155,19 +152,15 @@ const CalanderPage = ({ id }) => {
         ) {
           for (let k = 0; k < timeSlots.length; k++) {
             const timeSlot = timeSlots[k];
-            if (
-              slot.startTime === timeSlot?.startTime &&
-              timeSlot?.isBooked === "false"
-            ) {
-              timeSlot2 = timeSlots[k];
+            if (slot.startTime === timeSlot.startTime) {
               isDuplicate = true;
               break;
             }
           }
         }
       }
-      if (isDuplicate) {
-        filteredSet.add(timeSlot2);
+      if (!isDuplicate) {
+        filteredSet.add(slot);
       }
     }
 
@@ -178,126 +171,76 @@ const CalanderPage = ({ id }) => {
 
   const handleSlotSelect = (e, slot) => {
     e.preventDefault();
-    if (selectedTimes?.length < 3) {
-      const isSelected = selectedTimes.includes(slot);
-      if (isSelected) {
-        setSelectedTimes(
-          selectedTimes.filter((selectedSlot) => selectedSlot !== slot)
-        );
-      } else {
-        setSelectedTimes([...selectedTimes, slot]);
-      }
+
+    const isSelected = selectedTimes.includes(slot);
+    if (isSelected) {
+      setSelectedTimes(
+        selectedTimes.filter((selectedSlot) => selectedSlot !== slot)
+      );
+    } else {
+      setSelectedTimes([...selectedTimes, slot]);
     }
   };
 
-  
   const handleSaveSession = async () => {
+    if(selectedCourse){
+    const session = {
+      subject: selectedCourse,
+      timeSlots: selectedTimes,
+      date: selectedDate,
+    };
 
-    if (selectedTimes && selectedTimes?.length > 0 && selectedDate) {
-      const session = {
-        professor: `${user?.firstName} ${user?.lastName},${user?.email}`,
-        subject: selectedCourse
-          ? selectedCourse
-          : `${userTimeSlots[0]?.subject?.key} ${userTimeSlots[0]?.subject?.CourseName}`,
-        timeSlots: selectedTimes,
-        date: selectedDate,
-      };
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      sessions: arrayUnion(session),
+    });
+    setTimeSlots([]);
+    setSelectedTimes([]);
+    window.location.reload();
 
-      const userRef = doc(db, "users", userId);
-      await updateDoc(userRef, {
-        appointments: arrayUnion(session),
-      });
-      console.log("id", userId);
-      const userDocRef = doc(db, "users", professorId);
-      const userDocSnapshot = await getDoc(userDocRef);
-
-      if (userDocSnapshot.exists()) {
-        const selectedYear = selectedDate.getFullYear();
-        const selectedMonth = selectedDate.getMonth() + 1;
-        const selectedDay = selectedDate.getDate();
-
-        const userData = userDocSnapshot.data();
-        const sessions = userData?.sessions || [];
-
-        for (let i = 0; i < sessions.length; i++) {
-          const session = sessions[i];
-          const sessionDate = session.date.toDate();
-          const sessionYear = sessionDate.getFullYear();
-          const sessionMonth = sessionDate.getMonth() + 1;
-          const sessionDay = sessionDate.getDate();
-
-          if (
-            sessionYear === selectedYear &&
-            sessionMonth === selectedMonth &&
-            sessionDay === selectedDay
-          ) {
-            const timeSlots = session?.timeSlots || [];
-
-            selectedTimes.forEach((selectedTime) => {
-              timeSlots.forEach((timeSlot) => {
-                if (
-                  timeSlot.startTime === selectedTime.startTime &&
-                  timeSlot.isBooked === "false"
-                ) {
-                  timeSlot.isBooked = "true";
-                }
-              });
-            });
-            sessions[i].timeSlots = timeSlots;
-          }
-        }
-        await updateDoc(userDocRef, {
-          sessions: sessions,
-        });
-      }
-
-      setTimeSlots([]);
-      setSelectedTimes([]);
-      window.location.reload();
-
-      setTimeout(() => {
-        toast.success("You haved booked appointment successfully!");
-      }, 6000);
-    } else {
-      toast.error("timeslot/date is not selected!");
-    }
+    setTimeout(() => {
+      toast.success("Session saved successfully!");
+    }, 5000);
+  }else{
+    toast.error("Course is not selected!")
+  }
   };
 
   const handleCourseSelect = (e) => {
-    const selectedOption =
-      e.target.selectedOptions[0].getAttribute("data-key") + e.target.value;
+    const selectedOption = {
+      key: e.target.selectedOptions[0].getAttribute("data-key"),
+      CourseName: e.target.value,
+    };
     console.log("ddd", selectedOption);
     setSelectedCourse(selectedOption);
   };
 
   return (
     <Container>
-      <div className="d-flex align-items-center justify-content-center">
-        <div>
-          <Row className="mb-3 mt-3">
-            <Col>
-              <h4 className="text-center">Join a Tutoring Session!</h4>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-center">
-              <Form.Group>
-                <DatePicker
-                  selected={selectedDate}
-                  onChange={handleDateChange}
-                  dateFormat="MMMM d, yyyy"
-                  inline
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </div>
-      </div>
-
+      <Row className="mb-3">
+        <Col>
+          <h1>Create a Tutoring Session:</h1>
+        </Col>
+      </Row>
       <Row className="mb-3">
         <Col>
           <Form.Group>
-            <Form.Label>Select Course:</Form.Label>
+            <div>
+              <Form.Label>Select Date:</Form.Label>
+            </div>
+            <DatePicker
+              selected={selectedDate}
+              onChange={handleDateChange}
+              dateFormat="MMMM d, yyyy"
+            />
+          </Form.Group>
+        </Col>
+      </Row>
+      {/* )} */}
+      <Row className="mb-3">
+        <Col>
+          <Form.Group>
+            <Form.Label>Select Courses:</Form.Label>
             <Form.Control
               as="select"
               onChange={handleCourseSelect}
@@ -305,20 +248,23 @@ const CalanderPage = ({ id }) => {
               required
               defaultValue=""
             >
-              {userTimeSlots?.map((course, index) => (
+              <option value="" disabled>
+                Select a course
+              </option>
+              {courses.map((course, index) => (
                 <option
                   key={index}
-                  value={course?.subject?.CourseName}
-                  data-key={course.subject?.key}
+                  value={course.CourseName}
+                  data-key={course.key}
                 >
-                  {"("} {course.subject?.key} {course.subject?.CourseName} {")"}
+                  {course.key} {"("}
+                  {course.CourseName} {")"}
                 </option>
               ))}
             </Form.Control>
           </Form.Group>
         </Col>
       </Row>
-
       <Row>
         {timeSlots.map((slot, index) => (
           <Col key={index} xs={6} md={3} className="mb-2">
@@ -338,7 +284,7 @@ const CalanderPage = ({ id }) => {
           <Row className="mt-3">
             <Col>
               <Button variant="success" onClick={handleSaveSession}>
-                Book Appointment
+                Save Session
               </Button>
             </Col>
           </Row>
@@ -348,4 +294,4 @@ const CalanderPage = ({ id }) => {
   );
 };
 
-export default CalanderPage;
+export default TutoringSessionCreate;

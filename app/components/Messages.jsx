@@ -116,6 +116,7 @@ const Messages = ({ userEmail }) => {
         setShowPrompt(false);
         setSelectedUsers([]);
         setChatName("");
+        window.location.reload();
       } else {
         console.error("Current user not found or does not have an email");
       }
@@ -154,6 +155,7 @@ const Messages = ({ userEmail }) => {
         });
 
         console.log("User left conversation successfully.");
+        window.location.reload();
       } else {
         console.error("Chat data or users not found.");
       }
