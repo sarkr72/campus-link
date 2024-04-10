@@ -161,12 +161,22 @@ function ViewProfile() {
           });
           console.log("Friend request canceled successfully.");
         } else {
+          const notifications = {
+            senderId: userId,
+            message: " sent you a friend request.",
+            senderProfilePicture: currentUser?.profilePicture || null,
+            senderName: currentUser?.firstName + " " + currentUser?.lastName,
+            date: new Date(),
+          };
+          const currentNotifications = currentUser?.notifications || [];
+          const updatedNotifications = [...currentNotifications, notifications];
           const updatedFriendRequests = [
             ...friendRequests,
             `${currentUser?.firstName} ${currentUser?.lastName},${userId}`,
           ];
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
+            notifications: updatedNotifications,
           });
           console.log("Friend request sent successfully.");
         }
@@ -608,7 +618,7 @@ const friendProfile = async (e, id) => {
             </Card>
           </div>
           <div className="bottom-box">
-            <MainTimeline userEmail={data.email} />
+            <MainTimeline userEmail={data.email}  />
           </div>
         </div>
       </>

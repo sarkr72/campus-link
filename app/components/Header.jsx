@@ -191,6 +191,8 @@ function Header() {
                 <FaComments className="social-btn-icon" size={20} /> Chats
               </Nav.Link>
             )}
+            
+
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
               <Nav.Link
                 href="/pages/admin"
@@ -308,7 +310,9 @@ function Header() {
             </NavDropdown>
 
             {userId && (
-              <>
+              <div
+                style={{ marginTop: isNavbarCollapsed ? "margintop" : "7px" }}
+              >
                 <button
                   onClick={togglePanel}
                   style={{
@@ -333,9 +337,24 @@ function Header() {
                     </Button>
                   </Modal.Footer>
                 </Modal>
-              </>
+              </div>
             )}
 
+{userRole &&
+              (userRole.toLocaleLowerCase() === "admin" ||
+                userRole.toLocaleLowerCase() === "professor") && (
+                <Nav.Link
+                  href="/pages/tutoringCenterPage"
+                  className={`text-${
+                    pathname === "/pages/tutoringCenterPage" ? "dark" : ""
+                  } ${
+                    pathname === "/pages/tutoringCenterPage" ? "fw-bold" : ""
+                  }`}
+                >
+                  Tutoring Center
+                </Nav.Link>
+              )}
+              
             {!userId && (
               <>
                 <Nav.Link
