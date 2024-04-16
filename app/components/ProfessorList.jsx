@@ -3,7 +3,6 @@ import { db } from "../utils/firebase";
 import { collection, getDoc, doc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Modal, Button, Form } from "react-bootstrap";
-import RateMyProfessor from "./rateMyProfessor";
 import { useRouter } from "next/navigation";
 import Rating from "./Rating";
 
