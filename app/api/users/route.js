@@ -6,9 +6,9 @@ import { NextResponse } from "next/server";
 // const prisma = new PrismaClient();
 
 // import { createConnection } from "mysql2/promise";
-import { admin } from "../../utils/firebaseAdmin";
-import { getAuth } from "firebase/auth";
-const db = admin.firestore();
+// import { admin } from "../../utils/firebaseAdmin";
+// import { getAuth } from "firebase/auth";
+// const db = admin.firestore();
 // import { createConnection } from "mysql2/promise";
 //
 // Function to establish MySQL connection
@@ -86,10 +86,10 @@ const db = admin.firestore();
 export async function DELETE(request, { params }) {
   try {
     // const email = params.id;
-    const requestData = await request.json();
-    const userId = requestData.deleteUserId;
-    await admin.auth().deleteUser(userId);
-    await db.collection("users").doc(userId).delete();
+    // const requestData = await request.json();
+    // const userId = requestData.deleteUserId;
+    // await admin.auth().deleteUser(userId);
+    // await db.collection("users").doc(userId).delete();
 
     // if (!email) {
     //   console.log("Student email not provided");

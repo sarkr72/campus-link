@@ -305,8 +305,14 @@ function Header() {
               >
                 Tutors
               </NavDropdown.Item>
-
-              <NavDropdown.Divider />
+              <NavDropdown.Item
+                href="/pages/rateMyProfessor"
+                className={`text-${
+                  pathname === "/pages/rateMyProfessor" ? "text-dark" : ""
+                } ${pathname === "/pages/rateMyProfessor" ? "fw-bold" : ""}`}
+              >
+                Rate My Professor
+              </NavDropdown.Item>
             </NavDropdown>
 
             {userId && (

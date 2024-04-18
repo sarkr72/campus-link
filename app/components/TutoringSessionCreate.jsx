@@ -21,6 +21,7 @@ import { db } from "../utils/firebase";
 import styles from "../../styles/timeSlot.css";
 import { toast } from "react-toastify";
 import styless from "../../styles/timeSlot.css";
+import CalendarPage from "../components/CalendarPage";
 
 const TutoringSessionCreate = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -32,6 +33,7 @@ const TutoringSessionCreate = () => {
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [userTimeSlots, setUserTimeSlots] = useState([]);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
     // Fetch user time slots
@@ -183,28 +185,44 @@ const TutoringSessionCreate = () => {
   };
 
   const handleSaveSession = async () => {
-    if(selectedCourse){
+    // Check if a course is selected
+    if (!selectedCourse) {
+      toast.error("Course is not selected!");
+      return;
+    }
+
+    // Construct the session object
     const session = {
       subject: selectedCourse,
       timeSlots: selectedTimes,
       date: selectedDate,
+      userId: userId, // Include the userId in the session data
     };
 
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      sessions: arrayUnion(session),
-    });
-    setTimeSlots([]);
-    setSelectedTimes([]);
-    window.location.reload();
+    try {
+      // Update the user document with the new session
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, {
+        sessions: arrayUnion(session),
+      });
 
-    setTimeout(() => {
+      // Clear selected time slots and session data
+      setTimeSlots([]);
+      setSelectedTimes([]);
+      setSession(session);
+
+      // Reload the page to reflect changes (not recommended, consider alternatives)
+      window.location.reload();
+
+      // Display success message
       toast.success("Session saved successfully!");
-    }, 5000);
-  }else{
-    toast.error("Course is not selected!")
-  }
+    } catch (error) {
+      // Handle errors
+      console.error("Error saving session:", error);
+      toast.error("An error occurred while saving the session. Please try again.");
+    }
   };
+
 
   const handleCourseSelect = (e) => {
     const selectedOption = {
@@ -286,6 +304,7 @@ const TutoringSessionCreate = () => {
               <Button variant="success" onClick={handleSaveSession}>
                 Save Session
               </Button>
+              {session && <CalendarPage session={session} />}
             </Col>
           </Row>
         </>

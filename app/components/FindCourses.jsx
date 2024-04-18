@@ -30,7 +30,6 @@ const FindCourses = () => {
             const docRef = doc(db, "users", user.uid);
             const docSnapshot = await getDoc(docRef);
             if (docSnapshot.exists()) {
-              setSignedIn(true);
             }
           }
         });
