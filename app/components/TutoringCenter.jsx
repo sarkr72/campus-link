@@ -1,20 +1,26 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { Container, Row, Col } from "react-bootstrap";
 import TutoringSessionCreate from "./TutoringSessionCreate";
-import CalanderPage from "./CalendarPage";
+import CalendarPage from "./CalendarPage";
+import styless from "../../styles/timeSlot.css";
+import styles from "../../styles/timeSlot.css";
 
 const TutoringCenter = ({ id }) => {
+  const [sessionData, setSessionData] = useState(null);
+
+  const handleSaveSession = (data) => {
+    setSessionData(data);
+  };
 
   return (
     <Container>
       <Row className="mt-4">
         <Col md={6}>
-          <CalanderPage />
+          {/* Pass the onSaveSession prop to CalendarPage */}
+          <CalendarPage onSaveSession={handleSaveSession} />
         </Col>
         <Col md={6}>
-          <TutoringSessionCreate />
+          <TutoringSessionCreate onSaveSession={handleSaveSession} />
         </Col>
       </Row>
     </Container>

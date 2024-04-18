@@ -1,9 +1,9 @@
-.selected-button {
-    background-color: originalColor;
+.Row .selected-button {
+    background-color: #007bff;
     color: rgb(252, 250, 250);
   }
 
-  .undo-button {
+  .Row .undo-button {
     background-color: white;
     color: black;
   }
