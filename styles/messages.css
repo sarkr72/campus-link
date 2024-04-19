@@ -44,6 +44,7 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   cursor: pointer;
+  border: 1px solid black;
 }
 
 .conversation:hover {
@@ -117,15 +118,21 @@
 .chat-actions {
   display: flex;
   align-items: center;
+  border: 1px solid black;
+  border-radius: 50px;
+  margin: 0px;
 }
 
 .chat-action {
-  margin-left: 10px;
   cursor: pointer;
 }
 
 .chat-action:hover {
-  color: #007bff;
+  background-color: white;
+  color: #3586ff;
+}
+.dropdown-toggle::after {
+  display: none !important;
 }
 
 .chat-modal {
@@ -199,7 +206,7 @@
 }
 
 .user-message .message-content {
-  background-color: #007bff;
+  background-color: #3586ff;
   color: #fff;
   align-self: flex-end;
 }
@@ -245,7 +252,7 @@
 
 .chat-action {
   position: relative;
-  background-color: #007bff;
+  background-color: #3586ff;
   color: white;
   border: none;
   border-radius: 50%;
@@ -289,4 +296,3 @@
   right: 0;
   left: auto;
 }
-

@@ -1,0 +1,22 @@
+/*All Modal*/
+.modal-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*View Members Modal*/
+.members {
+    display: flex;
+    align-items:center;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 50%;
+    margin: auto;   
+}
+.member-list {
+    padding-left: 0px;
+}
+.member-profile-pic {
+    margin-right: 10px;
+}
