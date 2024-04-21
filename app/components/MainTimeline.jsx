@@ -600,7 +600,6 @@ const MainTimelineFeed = ({ userEmail }) => {
 
           <Button
             className="rounded-5"
-            variant="primary"
             onClick={() => setShowCreatePostModal(true)}
           >
             Create Post
@@ -867,7 +866,6 @@ const MainTimelineFeed = ({ userEmail }) => {
                           />
                           <Button
                             className="rounded-4"
-                            variant="primary"
                             onClick={() => handlePostComment(post.id)}
                           >
                             Post
@@ -1046,7 +1044,6 @@ const MainTimelineFeed = ({ userEmail }) => {
         <Modal.Footer>
           <Button
             id="createPost-btn"
-            variant="primary"
             onClick={handleCreatePost}
           >
             Post
@@ -1169,8 +1166,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                       onChange={(e) => setComment(e.target.value)}
                     />
                     <Button
-                      className="rounded-"
-                      variant="primary"
+                      className="rounded-5"
                       onClick={() => handlePostComment(selectedPost.id)}
                     >
                       Post

@@ -9,6 +9,10 @@
   border: 1px solid black;
   margin-top: 30px;
 }
+.conversations-container-mobile {
+  display: block;
+  width: 100%;
+}
 .chat-container {
   min-height: 100vh;
   background-color: aliceblue;
@@ -45,6 +49,11 @@
   border-radius: 5px;
   cursor: pointer;
   border: 1px solid black;
+}
+
+.profile-pic {
+  border: 1px solid black;
+  border-radius: 50px;
 }
 
 .conversation:hover {
@@ -157,6 +166,7 @@
 .message {
   display: flex;
   margin-bottom: 16px;
+  width: 200px;
 }
 
 .message-avatar {
@@ -195,10 +205,11 @@
 .user-message {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: flex-end;
   margin-bottom: 16px;
   width: 100%;
+  gap: 5px;
 }
 
 .user-message .message-details {
@@ -209,13 +220,20 @@
   background-color: #3586ff;
   color: #fff;
   align-self: flex-end;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 70%;
+  margin-right: auto;
 }
+
 .other-message {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
   margin-bottom: 16px;
+  width: 100%;
+  gap: 5px;
 }
 
 .other-message .message-details {
@@ -295,4 +313,27 @@
 .dropdown-menu {
   right: 0;
   left: auto;
+}
+.conversations-container-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .convo-container {
+    flex-direction: column;
+  }
+  .conversations-container {
+    display: none;
+  }
+  .conversations-container-mobile {
+    display: flex;
+    justify-content: center;
+  }
+  .chat-container {
+    width: 100%;
+    padding: 10px;
+  }
+  .chat-messages {
+    padding: 0px;
+  }
 }

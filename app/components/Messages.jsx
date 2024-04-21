@@ -22,6 +22,8 @@ import ChangeChatImageModal from "../modals/ChangeChatImageModal.js";
 import ChangeChatNameModal from "../modals/ChangeChatNameModal.js";
 import ChatMembersModal from "../modals/ChatMembersModal.js";
 import AddUsersToChatModal from "../modals/AddUsersToChatModal.js";
+import RemoveUsersFromChatModal from "../modals/RemoveUsersFromChat.js";
+import ConversationList from "../modals/ConversationList.js";
 
 const Messages = ({ userEmail }) => {
   const [showSharedPostModal, setShowSharedPostModal] = useState(false);
@@ -51,6 +53,7 @@ const Messages = ({ userEmail }) => {
   const [chatMembers, setChatMembers] = useState([]);
   const [selectedChatMembers, setSelectedChatMembers] = useState([]);
   const [showAddUsersModal, setShowAddUsersModal] = useState(false);
+  const [showRemoveUsersModal, setShowRemoveUsersModal] = useState(false);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -253,6 +256,29 @@ const Messages = ({ userEmail }) => {
       }
 
       setShowChat(true);
+
+      // Fetch chat members
+      const chatMembers = [];
+      for (const email of chatData.users) {
+        const userQuery = query(
+          collection(db, "users"),
+          where("email", "==", email)
+        );
+        const userSnapshot = await getDocs(userQuery);
+        if (!userSnapshot.empty) {
+          userSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            chatMembers.push({
+              name: `${userData.firstName} ${userData.lastName}`,
+              profilePicture: userData.profilePicture?.url,
+              email: userData.email,
+            });
+          });
+        } else {
+          console.log("User data not found for :", email);
+        }
+      }
+      setChatMembers(chatMembers);
     } catch (error) {
       console.error("Error selecting chat: ", error);
     }
@@ -339,14 +365,15 @@ const Messages = ({ userEmail }) => {
       console.error("Error saving chat image:", error);
     }
   };
-  const getChatImage = (users, selectedChat) => {
-    if (selectedChat && selectedChat.image) {
-      return selectedChat.image;
-    } else if (users.length === 2) {
+  const getChatImage = (chat, currentUser) => {
+    if (chat.image) {
+      return chat.image;
+    } else if (chat.users.length === 2) {
       // If there are exactly two users -> return the profile picture of the other user
-      const otherUser = users.find((user) => user.email !== currentUser.email);
-      return otherUser
-        ? otherUser.profilePicture?.url || defaultProfilePicture
+      const otherUser = chat.users.find((email) => email !== currentUser.email);
+      const otherUserData = users.find((user) => user.email === otherUser);
+      return otherUserData
+        ? otherUserData.profilePicture?.url || defaultProfilePicture
         : defaultProfilePicture;
     } else {
       // If there are more than two users -> return the default profile picture
@@ -385,7 +412,7 @@ const Messages = ({ userEmail }) => {
   const handleAddUsers = async () => {
     try {
       const updatedUsers = [...selectedChat.users, ...selectedUsers];
-      await updateDoc(doc(db, "chats", chat.id), {
+      await updateDoc(doc(db, "chats", selectedChat.id), {
         users: updatedUsers,
       });
       handleClose();
@@ -394,9 +421,20 @@ const Messages = ({ userEmail }) => {
     }
   };
 
+  const handleShowRemoveUsersModal = (chat) => {
+    setSelectedChat(chat);
+    setShowRemoveUsersModal(true);
+  };
+  const handleCloseRemoveUsersModal = () => {
+    setShowRemoveUsersModal(false);
+  };
+
   return (
     <div>
       <div className="convo-container">
+        <div className="conversations-container-mobile">
+          <ConversationList chats={chats} handleChatSelect={handleChatSelect} />
+        </div>
         {/* Conversations */}
         <div className="conversations-container">
           <Button className="rounded-5" variant="primary" onClick={handleShow}>
@@ -410,11 +448,11 @@ const Messages = ({ userEmail }) => {
               onClick={() => handleChatSelect(chat)}
             >
               <Image
-                src={getChatImage(chat.users)}
+                src={getChatImage(chat, currentUser.email)}
                 alt="Profile Pic"
                 width={50}
                 height={50}
-                className="rounded-circle me-2"
+                className="rounded-circle me-2 profile-pic"
               />
 
               {/* Chat details */}
@@ -460,7 +498,7 @@ const Messages = ({ userEmail }) => {
                     </Dropdown.Item>
                     <Dropdown.Item
                       className="text-danger"
-                      onClick={() => handleRemoveUserFromChat(chat)}
+                      onClick={() => handleShowRemoveUsersModal(chat)}
                     >
                       Remove User from Chat
                     </Dropdown.Item>
@@ -498,7 +536,7 @@ const Messages = ({ userEmail }) => {
                           message.senderProfilePicture || defaultProfilePicture
                         }
                         alt="Profile Pic"
-                        className="message-avatar"
+                        className="message-avata profile-pic"
                         width={50}
                         height={50}
                       />
@@ -563,7 +601,7 @@ const Messages = ({ userEmail }) => {
                         alt="Profile Pic"
                         width={50}
                         height={50}
-                        className="rounded-circle"
+                        className="rounded-circle profile-pic"
                       />
                       {`${user.firstName} ${user.lastName}`}
                     </div>
@@ -634,6 +672,14 @@ const Messages = ({ userEmail }) => {
         users={users}
         chatUsers={chatUsers}
         setChatUsers={setChatUsers}
+        selectedChat={selectedChat}
+      />
+      <RemoveUsersFromChatModal
+        show={showRemoveUsersModal}
+        handleClose={handleCloseRemoveUsersModal}
+        users={users}
+        setChatUsers={setChatUsers}
+        chatUsers={chatMembers}
         selectedChat={selectedChat}
       />
     </div>

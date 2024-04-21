@@ -25,7 +25,7 @@ const ChatMembersModal = ({ show, handleClose, members }) => {
           ))}
         </ul>
       </Modal.Body>
-      <Modal.Footer className="d-flex justify-content-center">
+      <Modal.Footer className="d-flex justify-content-center modal-btn-danger">
         <Button variant="danger" onClick={handleClose}>
           Close
         </Button>

@@ -81,10 +81,10 @@ const AddUsersToChatModal = ({
         ))}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="danger" onClick={handleClose}>
+        <Button onClick={handleClose} variant="warning">
           Close
         </Button>
-        <Button variant="primary" onClick={handleAddUsers}>
+        <Button onClick={handleAddUsers} variant="success">
           Add Users
         </Button>
       </Modal.Footer>

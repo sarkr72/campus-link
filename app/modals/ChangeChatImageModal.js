@@ -1,22 +1,17 @@
 import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { ref, uploadString } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { storage, db } from "../utils/firebase";
 import Image from "next/image";
 
 const ChangeChatImageModal = ({ show, handleClose, selectedChat }) => {
   const [chatImage, setChatImage] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleChatImageChange = (event) => {
     const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      setChatImage(reader.result);
-    };
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+    setChatImage(file);
   };
 
   const handleSaveChatImage = async () => {
@@ -24,15 +19,31 @@ const ChangeChatImageModal = ({ show, handleClose, selectedChat }) => {
       if (chatImage) {
         // Upload image to storage
         const storageRef = ref(storage, `chatImages/${selectedChat.id}`);
-        await uploadString(storageRef, chatImage, "data_url");
+        const uploadTask = uploadBytesResumable(storageRef, chatImage);
 
-        // Update chat document with new image URL
-        const chatRef = doc(db, "chats", selectedChat.id);
-        await updateDoc(chatRef, {
-          image: `chatImages/${selectedChat.id}`,
-        });
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Error uploading image:", error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-        handleClose();
+            // Update chat document with new image URL
+            const chatRef = doc(db, "chats", selectedChat.id);
+            await updateDoc(chatRef, {
+              image: downloadURL,
+            });
+
+            handleClose();
+            setUploadProgress(0);
+          }
+        );
       } else {
         console.error("No image selected");
       }
@@ -59,7 +70,7 @@ const ChangeChatImageModal = ({ show, handleClose, selectedChat }) => {
           <div className="text-center mb-3">
             <p className="mb-2">Current Image:</p>
             <Image
-              src={chatImage}
+              src={URL.createObjectURL(chatImage)}
               alt="Current Chat Image"
               width={100}
               height={100}
@@ -67,6 +78,7 @@ const ChangeChatImageModal = ({ show, handleClose, selectedChat }) => {
             />
           </div>
         )}
+        {uploadProgress > 0 && <progress value={uploadProgress} max="100" />}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="danger" onClick={handleClose}>
