@@ -209,9 +209,21 @@ const RegisterForm = () => {
           delete formDataCopy.password;
           formDataCopy.timestamp = serverTimestamp();
           await setDoc(doc(db, "users", user.uid), formDataCopy);
-          console.log(formDataCopy);
-          setIsLoading(false);
+
+          const docRef = doc(db, "professors", process.env.NEXT_PUBLIC_docId2);
+
+          const docSnapshot = await getDoc(docRef);
+          if (docSnapshot.exists()) {
+            const professorsData = docSnapshot.data();
+            const newProfessor = {
+              name: data?.firstName?.toLocaleLowerCase() + " " + data?.lastName?.toLocaleLowerCase(),
+              email: data?.email,
+            };
           
+            const updatedProfessors = [...professorsData.professors, newProfessor];
+            await updateDoc(docRef, { professors: updatedProfessors });
+          }
+          setIsLoading(false);
         } else {
           console.log("failed to register.");
         }
@@ -392,7 +404,6 @@ const RegisterForm = () => {
                     <option value="">Select your role</option>
                     <option value="student">Student</option>
                     <option value="professor">Professor</option>
-                    <option value="admin">Admin</option>
                   </select>
                 </div>
                 <div className="input-group">

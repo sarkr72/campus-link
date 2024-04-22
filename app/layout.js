@@ -15,7 +15,7 @@ import Footer from "./components/Footer";
 // import '../utils/configureAmplify'
 // import "@aws-amplify/ui-react/styles.css";
 // Amplify.configure(config);
-
+import '@fortawesome/fontawesome-free/css/all.css';
 
 const inter = Inter({ subsets: ["latin"] });
 

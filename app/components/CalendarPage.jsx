@@ -18,11 +18,11 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../utils/firebase";
-import styles from "../../styles/timeSlot.css";
+import styles from "../../styles/timeSlot 2.css";
 import { toast } from "react-toastify";
-import styless from "../../styles/timeSlot.css";
+// import styless from "../../styles/timeSlot.css";
 
-const CalendarPage = ({ onSaveSession }) => {
+const CalanderPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [timeSlots, setTimeSlots] = useState([]);
   const [selectedTimes, setSelectedTimes] = useState([]);
@@ -33,6 +33,7 @@ const CalendarPage = ({ onSaveSession }) => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [professors, setProfessors] = useState([]);
+  const [professor, setProfessor] = useState("");
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
 
   useEffect(() => {
@@ -42,35 +43,53 @@ const CalendarPage = ({ onSaveSession }) => {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           setUserId(user.uid);
-          //if (!id) {
+          // if (!id) {
           const userRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
             setUser(userData);
-            const userTimeSlots = userData.sessions
-              ?.map((session) => session)
-              .flat();
-            setUserTimeSlots(userTimeSlots);
-
-
+            // const userTimeSlots = userData.sessions
+            //   ?.map((session) => session)
+            //   .flat();
+            // setUserTimeSlots(userTimeSlots);
           }
-          /*else {
-            const userRef = doc(db, "users", id);
-            const userDoc = await getDoc(userRef);
-            const userData = userDoc?.data();
-            const sessions = userData?.sessions;
-              setProfessorId(userData?.id);
-              setUser(userData);
-              const userTimeSlots = sessions
-                ?.map((session) => session)
+          const q = query(
+            collection(db, "users"),
+            where("role", "in", ["professor", "admin"])
+          );
+          const querySnapshot = await getDocs(q);
+          const professorsData = [];
+          const times = [];
+          querySnapshot.forEach((doc) => {
+            if (doc?.data().sessions && doc?.data().sessions?.length > 1) {
+              professorsData.push(doc.data());
+              const userTimeSlots1 = doc
+                ?.data()
+                ?.sessions?.map((session) => session)
                 .flat();
-              console.log("sessions", userTimeSlots);
-              setUserTimeSlots(userTimeSlots);
+              times.push(userTimeSlots1);
+            }
+          });
+          // setUserTimeSlots(times);
+          setProfessors(professorsData);
 
-            setUserTimeSlots(userTimeSlots);
-          }
-          */
+          // }
+          //  else {
+          //   const userRef = doc(db, "users", id);
+          //   const userDoc = await getDoc(userRef);
+          //   const userData = userDoc?.data();
+          //   const sessions = userData?.sessions;
+          //     setProfessorId(userData?.id);
+          //     setUser(userData);
+          //     const userTimeSlots = sessions
+          //       ?.map((session) => session)
+          //       .flat();
+          //     console.log("sessions", userTimeSlots);
+          //     setUserTimeSlots(userTimeSlots);
+
+          //   setUserTimeSlots(userTimeSlots);
+          // }
         }
       });
     };
@@ -78,50 +97,21 @@ const CalendarPage = ({ onSaveSession }) => {
     fetchUserTimeSlots();
   }, []);
 
-
   useEffect(() => {
     fetchTimeSlots();
-  }, [userTimeSlots, selectedDate, userTimeSlots]);
+  }, [userTimeSlots, selectedDate, professor]);
 
-  useEffect(() => {
-    // Fetch courses
-    const fetchCourses = async () => {
-      const coursesCollectionRef = collection(db, "courses");
-      const querySnapshot = await getDocs(coursesCollectionRef);
-      const courseInfo = querySnapshot.docs.flatMap((doc) => {
-        return Object.entries(doc.data()).map(([key, value]) => ({
-          key: key,
-          CourseName: value.CourseName,
-        }));
-      });
-      setCourses(courseInfo);
-    };
+  // useEffect(() => {
+  //   const fetchProfessors = async () => {
+  //     const professorsCollectionRef = collection(db, "professors");
+  //     const querySnapshot = await getDocs(professorsCollectionRef);
+  //     const fetchedProfessors = querySnapshot.docs.map((doc) => doc.data());
+  //     setProfessors(fetchedProfessors);
+  //   };
 
-    fetchCourses();
-  }, []);
-
-  useEffect(() => {
-    const fetchProfessors = async () => {
-      try {
-        const q = query(collection(db, 'users'), where('role', '==', 'professor'));
-        const querySnapshot = await getDocs(q);
-
-        const professorsData = [];
-        querySnapshot.forEach(doc => {
-          professorsData.push({
-            id: doc.id,
-            ...doc.data()
-          });
-        });
-
-        setProfessors(professorsData);
-      } catch (error) {
-        console.error('Error fetching professors:', error);
-      }
-    };
-
-    fetchProfessors();
-  }, []);
+  //   // fetchCourses();
+  //   fetchProfessors();
+  // }, []);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -173,14 +163,14 @@ const CalendarPage = ({ onSaveSession }) => {
       for (let j = 0; j < userTimeSlots?.length; j++) {
         const userSlot = userTimeSlots[j];
         const { timeSlots } = userSlot;
-        const userSlotDateObj = userSlot.date.toDate();
-        const userSlotYear = userSlotDateObj.getFullYear();
-        const userSlotMonth = userSlotDateObj.getMonth() + 1;
-        const userSlotDay = userSlotDateObj.getDate();
+        const userSlotDateObj = userSlot?.date?.toDate();
+        const userSlotYear = userSlotDateObj?.getFullYear();
+        const userSlotMonth = userSlotDateObj?.getMonth() + 1;
+        const userSlotDay = userSlotDateObj?.getDate();
         const subject = userSlot;
-        const selectedYear = selectedDate.getFullYear();
-        const selectedMonth = selectedDate.getMonth() + 1;
-        const selectedDay = selectedDate.getDate();
+        const selectedYear = selectedDate?.getFullYear();
+        const selectedMonth = selectedDate?.getMonth() + 1;
+        const selectedDay = selectedDate?.getDate();
 
         if (
           selectedYear === userSlotYear &&
@@ -224,31 +214,17 @@ const CalendarPage = ({ onSaveSession }) => {
     }
   };
 
-  const handleProfessorSelect = (professorId) => {
-    setProfessorId(professorId);
-    setShowAppointmentForm(true);
-  };
+  const handleSaveSession = async () => {
+    if (selectedTimes && selectedTimes?.length > 0 && selectedDate) {
+      const session = {
+        professor: `${user?.firstName} ${user?.lastName},${user?.email}`,
+        subject: selectedCourse
+          ? selectedCourse
+          : `${userTimeSlots[0]?.subject?.key} ${userTimeSlots[0]?.subject?.CourseName}`,
+        timeSlots: selectedTimes,
+        date: selectedDate,
+      };
 
-
-  const handleSaveSession = async (session) => {
-    // Check if session data is provided
-    if (!session) {
-      console.error("Session data is missing:", session);
-      toast.error("Session data is missing!");
-      return;
-    }
-
-    const { professor, timeSlots, date } = session;
-
-    // Check if time slots or date are not selected
-    if (!timeSlots || timeSlots.length === 0 || !date) {
-      console.error("Timeslot or date is not selected:", session);
-      toast.error("Timeslot or date is not selected!");
-      return;
-    }
-
-    try {
-      // Update the appointments for the current user
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
         appointments: arrayUnion({
@@ -332,91 +308,126 @@ const CalendarPage = ({ onSaveSession }) => {
     setSelectedCourse(selectedOption);
   };
 
+  const handleProfessorSelect = (professor) => {
+    if (professor) {
+      setProfessorId(professor.id);
+      setProfessor(professor);
+      setUserTimeSlots(professor?.sessions?.map((session) => session).flat());
+      setShowAppointmentForm(true);
+    } else {
+    }
+  };
+
   return (
     <Container>
-      <Row className="mb-3 mt-3">
-        <Col>
-          <h4 className="text-center">Join a Tutoring Session!</h4>
-        </Col>
-      </Row>
-      <Row className="mb-3">
-        <Col>
-          <Form.Group>
-            <Form.Label>Select Professor:</Form.Label>
-            <Form.Control
-              as="select"
-              onChange={(e) => handleProfessorSelect(e.target.value)}
-              required
-              defaultValue=""
-            >
-              <option value="" disabled>Select Professor</option>
-              {professors?.map((professor, index) => (
-                <option key={index} value={professor.id}>
-                  {professor.firstName} {professor.lastName}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-        </Col>
-      </Row>
+      <div className="d-flex " style={{ flexDirection: "column" }}>
+        <Row className="mb-3 mt-3" style={{ alignSelf: "start" }}>
+          <Col>
+            <h4 className="text-center">Join a Tutoring Session!</h4>
+          </Col>
+        </Row>
 
-      {showAppointmentForm && (
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Select Professor:</Form.Label>
+              <Form.Control
+                as="select"
+                onChange={(e) =>
+                  handleProfessorSelect(professors[e.target.selectedIndex - 1])
+                }
+                required
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Select Professor
+                </option>
+                {professors?.map((professor, index) => (
+                  <option key={index} value={professor?.id}>
+                    {professor?.firstName} {professor?.lastName}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </Col>
+        </Row>
+        <div style={{ alignSelf: "start" }}>
+          {professor && (
+            <>
+              <Row className="mb-3">
+                <Col className="d-flex justify-content-center">
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <p style={{ alignSelf: "start", marginBottom: "0" }}>
+                      Select Date:
+                    </p>
+                    <Form.Group>
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={handleDateChange}
+                        dateFormat="MMMM d, yyyy"
+                        inline
+                      />
+                    </Form.Group>
+                  </div>
+                </Col>
+              </Row>
+            </>
+          )}
+        </div>
+
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Select Course:</Form.Label>
+              <Form.Control
+                as="select"
+                onChange={handleCourseSelect}
+                multiple={false}
+                required
+                defaultValue=""
+              >
+                {userTimeSlots?.map((course, index) => (
+                  <option
+                    key={index}
+                    value={course?.subject?.CourseName}
+                    data-key={course?.subject?.key}
+                  >
+                    {"("} {course?.subject?.key} {course?.subject?.CourseName}{" "}
+                    {")"}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </Col>
+        </Row>
+      </div>
+      <Row>
+        {timeSlots?.map((slot, index) => (
+          <Col key={index} xs={6} md={3} className="mb-2">
+            <Button
+              onClick={(e) => handleSlotSelect(e, slot)}
+              className={
+                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+              }
+            >
+              {slot.startTime} - {slot.endTime}
+            </Button>
+          </Col>
+        ))}
+      </Row>
+      {selectedTimes.length > 0 && (
         <>
-          <Row className="mb-3">
+          <Row className="mt-3">
             <Col>
-              <Form.Group>
-                <Form.Label>Select Course:</Form.Label>
-                <Form.Control
-                  as="select"
-                  onChange={handleCourseSelect}
-                  multiple={false}
-                  required
-                  value={selectedCourse}
-                >
-                  <option value="" disabled>Select Course</option>
-                  {courses.map((course, index) => (
-                    <option
-                      key={index}
-                      value={course.CourseName}
-                      data-key={course.key}
-                    >
-                      {course.key} {"("}
-                      {course.CourseName} {")"}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
+              <Button variant="success" onClick={handleSaveSession}>
+                Book Appointment
+              </Button>
             </Col>
           </Row>
-
-          <Row>
-            {timeSlots.map((slot, index) => (
-              <Col key={index} xs={6} md={3} className="mb-2">
-                <Button
-                  onClick={(e) => handleSlotSelect(e, slot)}
-                  className={
-                    selectedTimes.includes(slot) ? "selected-button" : "undo-button"
-                  }
-                >
-                  {slot.startTime} - {slot.endTime}
-                </Button>
-              </Col>
-            ))}
-          </Row>
-
-          {selectedTimes.length > 0 && (
-            <Row className="mt-3">
-              <Col>
-                <Button variant="success" onClick={() => props.onSaveSession(session)}>
-                  Book Appointment
-                </Button>
-              </Col>
-            </Row>
-          )}
         </>
       )}
     </Container>
   );
 };
 
-export default CalendarPage;
+export default CalanderPage;
