@@ -227,11 +227,7 @@ const CalanderPage = () => {
 
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
-        appointments: arrayUnion({
-          professor,
-          timeSlots,
-          date,
-        }),
+        appointments: arrayUnion(session),
       });
 
       // Update the session information for the professor
@@ -239,9 +235,9 @@ const CalanderPage = () => {
       const userDocSnapshot = await getDoc(userDocRef);
 
       if (userDocSnapshot.exists()) {
-        const selectedYear = date.getFullYear();
-        const selectedMonth = date.getMonth() + 1;
-        const selectedDay = date.getDate();
+        const selectedYear = selectedDate.getFullYear();
+        const selectedMonth = selectedDate.getMonth() + 1;
+        const selectedDay = selectedDate.getDate();
 
         const userData = userDocSnapshot.data();
         const sessions = userData?.sessions || [];
@@ -289,11 +285,14 @@ const CalanderPage = () => {
       setTimeout(() => {
         toast.success("You have booked the appointment successfully!");
       }, 6000);
-    } catch (error) {
+    }
+    /*
+    catch (error) {
       // Handle errors
       console.error("Error saving session:", error);
       toast.error("An error occurred while booking the appointment. Please try again.");
     }
+    */
   };
 
 
