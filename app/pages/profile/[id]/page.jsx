@@ -114,6 +114,7 @@ function ViewProfile() {
             });
 
             setUser(userData);
+            
           } else {
             console.log("No user found with the specified ID.");
           }
@@ -161,6 +162,7 @@ function ViewProfile() {
           });
           console.log("Friend request canceled successfully.");
         } else {
+          
           const notifications = {
             senderId: userId,
             message: " sent you a friend request.",
@@ -168,12 +170,16 @@ function ViewProfile() {
             senderName: currentUser?.firstName + " " + currentUser?.lastName,
             date: new Date(),
           };
-          const currentNotifications = currentUser?.notifications || [];
+          console.log('noti:', notifications)
+          const currentNotifications = user?.notifications || [];
+          console.log('noti:', currentNotifications);
           const updatedNotifications = [...currentNotifications, notifications];
+          
           const updatedFriendRequests = [
             ...friendRequests,
             `${currentUser?.firstName} ${currentUser?.lastName},${userId}`,
           ];
+         
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
             notifications: updatedNotifications,
@@ -237,7 +243,6 @@ function ViewProfile() {
         return requestId === receiverId;
       })
     ) {
-      console.log("hereeee");
       handleClickOpen();
       setOpenModal(true);
     } else {
@@ -254,10 +259,12 @@ function ViewProfile() {
       }
     }
   };
+  
 const friendProfile = async (e, id) => {
     e.preventDefault();
     router.push(`/pages/profile/${id}`);
   }
+
   const handleConfirmation = async (e) => {
     e.preventDefault();
     setOpenModal(false);
@@ -280,9 +287,9 @@ const friendProfile = async (e, id) => {
       const friendId = friend?.id;
       return friendId !== userId;
     });
-    if (sentRequests?.some((item) => item === id)) {
+    if (sentRequests?.some((item) => item === user?.id)) {
       setSentRequests((prevSentRequests) =>
-        prevSentRequests.filter((item) => item !== id)
+        prevSentRequests.filter((item) => item !== user?.id)
       );
     }
     await updateDoc(userDoc2.ref, {
@@ -534,16 +541,17 @@ const friendProfile = async (e, id) => {
                     display: "flex",
                     alignItems: "center",
                     alignSelf: "center",
+                    flexWrap: "wrap",
                   }}
                 >
-                  <Button className="profile-btn" style={{marginRight: "18px"}} onClick={handleAppointment}>
+                  <Button className="profile-btn" style={{marginRight: "18px", marginBottom: "10px"}} onClick={handleAppointment}>
                     <FaCalendarAlt className="text-black" />
-                    Appointment
+                    {" "} Appointment
                   </Button>
 
                   <Button
                     className="profile-btn"
-                    style={{ marginRight: "20px" }}
+                    style={{ marginRight: "20px", marginBottom: "10px" }}
                   >
                     <Image
                       className="profile-btn-icon"

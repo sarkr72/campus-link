@@ -3,6 +3,8 @@ import { db } from "../utils/firebase"; // Assuming db is your Firestore databas
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { ListGroup, Image, Button } from "react-bootstrap";
+import { FiMoreVertical } from "react-icons/fi";
+import { Modal } from "react-bootstrap";
 
 import {
   collection,
@@ -18,6 +20,8 @@ import {
 const Notifications = () => {
   const [user, setUser] = useState(null);
   const [retrivedRequests, setRetrivedRequests] = useState([]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [notificationToDelete, setNotificationToDelete] = useState(null);
 
   useEffect(() => {
     const auth = getAuth();
@@ -27,13 +31,14 @@ const Notifications = () => {
         const userDoc = await getDoc(userRef);
         setUser(userDoc?.data());
         setRetrivedRequests(userDoc?.data()?.friendRequests);
-        console.log(userDoc.data().notifications);
+        console.log('notification');
       }
     });
   }, []);
 
   const handleConfirm = async (e, id, name, profilePicture) => {
-    e.preventDefault();
+
+    console.log("here");
     const userRef = doc(db, "users", user?.id);
     const userDoc = await getDoc(userRef);
     const updatedFriendRequests = retrivedRequests?.filter((request) => {
@@ -47,7 +52,7 @@ const Notifications = () => {
         friends: arrayUnion({
           name: name,
           id: id,
-          profilePicture: profilePicture?.url || null,
+          profilePicture: profilePicture || null,
           timestamp: new Date(),
         }),
         friendRequests: updatedFriendRequests,
@@ -101,6 +106,31 @@ const Notifications = () => {
       friendRequestsSent: updateddFriendRequests,
     });
     console.log("Friend request canceled successfully.");
+  };
+
+  const handleDeleteNotification = async () => {
+    if (notificationToDelete) {
+      const userRef = doc(db, "users", user.id);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+
+      const updatedNotifications = userData?.notifications?.filter(
+        (n) =>
+          !(
+            n.message === notificationToDelete.message &&
+            n.senderId === notificationToDelete.senderId
+          )
+      );
+
+      await updateDoc(userRef, { notifications: updatedNotifications });
+      const userRef2 = doc(db, "users", user.id);
+      const userDoc2 = await getDoc(userRef2);
+      const userData2 = userDoc2.data();
+      setUser(userData2);
+
+      setShowConfirmation(false);
+      setNotificationToDelete(null);
+    }
   };
 
   return (
@@ -160,6 +190,47 @@ const Notifications = () => {
                     return null;
                   })}
                 </div>
+                <FiMoreVertical
+                  onClick={() => {
+                    setShowConfirmation(true);
+                    setNotificationToDelete(notification);
+                  }}
+                  style={{ width: "20px" }}
+                />
+                <Modal
+                  show={showConfirmation}
+                  onHide={() => setShowConfirmation(false)}
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title>Confirmation</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>Remove this notification?</span>
+                      <div>
+                        <Button
+                          variant="secondary"
+                          onClick={() => setShowConfirmation(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={handleDeleteNotification}
+                          style={{ marginLeft: "10px" }}
+                        >
+                          Confirm
+                        </Button>
+                      </div>
+                    </div>
+                  </Modal.Body>
+                </Modal>
               </div>
             </ListGroup.Item>
           ))}

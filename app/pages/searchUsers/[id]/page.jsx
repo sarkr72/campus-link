@@ -25,11 +25,13 @@ import defaultProfilePicture from "../../../resources/images/default-profile-pic
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+
 const SearchPage = () => {
   const { id } = useParams();
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState(id || "");
   const [user, setUser] = useState(null);
+  const [user2, setUser2] = useState(null);
   const router = useRouter();
   const [userId, setUserId] = useState("");
   const [sentRequests, setSentRequests] = useState([]);
@@ -57,6 +59,14 @@ const SearchPage = () => {
               );
               setSentRequests(updatedFriendRequests || []);
             }
+            const userDocRef = doc(db, "users", id);
+            const userDocSnapshot = await getDoc(userDocRef);
+
+            if (userDocSnapshot.exists()) {
+              const userData = userDocSnapshot?.data();
+              setUser2(userData);
+            }
+
             const searchTerm = searchQuery.trim().toLowerCase();
 
             const firstNameQuerySnapshot = await getDocs(
@@ -208,6 +218,7 @@ const SearchPage = () => {
       if (usersDoc.exists()) {
         const data = usersDoc?.data();
         handleSendEmail(data?.email);
+        console.log("emsi", data.email)
         const friendRequests = data?.friendRequests || [];
         const isRequestFound = friendRequests.some((request) => {
           const [, requestUserId] = request.split(",");
@@ -217,12 +228,14 @@ const SearchPage = () => {
         if (isRequestFound) {
           const updatedFriendRequests = friendRequests.filter((request) => {
             const [, requestUserId] = request.split(",");
+            // console.log("first11", reciverId)
             return requestUserId !== userId;
           });
 
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
           });
+          // console.log("first", reciverId)
           console.log("Friend request canceled successfully.");
         } else {
           const notifications = {
@@ -232,11 +245,13 @@ const SearchPage = () => {
             senderName: user?.firstName + " " + user?.lastName,
             date: new Date(),
           };
-          const currentNotifications = user?.notifications || [];
+          console.log("user1", notifications);
+          const currentNotifications = user2?.notifications || [];
+          console.log("user1", currentNotifications);
           const updatedNotifications = [...currentNotifications, notifications];
           const updatedFriendRequests = [
             ...friendRequests,
-            `${user?.firstName} ${user?.lastName},${userId}`,
+            `${user?.firstName} ${user?.lastName},${user.id}`,
           ];
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,

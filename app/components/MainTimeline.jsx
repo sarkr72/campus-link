@@ -564,7 +564,7 @@ const MainTimelineFeed = ({ userEmail }) => {
           {posts?.map((post, index) => (
             (post?.privacy !== "Private" &&  ((currentUser?.friends?.some((friend) => friend.id === post.userId))) || post?.privacy === "Public" || post.userId === userId) && (
             <>
-            {console.log("2nd,", post.userId, userId)}
+      
             <Card key={`${post.id}-${index}`} className="mb-3">
               <Card.Header className="post-header">
                 <Link
@@ -982,7 +982,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                     <span style={{ fontSize: "1.5em" }}>•••</span>
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {userRole === "Admin" && (
+                    {userRole.toLocaleLowerCase() === "admin" && (
                       <Dropdown.Item
                         onClick={() => handleDeletePost(selectedPost.id)}
                         className="text-danger"
