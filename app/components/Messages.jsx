@@ -4,7 +4,6 @@ import styles from "/styles/messages.css";
 import Image from "next/image";
 import defaultProfilePicture from "../resources/images/default-profile-picture.jpeg";
 import { db } from "../utils/firebase";
-import SharedPostModal from "../modals/SharedPostModal";
 import postStyles from "/styles/mainTimeline.css";
 import {
   collection,
@@ -24,8 +23,18 @@ import ChatMembersModal from "../modals/ChatMembersModal.js";
 import AddUsersToChatModal from "../modals/AddUsersToChatModal.js";
 import RemoveUsersFromChatModal from "../modals/RemoveUsersFromChat.js";
 import ConversationList from "../modals/ConversationList.js";
+import SharedPostModal from "../modals/ViewPostModal.js";
 
-const Messages = ({ userEmail }) => {
+const Messages = ({
+  userEmail,
+  handleLikePost,
+  handlePostComment,
+  handleAddComment,
+  comment,
+  setComment,
+  userId,
+  imageUrl
+}) => {
   const [showSharedPostModal, setShowSharedPostModal] = useState(false);
   const [selectedSharedPost, setSelectedSharedPost] = useState(null);
   const [sharedPost, setSharedPost] = useState(null);
@@ -70,7 +79,6 @@ const Messages = ({ userEmail }) => {
             const chatsData = snapshot.docs.map((doc) => ({
               ...doc.data(),
             }));
-            console.log("sss", chatsData);
             setChats(chatsData);
             const data = await getDoc(doc(db, "users", user.uid));
             setCurrentUserData(data);
@@ -81,7 +89,6 @@ const Messages = ({ userEmail }) => {
       }
     };
     fetchChats();
-
     const fetchUsers = async () => {
       // Fetch all users from Firebase
       const q = query(collection(db, "users"));
@@ -95,21 +102,17 @@ const Messages = ({ userEmail }) => {
 
     fetchUsers();
   }, []);
-
   const handleClose = () => {
     setShowPrompt(false);
     setSelectedUsers([]);
   };
-
   const handleShow = () => setShowPrompt(true);
-
   const handleAddToConversation = (user) => {
     setUsers((prevUsers) =>
       prevUsers.map((u) => (u.id === user.id ? { ...u, added: !u.added } : u))
     );
     setSelectedUsers((prevSelectedUsers) => [...prevSelectedUsers, user]);
   };
-
   const handleStartConversation = async () => {
     try {
       const currentUserEmail = currentUser.email;
@@ -195,7 +198,6 @@ const Messages = ({ userEmail }) => {
       console.error("Error leaving conversation: ", error);
     }
   };
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
@@ -238,7 +240,6 @@ const Messages = ({ userEmail }) => {
       }
     }
   };
-
   const handleChatSelect = async (chat) => {
     try {
       const chatRef = doc(db, "chats", chat.id);
@@ -289,8 +290,8 @@ const Messages = ({ userEmail }) => {
     setShowChat(false);
   };
   // Share Post
-  const handleShowSharedPostModal = (sharedPost) => {
-    setSelectedSharedPost(sharedPost);
+  const handleShowSharedPostModal = (sharedPostID) => {
+    setSelectedSharedPost(sharedPostID);
     setShowSharedPostModal(true);
   };
   const handleCloseSharedPostModal = () => {
@@ -408,7 +409,6 @@ const Messages = ({ userEmail }) => {
   const handleCloseAddUsersModal = () => {
     setShowAddUsersModal(false);
   };
-
   const handleAddUsers = async () => {
     try {
       const updatedUsers = [...selectedChat.users, ...selectedUsers];
@@ -420,7 +420,6 @@ const Messages = ({ userEmail }) => {
       console.error("Error adding users to chat: ", error);
     }
   };
-
   const handleShowRemoveUsersModal = (chat) => {
     setSelectedChat(chat);
     setShowRemoveUsersModal(true);
@@ -533,10 +532,12 @@ const Messages = ({ userEmail }) => {
                     >
                       <Image
                         src={
-                          message.senderProfilePicture || defaultProfilePicture
+                          message.senderProfilePicture ||
+                          message.senderProfilePicture.src ||
+                          defaultProfilePicture
                         }
                         alt="Profile Pic"
-                        className="message-avata profile-pic"
+                        className="message-avatar profile-pic"
                         width={50}
                         height={50}
                       />
@@ -551,14 +552,16 @@ const Messages = ({ userEmail }) => {
                         </div>
                         <div className="message-content rounded-4">
                           {message.content}
-                          {message.sharedPost && (
+                          {message.sharedPostID && (
                             <div
                               className="shared-post-link"
                               onClick={() =>
-                                handleShowSharedPostModal(message.sharedPost)
+                                handleShowSharedPostModal(message.sharedPostID)
                               }
                             >
-                              <p>{message.content}</p>
+                              <p className="shared-Post rounded-4">
+                                Click Here to See Attached Post
+                              </p>
                             </div>
                           )}
                         </div>
@@ -652,7 +655,14 @@ const Messages = ({ userEmail }) => {
       <SharedPostModal
         show={showSharedPostModal}
         onHide={handleCloseSharedPostModal}
-        sharedPost={selectedSharedPost}
+        postId={selectedSharedPost}
+        handleLikePost={handleLikePost}
+        handleAddComment={handleAddComment}
+        handlePostComment={handlePostComment}
+        comment={comment}
+        setComment={setComment}
+        userId={userId}
+        imageUrl={imageUrl}
       />
       <ChangeChatImageModal
         show={showChatImageModal}

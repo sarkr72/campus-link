@@ -64,7 +64,7 @@ const AddUsersToChatModal = ({
                   alt="Profile Pic"
                   width={50}
                   height={50}
-                  className="rounded-circle"
+                  className="rounded-circle profile-pic"
                 />
                 {`${user.firstName} ${user.lastName}`}
               </div>

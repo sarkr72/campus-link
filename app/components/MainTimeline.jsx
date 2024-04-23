@@ -28,7 +28,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import SearchPage from "./SearchUsers";
 import { RiEarthLine, RiUserLine, RiLockLine } from "react-icons/ri";
 import SharePostModal from "../modals/SharePostModal";
-import SharedPostModal from "../modals/SharedPostModal";
+import SharedPostModal from "../modals/ViewPostModal";
 
 const MainTimelineFeed = ({ userEmail }) => {
   // const router = useRouter();
@@ -514,21 +514,25 @@ const MainTimelineFeed = ({ userEmail }) => {
     }
   };
 
-  const handleSharePost = (post) => {
-    setSharedPost(post);
+  const handleSharePost = (postId) => {
+    setSharedPost(postId);
     setShowShareModal(true);
   };
 
   const handleSharePostToChats = (selectedChats, userMessage) => {
     setShowShareModal(false);
     selectedChats.forEach((chat) => {
-      addSharedPostToExistingChat(chat, sharedPost, userMessage);
+      console.log(sharedPost);
+      if (sharedPost) {
+        addSharedPostToExistingChat(chat, sharedPost, userMessage);
+      } else {
+        console.error("Post not found");
+      }
     });
-    setShowSharedPostModal(true);
   };
 
   const handleCloseSharedPostModal = () => {
-    setShowSharedPostModal(false);
+    setShowSharedPostModal(true);
     setSharedPost(null);
   };
 
@@ -542,10 +546,9 @@ const MainTimelineFeed = ({ userEmail }) => {
         const sharedPostMessage = {
           id: `${Date.now()}-shared-post`,
           sender: currentUser.email,
-          senderProfilePicture:
-            currentUser.profilePicture?.url || defaultProfilePicture,
+          senderProfilePicture: imageUrl || defaultProfilePicture,
           content: userMessage || "Attached Post",
-          sharedPost: sharedPost,
+          sharedPostID: sharedPost,
           timestamp: Timestamp.fromDate(new Date()),
         };
 
@@ -639,7 +642,6 @@ const MainTimelineFeed = ({ userEmail }) => {
                 post?.privacy === "Public" ||
                 post.userId === userId) && (
                 <>
-                  {console.log("2nd,", post.userId, userId)}
                   <Card key={`${post.id}-${index}`} className="mb-3">
                     <Card.Header className="post-header">
                       <Link
@@ -788,7 +790,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                     </Card.Body>
                     <Card.Footer className="post-footer">
                       <div className="post-footer-icons">
-                        <Button className="social-btn rounded-5" variant="btn">
+                        <Button className="social-btn rounded-5">
                           <Image
                             onClick={() => handleLikePost(post.id, "like")}
                             className="social-btn-icon"
@@ -812,7 +814,6 @@ const MainTimelineFeed = ({ userEmail }) => {
                         </Button>
                         <Button
                           className="social-btn rounded-5"
-                          variant="btn"
                           onClick={() => handleViewComments(post.id)}
                         >
                           <Image
@@ -826,7 +827,6 @@ const MainTimelineFeed = ({ userEmail }) => {
                         </Button>
                         <Button
                           className="social-btn rounded-5"
-                          variant="btn"
                           onClick={() => handleSharePost(post.id)}
                         >
                           <Image
@@ -892,9 +892,9 @@ const MainTimelineFeed = ({ userEmail }) => {
                                       defaultProfilePicture
                                     }
                                     alt="Profile Picture"
-                                    className="profile-pic"
-                                    width={75}
-                                    height={75}
+                                    className="profile-pic comment-avatar"
+                                    width={50}
+                                    height={50}
                                   />
                                 </Link>
                                 <div className="comment-info">
@@ -1042,15 +1042,12 @@ const MainTimelineFeed = ({ userEmail }) => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            id="createPost-btn"
-            onClick={handleCreatePost}
-          >
+          <Button id="createPost-btn" onClick={handleCreatePost}>
             Post
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* Post modal */}
+      {/* View Comments modal */}
       <Modal
         show={viewCommentsModalShow}
         onHide={handleCloseViewCommentsModal}
@@ -1211,7 +1208,15 @@ const MainTimelineFeed = ({ userEmail }) => {
       <SharedPostModal
         show={showSharedPostModal}
         onHide={handleCloseSharedPostModal}
-        sharedPost={sharedPost}
+        userEmail={userEmail}
+        posts={posts}
+        handleLikePost={handleLikePost}
+        handleAddComment={handleAddComment}
+        handlePostComment={handlePostComment}
+        comment={comment}
+        setComment={setComment}
+        userId={userId}
+        imageUrl={imageUrl}
       />
     </div>
   );
