@@ -177,12 +177,14 @@
 }
 
 .message-details {
-  max-height: 200px;
+  max-width: 250px;
+  min-width: 250px;
 }
 
 .message-header {
   display: flex;
   align-items: center;
+  margin-right: 0px;
 }
 
 .message-username {
@@ -199,33 +201,31 @@
   background-color: #f0f0f0;
   padding: 8px 12px;
   border-radius: 12px;
-  max-width: 70%;
 }
 
 .user-message {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: flex-end;
   margin-bottom: 16px;
   width: 100%;
-  gap: 5px;
 }
 
-.user-message .message-details {
-  align-items: flex-end;
-}
 
 .user-message .message-content {
   background-color: #3586ff;
   color: #fff;
-  align-self: flex-end;
   padding: 8px 12px;
   border-radius: 12px;
-  max-width: 70%;
-  margin-right: auto;
+  max-width: 100%;
 }
-
+.shared-Post {
+  background-color:mediumturquoise;
+  padding: 3px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
 .other-message {
   display: flex;
   flex-direction: row;
@@ -233,7 +233,6 @@
   justify-content: flex-start;
   margin-bottom: 16px;
   width: 100%;
-  gap: 5px;
 }
 
 .other-message .message-details {
