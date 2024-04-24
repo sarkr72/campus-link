@@ -293,11 +293,11 @@ const TutoringSessionCreate = () => {
           <Col key={index} xs={6} md={3} className="mb-2">
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
-              className={
-                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
-              }
+              // className={
+              //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+              // }
               style={{
-                backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
+                backgroundColor: selectedTimes.includes(slot) ? "white" : "#4a53ff",
                 color: selectedTimes.includes(slot) ? "white" : "black",
               }}
             >

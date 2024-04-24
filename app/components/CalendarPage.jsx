@@ -412,15 +412,18 @@ const CalanderPage = () => {
           <Col key={index} xs={6} md={3} className="mb-2">
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
+              className={
+                selectedTimes.includes(slot) ? "bg-blue text-white" : "bg-white text-black"
+              }
               // className={
               //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
               // }
-              style={{
-                backgroundColor: selectedTimes.includes(slot)
-                  ? "#4a53ff"
-                  : "white",
-                color: selectedTimes.includes(slot) ? "white" : "black",
-              }}
+              // style={{
+              //   backgroundColor: selectedTimes.includes(slot)
+              //     ? "#4a53ff"
+              //     : "white",
+              //   color: selectedTimes.includes(slot) ? "white" : "black",
+              // }}
             >
               {slot.startTime} - {slot.endTime}
             </Button>
@@ -429,7 +432,7 @@ const CalanderPage = () => {
       </Row>
       {selectedTimes.length > 0 && (
         <>
-          <Row className="mt-3">
+          <Row className="mt-3 mb-3">
             <Col>
               <Button variant="success" onClick={handleSaveSession}>
                 Book Appointment
