@@ -225,16 +225,37 @@ const CalanderPage = () => {
         date: selectedDate,
       };
 
+      const notifications = {
+        senderId: userId,
+        message: "You joined a session.",
+        senderProfilePicture: user?.profilePicture || null,
+        date: new Date(),
+      };
+      const currentNotifications = user?.notifications || [];
+      const updatedNotifications = [...currentNotifications, notifications];
+
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
         appointments: arrayUnion(session),
+        notifications: updatedNotifications,
       });
 
-      // Update the session information for the professor
+
       const userDocRef = doc(db, "users", professorId);
       const userDocSnapshot = await getDoc(userDocRef);
 
       if (userDocSnapshot.exists()) {
+        const notifications = {
+          senderId: userId,
+          message: " joined a session.",
+          senderName: user?.firstName + " " + user?.lastName,
+          senderProfilePicture: user?.profilePicture || null,
+          date: new Date(),
+        };
+        const currentNotifications =
+          userDocSnapshot?.data()?.notifications || [];
+        const updatedNotifications = [...currentNotifications, notifications];
+
         const selectedYear = selectedDate.getFullYear();
         const selectedMonth = selectedDate.getMonth() + 1;
         const selectedDay = selectedDate.getDate();
@@ -271,6 +292,7 @@ const CalanderPage = () => {
         }
         await updateDoc(userDocRef, {
           sessions: sessions,
+          notifications: updatedNotifications,
         });
       }
 
@@ -406,12 +428,17 @@ const CalanderPage = () => {
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
               className={
-                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+                selectedTimes.includes(slot) ? "bg-blue text-white" : "bg-white text-black"
               }
-              style={{
-                backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
-                color: selectedTimes.includes(slot) ? "white" : "black",
-              }}
+              // className={
+              //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+              // }
+              // style={{
+              //   backgroundColor: selectedTimes.includes(slot)
+              //     ? "#4a53ff"
+              //     : "white",
+              //   color: selectedTimes.includes(slot) ? "white" : "black",
+              // }}
             >
               {slot.startTime} - {slot.endTime}
             </Button>
@@ -420,7 +447,7 @@ const CalanderPage = () => {
       </Row>
       {selectedTimes.length > 0 && (
         <>
-          <Row className="mt-3">
+          <Row className="mt-3 mb-3">
             <Col>
               <Button variant="success" onClick={handleSaveSession}>
                 Book Appointment

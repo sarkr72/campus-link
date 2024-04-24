@@ -31,7 +31,7 @@ const TutoringSessionCreate = () => {
   const [courses, setCourses] = useState([]);
   const [professors, setProfessors] = useState([]);
   const [userId, setUserId] = useState("");
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState("");
   const [userTimeSlots, setUserTimeSlots] = useState([]);
   const [session, setSession] = useState(null);
 
@@ -42,11 +42,11 @@ const TutoringSessionCreate = () => {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           setUserId(user.uid);
-          setEmail(user.email);
           const userRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            setUser(userData);
             const userTimeSlots = userData?.sessions?.map((session) => session)
               .flat();
             setUserTimeSlots(userTimeSlots);
@@ -200,24 +200,29 @@ const TutoringSessionCreate = () => {
     };
 
     try {
-      // Update the user document with the new session
+        const notifications = {
+          senderId: userId,
+          message: "You created a session.",
+          senderProfilePicture: user?.profilePicture || null,
+          date: new Date(),
+        };
+        const currentNotifications = user?.notifications || [];
+        const updatedNotifications = [...currentNotifications, notifications];
+
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
         sessions: arrayUnion(session),
+        notifications: updatedNotifications,
       });
 
-      // Clear selected time slots and session data
       setTimeSlots([]);
       setSelectedTimes([]);
       setSession(session);
 
-      // Reload the page to reflect changes (not recommended, consider alternatives)
       window.location.reload();
 
-      // Display success message
       toast.success("Session saved successfully!");
     } catch (error) {
-      // Handle errors
       console.error("Error saving session:", error);
       toast.error("An error occurred while saving the session. Please try again.");
     }
@@ -288,11 +293,11 @@ const TutoringSessionCreate = () => {
           <Col key={index} xs={6} md={3} className="mb-2">
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
-              className={
-                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
-              }
+              // className={
+              //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+              // }
               style={{
-                backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
+                backgroundColor: selectedTimes.includes(slot) ? "white" : "#4a53ff",
                 color: selectedTimes.includes(slot) ? "white" : "black",
               }}
             >
