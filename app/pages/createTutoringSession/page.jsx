@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
-import TimeSlotPicker from "../../components/TimeSlotPicker";
-import styless from "../../../styles/timeSlot.css";
+import TutoringSessionCreate from "@/app/components/TutoringSessionCreate";
+
 function page() {
   return (
     <div>
-      <TimeSlotPicker />
+      <TutoringSessionCreate />
     </div>
   );
 }
