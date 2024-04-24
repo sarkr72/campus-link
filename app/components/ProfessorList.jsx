@@ -79,7 +79,12 @@ console.log("saa", courses2, professors.professors)
 
   return (
     <div className="container">
-      <h1>Professors</h1>
+        <div className="row justify-content-center">
+    <div className="col-12 text-center">
+      <h1 className="fw-bold">Rate My Professor</h1>
+    </div>
+  </div>
+      <h5 style={{marginBottom: "0px", marginTop: "10px"}}>Search Professor</h5>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <div>
           <Form.Group controlId="searchForm" style={{ marginBottom: "10px" }}>
