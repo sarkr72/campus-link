@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Dropdown, Container, Row, Col, Button, Form } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -20,7 +20,7 @@ import {
 import { db } from "../utils/firebase";
 import styles from "../../styles/timeSlot 2.css";
 import { toast } from "react-toastify";
-import styless from "../../styles/timeSlot.css";
+// import styless from "../../styles/timeSlot.css";
 
 const CalanderPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -229,7 +229,8 @@ const CalanderPage = () => {
       await updateDoc(userRef, {
         appointments: arrayUnion(session),
       });
-      console.log("id", userId);
+
+      // Update the session information for the professor
       const userDocRef = doc(db, "users", professorId);
       const userDocSnapshot = await getDoc(userDocRef);
 
@@ -253,10 +254,10 @@ const CalanderPage = () => {
             sessionMonth === selectedMonth &&
             sessionDay === selectedDay
           ) {
-            const timeSlots = session?.timeSlots || [];
+            const sessionTimeSlots = session?.timeSlots || [];
 
-            selectedTimes.forEach((selectedTime) => {
-              timeSlots.forEach((timeSlot) => {
+            timeSlots.forEach((selectedTime) => {
+              sessionTimeSlots.forEach((timeSlot) => {
                 if (
                   timeSlot.startTime === selectedTime.startTime &&
                   timeSlot.isBooked === "false"
@@ -265,7 +266,7 @@ const CalanderPage = () => {
                 }
               });
             });
-            sessions[i].timeSlots = timeSlots;
+            sessions[i].timeSlots = sessionTimeSlots;
           }
         }
         await updateDoc(userDocRef, {
@@ -273,17 +274,31 @@ const CalanderPage = () => {
         });
       }
 
+      // Clear selected time slots and session data
       setTimeSlots([]);
       setSelectedTimes([]);
+
+      // Reload the page to reflect changes (not recommended, consider alternatives)
       window.location.reload();
 
+      // Display success message
       setTimeout(() => {
-        toast.success("You haved booked appointment successfully!");
+        toast.success("You have booked the appointment successfully!");
       }, 6000);
-    } else {
-      toast.error("timeslot/date is not selected!");
     }
+    /*
+    catch (error) {
+      // Handle errors
+      console.error("Error saving session:", error);
+      toast.error("An error occurred while booking the appointment. Please try again.");
+    }
+    */
   };
+
+
+
+
+
 
   const handleCourseSelect = (e) => {
     const selectedOption =
@@ -390,9 +405,9 @@ const CalanderPage = () => {
           <Col key={index} xs={6} md={3} className="mb-2">
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
-              // className={
-              //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
-              // }
+              className={
+                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+              }
               style={{
                 backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
                 color: selectedTimes.includes(slot) ? "white" : "black",
