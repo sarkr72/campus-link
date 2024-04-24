@@ -271,7 +271,7 @@ function Header() {
                               : ""
                           }`}
                         >
-                          My Appointments
+                          My Sessions
                         </NavDropdown.Item>
 
                         <NavDropdown.Item

@@ -408,6 +408,10 @@ const CalanderPage = () => {
               className={
                 selectedTimes.includes(slot) ? "selected-button" : "undo-button"
               }
+              style={{
+                backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
+                color: selectedTimes.includes(slot) ? "white" : "black",
+              }}
             >
               {slot.startTime} - {slot.endTime}
             </Button>
