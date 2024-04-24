@@ -87,30 +87,61 @@ const Notifications = () => {
     console.log("Friend request accepted successfully.");
   };
 
-  const handleDelete = async (e, id) => {
+  // const handleDelete = async (e, id) => {
+  //   e.preventDefault();
+  //   const userRef = doc(db, "users", user?.id);
+  //   const userDoc = await getDoc(userRef);
+  //   const updatedFriendRequests = retrivedRequests?.filter((request) => {
+  //     const [, requestUserId] = request.split(",");
+  //     return requestUserId !== id;
+  //   });
+  //   setRetrivedRequests(updatedFriendRequests);
+  //   await updateDoc(userDoc.ref, {
+  //     friendRequests: updatedFriendRequests,
+  //   });
+  //   const userrRef = doc(db, "users", id);
+  //   const userrDoc = await getDoc(userrRef);
+  //   const sentRequests = userrDoc?.data()?.friendRequestsSent;
+  //   const updateddFriendRequests = sentRequests?.filter((request) => {
+  //     const [, requestUserId] = request.split(",");
+  //     return requestUserId !== user?.id;
+  //   });
+  //   await updateDoc(userrDoc.ref, {
+  //     friendRequestsSent: updateddFriendRequests,
+  //   });
+  //   console.log("Friend request canceled successfully.");
+  // };
+
+  const handleDelete = async (e, index, id) => {
     e.preventDefault();
+
+    // Update retrivedRequests
+    const updatedRetrivedRequests = [...retrivedRequests];
+    updatedRetrivedRequests.splice(index, 1); // Remove the element at the specified index
+
+    setRetrivedRequests(updatedRetrivedRequests);
+
+    // Update friendRequests in the user document
     const userRef = doc(db, "users", user?.id);
-    const userDoc = await getDoc(userRef);
-    const updatedFriendRequests = retrivedRequests?.filter((request) => {
-      const [, requestUserId] = request.split(",");
-      return requestUserId !== id;
+    await updateDoc(userRef, {
+        friendRequests: updatedRetrivedRequests,
     });
-    setRetrivedRequests(updatedFriendRequests);
-    await updateDoc(userDoc.ref, {
-      friendRequests: updatedFriendRequests,
-    });
+
+    // Update sentRequests in the other user's document
     const userrRef = doc(db, "users", id);
     const userrDoc = await getDoc(userrRef);
     const sentRequests = userrDoc?.data()?.friendRequestsSent;
-    const updateddFriendRequests = sentRequests?.filter((request) => {
-      const [, requestUserId] = request.split(",");
-      return requestUserId !== user?.id;
+    const updatedSentRequests = sentRequests?.filter((request) => {
+        const [, requestUserId] = request.split(",");
+        return requestUserId !== user?.id;
     });
-    await updateDoc(userrDoc.ref, {
-      friendRequestsSent: updateddFriendRequests,
+    await updateDoc(userrRef, {
+        friendRequestsSent: updatedSentRequests,
     });
+
     console.log("Friend request canceled successfully.");
-  };
+};
+
 
   const handleDeleteNotification = async () => {
     if (notificationToDelete) {
@@ -212,7 +243,7 @@ const Notifications = () => {
                               variant="light"
                               className="bg-gray me-2"
                               onClick={(e) =>
-                                handleDelete(e, notification?.senderId)
+                                handleDelete(e, index, notification?.senderId)
                               }
                             >
                               Delete

@@ -1,4 +1,4 @@
-// import styles from "/styles/mainTimeline.css";
+import styles from "/styles/mainTimeline.css";
 import React, { useState, useEffect } from "react";
 import { Button, Card, Modal, Form, Dropdown } from "react-bootstrap";
 import Image from "next/image";

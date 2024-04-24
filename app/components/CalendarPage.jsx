@@ -225,15 +225,36 @@ const CalanderPage = () => {
         date: selectedDate,
       };
 
+      const notifications = {
+        senderId: userId,
+        message: "You joined a session.",
+        senderProfilePicture: user?.profilePicture || null,
+        date: new Date(),
+      };
+      const currentNotifications = user?.notifications || [];
+      const updatedNotifications = [...currentNotifications, notifications];
+
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
         appointments: arrayUnion(session),
+        notifications: updatedNotifications,
       });
-      console.log("id", userId);
+
       const userDocRef = doc(db, "users", professorId);
       const userDocSnapshot = await getDoc(userDocRef);
 
       if (userDocSnapshot.exists()) {
+        const notifications = {
+          senderId: userId,
+          message: " joined a session.",
+          senderName: user?.firstName + " " + user?.lastName,
+          senderProfilePicture: user?.profilePicture || null,
+          date: new Date(),
+        };
+        const currentNotifications =
+          userDocSnapshot?.data()?.notifications || [];
+        const updatedNotifications = [...currentNotifications, notifications];
+
         const selectedYear = selectedDate.getFullYear();
         const selectedMonth = selectedDate.getMonth() + 1;
         const selectedDay = selectedDate.getDate();
@@ -270,6 +291,7 @@ const CalanderPage = () => {
         }
         await updateDoc(userDocRef, {
           sessions: sessions,
+          notifications: updatedNotifications,
         });
       }
 
@@ -394,7 +416,9 @@ const CalanderPage = () => {
               //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
               // }
               style={{
-                backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
+                backgroundColor: selectedTimes.includes(slot)
+                  ? "#4a53ff"
+                  : "white",
                 color: selectedTimes.includes(slot) ? "white" : "black",
               }}
             >

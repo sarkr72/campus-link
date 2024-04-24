@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import TutoringSessionCreate from "./TutoringSessionCreate";
 import CalendarPage from "./CalendarPage";
-import styless from "../../styles/timeSlot.css";
-import styles from "../../styles/timeSlot.css";
 
 const TutoringCenter = ({ id }) => {
   const [sessionData, setSessionData] = useState(null);

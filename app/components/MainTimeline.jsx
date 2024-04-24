@@ -173,13 +173,15 @@ const MainTimelineFeed = ({ userEmail }) => {
               postId: postId,
             };
             const currentNotifications = userdata?.notifications || [];
-            const updatedNotifications = [...currentNotifications, notifications];
-    
+            const updatedNotifications = [
+              ...currentNotifications,
+              notifications,
+            ];
+
             updateDoc(userDoc.ref, {
               notifications: updatedNotifications,
             });
           }
-
         } else {
           // If the user's ID is already present in likedBy array, remove it
           updatedPost.likedBy = updatedPost.likedBy.filter(
@@ -356,7 +358,7 @@ const MainTimelineFeed = ({ userEmail }) => {
       if (userId !== postUserId) {
         const userRef = doc(db, "users", postUserId);
         const userDoc = await getDoc(userRef);
-const userdata = userDoc?.data();
+        const userdata = userDoc?.data();
         const notifications = {
           senderId: userId,
           message: " commented on your post.",
@@ -831,7 +833,9 @@ const userdata = userDoc?.data();
                       <div className="post-footer-icons">
                         <Button className="social-btn rounded-5">
                           <Image
-                            onClick={() => handleLikePost(post.id, "like", post?.userId)}
+                            onClick={() =>
+                              handleLikePost(post.id, "like", post?.userId)
+                            }
                             className="social-btn-icon"
                             src={likeIcon}
                             alt="Discussion Board Icon"
@@ -843,7 +847,9 @@ const userdata = userDoc?.data();
                             (post.dislikedBy?.length || 0)}
                           )
                           <Image
-                            onClick={() => handleLikePost(post.id, "dislike", post?.userId)}
+                            onClick={() =>
+                              handleLikePost(post.id, "dislike", post?.userId)
+                            }
                             className="social-btn-icon"
                             src={dislikeIcon}
                             alt="Discussion Board Icon"
