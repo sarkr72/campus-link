@@ -191,7 +191,6 @@ function Header() {
                 <FaComments className="social-btn-icon" size={20} /> Chats
               </Nav.Link>
             )}
-            
 
             {userRole && userRole.toLocaleLowerCase() === "admin" && (
               <Nav.Link
@@ -203,150 +202,144 @@ function Header() {
                 <FaUserShield className="social-btn-icon" size={20} /> Admin
               </Nav.Link>
             )}
-            <NavDropdown
-              title={
-                <>
-                  <FaTools className="social-btn-icon" size={20} /> Tools
-                </>
-              }
-              id="basic-nav-dropdown"
-              onSelect={handleDropdownSelect} // Close dropdown on select
-              show={dropdownOpen} // Control visibility of dropdown
-              onClick={
-                !showPanel ? () => setDropdownOpen(!dropdownOpen) : undefined
-              }
-              style={{ zIndex: 9999 }}
-            >
-              {userId && (
-                <>
-                  <NavDropdown.Item
-                    href="/pages/profile"
-                    className={`text-${
-                      pathname === "/pages/profile" ? "text-dark" : ""
-                    } ${pathname === "/pages/profile" ? "fw-bold" : ""}`}
-                  >
-                    View Profile
-                  </NavDropdown.Item>
-                  <NavDropdown.Item
-                    href="/pages/updateProfile"
-                    className={`text-${
-                      pathname === "/pages/updateProfile" ? "text-dark" : ""
-                    } ${pathname === "/pages/updateProfile" ? "fw-bold" : ""}`}
-                  >
-                    Update Profile
-                  </NavDropdown.Item>
+            {userId && (
+              <NavDropdown
+                title={
+                  <>
+                    <FaTools className="social-btn-icon" size={20} /> Tools
+                  </>
+                }
+                id="basic-nav-dropdown"
+                onSelect={handleDropdownSelect} // Close dropdown on select
+                show={dropdownOpen} // Control visibility of dropdown
+                onClick={
+                  !showPanel ? () => setDropdownOpen(!dropdownOpen) : undefined
+                }
+              >
+                {userId && (
+                  <>
+                    <NavDropdown.Item
+                      href="/pages/profile"
+                      className={`text-${
+                        pathname === "/pages/profile" ? "text-dark" : ""
+                      } ${pathname === "/pages/profile" ? "fw-bold" : ""}`}
+                    >
+                      View Profile
+                    </NavDropdown.Item>
+                    <NavDropdown.Item
+                      href="/pages/updateProfile"
+                      className={`text-${
+                        pathname === "/pages/updateProfile" ? "text-dark" : ""
+                      } ${
+                        pathname === "/pages/updateProfile" ? "fw-bold" : ""
+                      }`}
+                    >
+                      Update Profile
+                    </NavDropdown.Item>
 
-                  <NavDropdown.Item
-                    href="/pages/settings"
-                    className={`text-${
-                      pathname === "/pages/settings" ? "text-dark" : ""
-                    } ${pathname === "/pages/settings" ? "fw-bold" : ""}`}
-                  >
-                    Settings
-                  </NavDropdown.Item>
+                    <NavDropdown.Item
+                      href="/pages/settings"
+                      className={`text-${
+                        pathname === "/pages/settings" ? "text-dark" : ""
+                      } ${pathname === "/pages/settings" ? "fw-bold" : ""}`}
+                    >
+                      Settings
+                    </NavDropdown.Item>
 
-                  {userRole && userRole.toLocaleLowerCase() === "admin" && (
-                    <>
-                      <NavDropdown.Item
-                        href="/pages/addCourse"
-                        className={`text-${
-                          pathname === "/pages/addCourse" ? "text-dark" : ""
-                        } ${pathname === "/pages/addCourse" ? "fw-bold" : ""}`}
-                      >
-                        Add Course
-                      </NavDropdown.Item>
-                    </>
-                  )}
-                  {userRole &&
-                    (userRole.toLocaleLowerCase() === "professor" ||
-                      userRole.toLocaleLowerCase() === "admin") && (
+                    {userRole && userRole.toLocaleLowerCase() === "admin" && (
                       <>
                         <NavDropdown.Item
-                          href="/pages/myAppointments"
+                          href="/pages/addCourse"
                           className={`text-${
-                            pathname === "/pages/myAppointments" ? "dark" : ""
+                            pathname === "/pages/addCourse" ? "text-dark" : ""
                           } ${
-                            pathname === "/pages/myAppointments"
-                              ? "fw-bold"
-                              : ""
+                            pathname === "/pages/addCourse" ? "fw-bold" : ""
                           }`}
                         >
-                          My Sessions
-                        </NavDropdown.Item>
-
-                        <NavDropdown.Item
-                          href="/pages/createTutoringSession"
-                          className={`text-${
-                            pathname === "/pages/createTutoringSession"
-                              ? "dark"
-                              : ""
-                          } ${
-                            pathname === "/pages/createTutoringSession"
-                              ? "fw-bold"
-                              : ""
-                          }`}
-                          style={{
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          Create Tutoring Session
+                          Add Course
                         </NavDropdown.Item>
                       </>
                     )}
-                </>
-              )}
-              <NavDropdown.Item
-                href="/pages/tutors"
-                className={`text-${
-                  pathname === "/pages/tutors" ? "text-dark" : ""
-                } ${pathname === "/pages/tutors" ? "fw-bold" : ""}`}
-              >
-                Tutors
-              </NavDropdown.Item>
-              <NavDropdown.Item
-                href="/pages/rateMyProfessor"
-                className={`text-${
-                  pathname === "/pages/rateMyProfessor" ? "text-dark" : ""
-                } ${pathname === "/pages/rateMyProfessor" ? "fw-bold" : ""}`}
-              >
-                Rate My Professor
-              </NavDropdown.Item>
-            </NavDropdown>
+                    {userRole &&
+                      (userRole.toLocaleLowerCase() === "professor" ||
+                        userRole.toLocaleLowerCase() === "admin") && (
+                        <>
+                          <NavDropdown.Item
+                            href="/pages/myAppointments"
+                            className={`text-${
+                              pathname === "/pages/myAppointments" ? "dark" : ""
+                            } ${
+                              pathname === "/pages/myAppointments"
+                                ? "fw-bold"
+                                : ""
+                            }`}
+                          >
+                            My Appointments
+                          </NavDropdown.Item>
 
-            {userId && (
-              <div
-                style={{ marginTop: isNavbarCollapsed ? "margintop" : "7px" }}
-              >
-                <button
-                  onClick={togglePanel}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    marginLeft: "-8px",
-                  }}
+                          <NavDropdown.Item
+                            href="/pages/createTutoringSession"
+                            className={`text-${
+                              pathname === "/pages/createTutoringSession"
+                                ? "dark"
+                                : ""
+                            } ${
+                              pathname === "/pages/createTutoringSession"
+                                ? "fw-bold"
+                                : ""
+                            }`}
+                            style={{
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            Create Tutoring Session
+                          </NavDropdown.Item>
+                        </>
+                      )}
+                  </>
+                )}
+                <NavDropdown.Item
+                  href="/pages/tutors"
+                  className={`text-${
+                    pathname === "/pages/tutors" ? "text-dark" : ""
+                  } ${pathname === "/pages/tutors" ? "fw-bold" : ""}`}
                 >
-                  <FaBell /> Notifications
-                </button>
-
-                <Modal show={showPanel} onHide={togglePanel}>
-                  <Modal.Header closeButton>
-                    <Modal.Title>Notifications</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    <Notifications />
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button variant="secondary" onClick={togglePanel}>
-                      Close
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
-              </div>
+                  Tutors
+                </NavDropdown.Item>
+                <NavDropdown.Item
+                  href="/pages/rateMyProfessor"
+                  className={`text-${
+                    pathname === "/pages/rateMyProfessor" ? "text-dark" : ""
+                  } ${pathname === "/pages/rateMyProfessor" ? "fw-bold" : ""}`}
+                >
+                  Rate My Professor
+                </NavDropdown.Item>
+              </NavDropdown>
             )}
 
-{userRole &&
+            {userId && (
+              <Nav.Link onClick={togglePanel}>
+                <FaBell /> Notifications
+              </Nav.Link>
+            )}
+
+            <Modal show={showPanel} onHide={togglePanel}>
+              <Modal.Header closeButton>
+                <Modal.Title>Notifications</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Notifications />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={togglePanel}>
+                  Close
+                </Button>
+              </Modal.Footer>
+            </Modal>
+
+            {userRole &&
               (userRole.toLocaleLowerCase() === "admin" ||
                 userRole.toLocaleLowerCase() === "professor") && (
                 <Nav.Link
@@ -360,7 +353,7 @@ function Header() {
                   Tutoring Center
                 </Nav.Link>
               )}
-              
+
             {!userId && (
               <>
                 <Nav.Link
