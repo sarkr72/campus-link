@@ -27,9 +27,12 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import SearchPage from "./SearchUsers";
 import { RiEarthLine, RiUserLine, RiLockLine } from "react-icons/ri";
+import SharePostModal from "../modals/SharePostModal";
+import SharedPostModal from "../modals/ViewPostModal";
 
 const MainTimelineFeed = ({ userEmail }) => {
   // const router = useRouter();
+  const [chats, setChats] = useState([]);
   const [privacy, setPrivacy] = useState("Friends");
   const [sortBy, setSortBy] = useState("recent");
   const [userRole, setUserRole] = useState("");
@@ -44,6 +47,9 @@ const MainTimelineFeed = ({ userEmail }) => {
   const [postImage, setPostImage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [sharedPost, setSharedPost] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSharedPostModal, setShowSharedPostModal] = useState(false);
   const [dislikes, setDislikes] = useState([]);
   const [dislikedByUser, setDislikedByUser] = useState([]);
   const [likes, setLikes] = useState([]);
@@ -61,6 +67,7 @@ const MainTimelineFeed = ({ userEmail }) => {
   const [userId, setUserId] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const usersRef = collection(db, "users");
 
   const handleCreatePost = async () => {
     const newPost = {
@@ -200,8 +207,6 @@ const MainTimelineFeed = ({ userEmail }) => {
       console.error("Error handling like:", error);
     }
   };
-
-  // Fetch posts function
   const fetchPosts = async (userEmail, id) => {
     try {
       const postsCollection = collection(db, "posts");
@@ -232,7 +237,7 @@ const MainTimelineFeed = ({ userEmail }) => {
         const postData = doc.data();
         // setUserId(id);
         // if ( postData.userId === userId) {
-          fetchedPosts.push({ ...postData, id: doc.id });
+        fetchedPosts.push({ ...postData, id: doc.id });
         // }
         fetchedLikes.push(postData.likedBy ? postData.likedBy.length : 0);
         fetchedDislikes.push(
@@ -438,8 +443,32 @@ const MainTimelineFeed = ({ userEmail }) => {
         } else {
           console.log("Failed to fetch user data", response);
         }
-        fetchPosts(userEmail, user.uid); // Pass the userEmail prop to fetchPosts
+        fetchPosts(userEmail, user.uid);
       }
+      const fetchChats = async () => {
+        try {
+          const auth = getAuth();
+          onAuthStateChanged(auth, async (user) => {
+            if (user) {
+              setCurrentUser(user);
+              const q = query(
+                collection(db, "chats"),
+                where("users", "array-contains", user?.email)
+              );
+              const snapshot = await getDocs(q);
+              const chatsData = snapshot.docs.map((doc) => ({
+                ...doc.data(),
+              }));
+              console.log("sss", chatsData);
+              setChats(chatsData);
+              const data = await getDoc(doc(db, "users", user.uid));
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching chats: ", error);
+        }
+      };
+      fetchChats();
     });
   }, [userEmail, sortBy]);
 
@@ -485,15 +514,59 @@ const MainTimelineFeed = ({ userEmail }) => {
     }
   };
 
+  const handleSharePost = (postId) => {
+    setSharedPost(postId);
+    setShowShareModal(true);
+  };
+
+  const handleSharePostToChats = (selectedChats, userMessage) => {
+    setShowShareModal(false);
+    selectedChats.forEach((chat) => {
+      console.log(sharedPost);
+      if (sharedPost) {
+        addSharedPostToExistingChat(chat, sharedPost, userMessage);
+      } else {
+        console.error("Post not found");
+      }
+    });
+  };
+
+  const handleCloseSharedPostModal = () => {
+    setShowSharedPostModal(true);
+    setSharedPost(null);
+  };
+
+  const addSharedPostToExistingChat = async (chat, sharedPost, userMessage) => {
+    try {
+      const chatRef = doc(db, "chats", chat.id);
+      const chatSnapshot = await getDoc(chatRef);
+      const chatData = chatSnapshot.data();
+
+      if (chatData && chatData.messages) {
+        const sharedPostMessage = {
+          id: `${Date.now()}-shared-post`,
+          sender: currentUser.email,
+          senderProfilePicture: imageUrl || defaultProfilePicture,
+          content: userMessage || "Attached Post",
+          sharedPostID: sharedPost,
+          timestamp: Timestamp.fromDate(new Date()),
+        };
+
+        await updateDoc(chatRef, {
+          messages: [...chatData.messages, sharedPostMessage],
+        });
+
+        console.log("Shared post added to existing chat.");
+      } else {
+        console.error("Chat data or messages not found.");
+      }
+    } catch (error) {
+      console.error("Error adding shared post to existing chat:", error);
+    }
+  };
+
   return (
     <div className={`timeLine-container ${styles.mainTimeline}`}>
-      {/* <div className="col-md-3 left-box">
-        <p>Quicklinks</p>
-        <p>Calendar Link</p>
-        <p>Tutors</p>
-        <p>Other features</p>
-      </div> */}
-
       <div className="col-md-6 center-box">
         <SearchPage />
         <div className="createPostPrompt shadow-sm border rounded-5 p-3 bg-white shadow box-area">
@@ -530,7 +603,6 @@ const MainTimelineFeed = ({ userEmail }) => {
 
           <Button
             className="rounded-5"
-            variant="primary"
             onClick={() => setShowCreatePostModal(true)}
           >
             Create Post
@@ -564,7 +636,7 @@ const MainTimelineFeed = ({ userEmail }) => {
           {posts?.map((post, index) => (
             (post?.privacy !== "Private" &&  ((currentUser?.friends?.some((friend) => friend.id === post.userId))) || post?.privacy === "Public" || post.userId === userId) && (
             <>
-      
+            {console.log("2nd,", post.userId, userId)}
             <Card key={`${post.id}-${index}`} className="mb-3">
               <Card.Header className="post-header">
                 <Link
@@ -637,226 +709,233 @@ const MainTimelineFeed = ({ userEmail }) => {
                       <strong>Report Post</strong>
                     </Dropdown.Item>
 
-                    {post.userId === userId.toString() && (
-                      <>
-                        <Dropdown.Divider />
-                        <Dropdown.Item disabled>
-                          <strong>Edit Privacy</strong>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          onClick={() => handlePrivacyChange("Public", post.id)}
+                          {post.userId === userId.toString() && (
+                            <>
+                              <Dropdown.Divider />
+                              <Dropdown.Item disabled>
+                                <strong>Edit Privacy</strong>
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() =>
+                                  handlePrivacyChange("Public", post.id)
+                                }
+                              >
+                                <strong>
+                                  <RiEarthLine /> Public
+                                </strong>
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() =>
+                                  handlePrivacyChange("Friends", post.id)
+                                }
+                              >
+                                <strong>
+                                  <RiUserLine /> Friends
+                                </strong>
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() =>
+                                  handlePrivacyChange("Private", post.id)
+                                }
+                              >
+                                <strong>
+                                  <RiLockLine /> Only me
+                                </strong>
+                              </Dropdown.Item>
+                            </>
+                          )}
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </Card.Header>
+                    <Card.Body className="post-body">
+                      <Card.Text className="post-comment">
+                        {post.comment}
+                      </Card.Text>
+                      {post.image && (
+                        <div className="post-img">
+                          <Image
+                            className="post-img"
+                            src={post.image}
+                            alt="Post Image"
+                            width={200}
+                            height={200}
+                            priority
+                            style={{ filter: "brightness(90%)" }}
+                            onError={(e) =>
+                              console.error("Image failed to load", e)
+                            }
+                          />
+                        </div>
+                      )}
+                    </Card.Body>
+                    <Card.Footer className="post-footer">
+                      <div className="post-footer-icons">
+                        <Button className="social-btn rounded-5">
+                          <Image
+                            onClick={() => handleLikePost(post.id, "like")}
+                            className="social-btn-icon"
+                            src={likeIcon}
+                            alt="Discussion Board Icon"
+                            width={20}
+                            height={20}
+                          />{" "}
+                          Likes (
+                          {(post.likedBy?.length || 0) -
+                            (post.dislikedBy?.length || 0)}
+                          )
+                          <Image
+                            onClick={() => handleLikePost(post.id, "dislike")}
+                            className="social-btn-icon"
+                            src={dislikeIcon}
+                            alt="Discussion Board Icon"
+                            width={20}
+                            height={20}
+                          />{" "}
+                        </Button>
+                        <Button
+                          className="social-btn rounded-5"
+                          onClick={() => handleViewComments(post.id)}
                         >
-                          <strong>
-                            <RiEarthLine /> Public
-                          </strong>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          onClick={() =>
-                            handlePrivacyChange("Friends", post.id)
-                          }
+                          <Image
+                            className="social-btn-icon"
+                            src={commentIcon}
+                            alt="Discussion Board Icon"
+                            width={20}
+                            height={20}
+                          />{" "}
+                          Comment
+                        </Button>
+                        <Button
+                          className="social-btn rounded-5"
+                          onClick={() => handleSharePost(post.id)}
                         >
-                          <strong>
-                            <RiUserLine /> Friends
-                          </strong>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          onClick={() =>
-                            handlePrivacyChange("Private", post.id)
-                          }
-                        >
-                          <strong>
-                            <RiLockLine /> Only me
-                          </strong>
-                        </Dropdown.Item>
-                      </>
-                    )}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Card.Header>
-              <Card.Body className="post-body">
-                <Card.Text className="post-comment">{post.comment}</Card.Text>
-                {post.image && (
-                  <div className="post-img">
-                    <Image
-                      className="post-img"
-                      src={post.image}
-                      alt="Post Image"
-                      width={200}
-                      height={200}
-                      priority
-                      style={{ filter: "brightness(90%)" }}
-                      onError={(e) => console.error("Image failed to load", e)}
-                    />
-                  </div>
-                )}
-              </Card.Body>
-              <Card.Footer className="post-footer">
-                <div className="post-footer-icons">
-                  <Button className="social-btn rounded-5" variant="btn">
-                    <Image
-                      onClick={() => handleLikePost(post.id, "like")}
-                      className="social-btn-icon"
-                      src={likeIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                    Likes (
-                    {(post.likedBy?.length || 0) -
-                      (post.dislikedBy?.length || 0)}
-                    )
-                    <Image
-                      onClick={() => handleLikePost(post.id, "dislike")}
-                      className="social-btn-icon"
-                      src={dislikeIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                  </Button>
-                  <Button
-                    className="social-btn rounded-5"
-                    variant="btn"
-                    onClick={() => handleViewComments(post.id)}
-                  >
-                    <Image
-                      className="social-btn-icon"
-                      src={commentIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                    Comment
-                  </Button>
-                  <Button className="social-btn rounded-5" variant="btn">
-                    <Image
-                      className="social-btn-icon"
-                      src={shareIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                    Share
-                  </Button>
-                </div>
-                {/* Add comment section */}
-                <div>
-                  <Form className="comment-prompt rounded-5">
-                    <Link
-                      className="user-link"
-                      href={`/pages/profile/${encodeURIComponent(user?.email)}`}
-                      style={{ textDecoration: "none" }}
-                    >
-                      <Image
-                        src={imageUrl || defaultProfilePicture}
-                        alt="Profile Picture"
-                        className="profile-pic"
-                        width={50}
-                        height={50}
-                      />
-                    </Link>
-                    <Form.Control
-                      className="rounded-5"
-                      type="text"
-                      placeholder="Add a comment..."
-                      value={comment} // State for comment input
-                      onChange={(e) => setComment(e.target.value)}
-                    />
-                    <Button
-                      className="rounded-4"
-                      variant="primary"
-                      onClick={() => handlePostComment(post.id)}
-                    >
-                      Post
-                    </Button>
-                  </Form>
-                </div>
-                {/* Display comments */}
-                <div className="comment-section">
-                  {post.comments &&
-                    post.comments.length > 0 &&
-                    post.comments.slice(0, 2).map((comment, index) => (
-                      <div key={index} className="">
-                        <div className="comment rounded-5">
+                          <Image
+                            className="social-btn-icon"
+                            src={shareIcon}
+                            alt="Discussion Board Icon"
+                            width={20}
+                            height={20}
+                          />{" "}
+                          Share
+                        </Button>
+                      </div>
+                      {/* Add comment section */}
+                      <div>
+                        <Form className="comment-prompt rounded-5">
                           <Link
                             className="user-link"
                             href={`/pages/profile/${encodeURIComponent(
-                              comment?.email
+                              user?.email
                             )}`}
                             style={{ textDecoration: "none" }}
                           >
                             <Image
-                              src={
-                                comment.userProfilePicture ||
-                                defaultProfilePicture
-                              }
+                              src={imageUrl || defaultProfilePicture}
                               alt="Profile Picture"
                               className="profile-pic"
-                              width={75}
-                              height={75}
+                              width={50}
+                              height={50}
                             />
                           </Link>
-                          <div className="comment-info">
-                            <div className="comment-header">
-                              <p className="comment-user">{comment.username}</p>
-                              <p className="comment-timestamp">
-                                {comment.timestamp &&
-                                  comment.timestamp.toDate().toLocaleString()}
-                              </p>
-                            </div>
-                            <p className="comment-text">{comment.text}</p>
-                            <div className="comment-likes">
-                              <Image
-                                onClick={() =>
-                                  handleLikeComment(comment.id, "like")
-                                }
-                                className="social-btn-icon"
-                                src={likeIcon}
-                                alt="Like Icon"
-                                width={20}
-                                height={20}
-                              />
-                              Likes (
-                              {(comment.likes || 0) - (comment.dislikes || 0)}
-                              )
-                              <Image
-                                onClick={() =>
-                                  handleLikeComment(comment.id, "dislike")
-                                }
-                                className="social-btn-icon"
-                                src={dislikeIcon}
-                                alt="Dislike Icon"
-                                width={20}
-                                height={20}
-                              />
-                            </div>
-                          </div>
-                        </div>
+                          <Form.Control
+                            className="rounded-5"
+                            type="text"
+                            placeholder="Add a comment..."
+                            value={comment} // State for comment input
+                            onChange={(e) => setComment(e.target.value)}
+                          />
+                          <Button
+                            className="rounded-4"
+                            onClick={() => handlePostComment(post.id)}
+                          >
+                            Post
+                          </Button>
+                        </Form>
                       </div>
-                    ))}
-                  {/* View all comments */}
-                  {post.comments &&
-                    post.comments.length > 2 &&
-                    commentingPostId === post.id && (
-                      <Button
-                        onClick={() => setCommentingPostId(null)}
-                      ></Button>
-                    )}
-                </div>
-              </Card.Footer>
-            </Card>
-            </>
-          )
-          ))}
+                      {/* Display comments */}
+                      <div className="comment-section">
+                        {post.comments &&
+                          post.comments.length > 0 &&
+                          post.comments.slice(0, 2).map((comment, index) => (
+                            <div key={index} className="">
+                              <div className="comment rounded-5">
+                                <Link
+                                  className="user-link"
+                                  href={`/pages/profile/${encodeURIComponent(
+                                    comment?.email
+                                  )}`}
+                                  style={{ textDecoration: "none" }}
+                                >
+                                  <Image
+                                    src={
+                                      comment.userProfilePicture ||
+                                      defaultProfilePicture
+                                    }
+                                    alt="Profile Picture"
+                                    className="profile-pic comment-avatar"
+                                    width={50}
+                                    height={50}
+                                  />
+                                </Link>
+                                <div className="comment-info">
+                                  <div className="comment-header">
+                                    <p className="comment-user">
+                                      {comment.username}
+                                    </p>
+                                    <p className="comment-timestamp">
+                                      {comment.timestamp &&
+                                        comment.timestamp
+                                          .toDate()
+                                          .toLocaleString()}
+                                    </p>
+                                  </div>
+                                  <p className="comment-text">{comment.text}</p>
+                                  <div className="comment-likes">
+                                    <Image
+                                      onClick={() =>
+                                        handleLikeComment(comment.id, "like")
+                                      }
+                                      className="social-btn-icon"
+                                      src={likeIcon}
+                                      alt="Like Icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                    Likes (
+                                    {(comment.likes || 0) -
+                                      (comment.dislikes || 0)}
+                                    )
+                                    <Image
+                                      onClick={() =>
+                                        handleLikeComment(comment.id, "dislike")
+                                      }
+                                      className="social-btn-icon"
+                                      src={dislikeIcon}
+                                      alt="Dislike Icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        {/* View all comments */}
+                        {post.comments &&
+                          post.comments.length > 2 &&
+                          commentingPostId === post.id && (
+                            <Button
+                              onClick={() => setCommentingPostId(null)}
+                            ></Button>
+                          )}
+                      </div>
+                    </Card.Footer>
+                  </Card>
+                </>
+              )
+          )}
         </div>
       </div>
-
-      {/* <div className="col-md-3 right-box">
-        <p>Contacts</p>
-        <p>RecentActivity</p>
-        <p>Notifications</p>
-      </div> */}
-      {/* Create Post Prompt modal */}
       <Modal
         show={showCreatePostModal}
         onHide={() => setShowCreatePostModal(false)}
@@ -865,58 +944,58 @@ const MainTimelineFeed = ({ userEmail }) => {
         <Modal.Header closeButton>
           <Modal.Title>
             {/* <div style={{ display: "flex", alignItems: "center" }}> */}
-              <p style={{ margin: 0 }}>Create Post</p>
-              <Dropdown style={{ marginLeft: "10px"}}>
-                <Dropdown.Toggle
-                  variant="light"
-                  id="dropdown-basic"
-                  style={{
-                    maxHeight: "25px",
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "0px",
-                    backgroundColor: "transparent",
-                    color: "black"
-                  }}
-                > 
+            <p style={{ margin: 0 }}>Create Post</p>
+            <Dropdown style={{ marginLeft: "10px" }}>
+              <Dropdown.Toggle
+                variant="light"
+                id="dropdown-basic"
+                style={{
+                  maxHeight: "25px",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0px",
+                  backgroundColor: "transparent",
+                  color: "black",
+                }}
+              >
                 <strong>Privacy:</strong>&nbsp;
-                  {privacy === "Friends" && (
-                    <span style={{ display: "flex", alignItems: "center" }}>
-                      <RiUserLine/> {privacy}
-                    </span>
-                  )}
-                  {privacy === "Public" && (
-                    <>
-                      <RiEarthLine style={{ marginRight: "5px" }} /> {privacy}
-                    </>
-                  )}
-                  {privacy === "Private" && (
-                    <>
-                      <RiLockLine style={{ marginRight: "5px" }} /> Only me
-                    </>
-                  )}
-                </Dropdown.Toggle>
-                <Dropdown.Menu style={{ padding: "0px" }}>
-                  <Dropdown.Item
-                    style={{ padding: "0px" }}
-                    onClick={() => setPrivacy("Public")}
-                  >
-                    <RiEarthLine /> Public
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    style={{ padding: "0px" }}
-                    onClick={() => setPrivacy("Friends")}
-                  >
-                    <RiUserLine /> Friends
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    style={{ padding: "0px" }}
-                    onClick={() => setPrivacy("Private")}
-                  >
-                    <RiLockLine /> Only me
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+                {privacy === "Friends" && (
+                  <span style={{ display: "flex", alignItems: "center" }}>
+                    <RiUserLine /> {privacy}
+                  </span>
+                )}
+                {privacy === "Public" && (
+                  <>
+                    <RiEarthLine style={{ marginRight: "5px" }} /> {privacy}
+                  </>
+                )}
+                {privacy === "Private" && (
+                  <>
+                    <RiLockLine style={{ marginRight: "5px" }} /> Only me
+                  </>
+                )}
+              </Dropdown.Toggle>
+              <Dropdown.Menu style={{ padding: "0px" }}>
+                <Dropdown.Item
+                  style={{ padding: "0px" }}
+                  onClick={() => setPrivacy("Public")}
+                >
+                  <RiEarthLine /> Public
+                </Dropdown.Item>
+                <Dropdown.Item
+                  style={{ padding: "0px" }}
+                  onClick={() => setPrivacy("Friends")}
+                >
+                  <RiUserLine /> Friends
+                </Dropdown.Item>
+                <Dropdown.Item
+                  style={{ padding: "0px" }}
+                  onClick={() => setPrivacy("Private")}
+                >
+                  <RiLockLine /> Only me
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
             {/* </div> */}
           </Modal.Title>
         </Modal.Header>
@@ -943,16 +1022,12 @@ const MainTimelineFeed = ({ userEmail }) => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            id="createPost-btn"
-            variant="primary"
-            onClick={handleCreatePost}
-          >
+          <Button id="createPost-btn" onClick={handleCreatePost}>
             Post
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* Post modal */}
+      {/* View Comments modal */}
       <Modal
         show={viewCommentsModalShow}
         onHide={handleCloseViewCommentsModal}
@@ -1068,8 +1143,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                       onChange={(e) => setComment(e.target.value)}
                     />
                     <Button
-                      className="rounded-"
-                      variant="primary"
+                      className="rounded-5"
                       onClick={() => handlePostComment(selectedPost.id)}
                     >
                       Post
@@ -1104,6 +1178,26 @@ const MainTimelineFeed = ({ userEmail }) => {
           )}
         </Modal.Body>
       </Modal>
+      <SharePostModal
+        show={showShareModal}
+        onHide={() => setShowShareModal(false)}
+        onSharePost={handleSharePostToChats}
+        chats={chats}
+        currentUser={currentUser}
+      />
+      <SharedPostModal
+        show={showSharedPostModal}
+        onHide={handleCloseSharedPostModal}
+        userEmail={userEmail}
+        posts={posts}
+        handleLikePost={handleLikePost}
+        handleAddComment={handleAddComment}
+        handlePostComment={handlePostComment}
+        comment={comment}
+        setComment={setComment}
+        userId={userId}
+        imageUrl={imageUrl}
+      />
     </div>
   );
 };

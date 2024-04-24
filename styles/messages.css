@@ -9,6 +9,10 @@
   border: 1px solid black;
   margin-top: 30px;
 }
+.conversations-container-mobile {
+  display: block;
+  width: 100%;
+}
 .chat-container {
   min-height: 100vh;
   background-color: aliceblue;
@@ -44,6 +48,12 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   cursor: pointer;
+  border: 1px solid black;
+}
+
+.profile-pic {
+  border: 1px solid black;
+  border-radius: 50px;
 }
 
 .conversation:hover {
@@ -117,15 +127,21 @@
 .chat-actions {
   display: flex;
   align-items: center;
+  border: 1px solid black;
+  border-radius: 50px;
+  margin: 0px;
 }
 
 .chat-action {
-  margin-left: 10px;
   cursor: pointer;
 }
 
 .chat-action:hover {
-  color: #007bff;
+  background-color: white;
+  color: #3586ff;
+}
+.dropdown-toggle::after {
+  display: none !important;
 }
 
 .chat-modal {
@@ -150,6 +166,7 @@
 .message {
   display: flex;
   margin-bottom: 16px;
+  width: 200px;
 }
 
 .message-avatar {
@@ -160,12 +177,14 @@
 }
 
 .message-details {
-  max-height: 200px;
+  max-width: 250px;
+  min-width: 250px;
 }
 
 .message-header {
   display: flex;
   align-items: center;
+  margin-right: 0px;
 }
 
 .message-username {
@@ -182,7 +201,6 @@
   background-color: #f0f0f0;
   padding: 8px 12px;
   border-radius: 12px;
-  max-width: 70%;
 }
 
 .user-message {
@@ -194,14 +212,19 @@
   width: 100%;
 }
 
-.user-message .message-details {
-  align-items: flex-end;
-}
 
 .user-message .message-content {
-  background-color: #007bff;
+  background-color: #3586ff;
   color: #fff;
-  align-self: flex-end;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 100%;
+}
+.shared-Post {
+  background-color:mediumturquoise;
+  padding: 3px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 .other-message {
   display: flex;
@@ -209,6 +232,7 @@
   align-items: flex-start;
   justify-content: flex-start;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .other-message .message-details {
@@ -245,7 +269,7 @@
 
 .chat-action {
   position: relative;
-  background-color: #007bff;
+  background-color: #3586ff;
   color: white;
   border: none;
   border-radius: 50%;
@@ -289,4 +313,26 @@
   right: 0;
   left: auto;
 }
+.conversations-container-mobile {
+  display: none;
+}
 
+@media (max-width: 768px) {
+  .convo-container {
+    flex-direction: column;
+  }
+  .conversations-container {
+    display: none;
+  }
+  .conversations-container-mobile {
+    display: flex;
+    justify-content: center;
+  }
+  .chat-container {
+    width: 100%;
+    padding: 10px;
+  }
+  .chat-messages {
+    padding: 0px;
+  }
+}

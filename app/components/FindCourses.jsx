@@ -30,7 +30,6 @@ const FindCourses = () => {
             const docRef = doc(db, "users", user.uid);
             const docSnapshot = await getDoc(docRef);
             if (docSnapshot.exists()) {
-              // setCourses(docSnapshot.data());
             }
           }
         });
@@ -68,9 +67,9 @@ const FindCourses = () => {
       ([courseId, courseData]) => {
         const { CourseName, professors } = courseData;
         return (
-          courseId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          CourseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          professors.some((professor) =>
+          courseId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          CourseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          professors?.some((professor) =>
             professor.toLowerCase().includes(searchTerm.toLowerCase())
           )
         );
