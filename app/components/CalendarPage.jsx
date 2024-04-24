@@ -20,7 +20,7 @@ import {
 import { db } from "../utils/firebase";
 import styles from "../../styles/timeSlot 2.css";
 import { toast } from "react-toastify";
-// import styless from "../../styles/timeSlot.css";
+import styless from "../../styles/timeSlot.css";
 
 const CalanderPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -390,9 +390,13 @@ const CalanderPage = () => {
           <Col key={index} xs={6} md={3} className="mb-2">
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
-              className={
-                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
-              }
+              // className={
+              //   selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+              // }
+              style={{
+                backgroundColor: selectedTimes.includes(slot) ? "#4a53ff" : "white",
+                color: selectedTimes.includes(slot) ? "white" : "black",
+              }}
             >
               {slot.startTime} - {slot.endTime}
             </Button>

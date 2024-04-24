@@ -271,7 +271,7 @@ const TimeSlotPicker = () => {
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
               className={
-                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+                selectedTimes.includes(slot) ? "bg-blue" : "bg-white"
               }
             >
               {slot.startTime} - {slot.endTime}

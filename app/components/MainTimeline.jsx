@@ -29,6 +29,7 @@ import SearchPage from "./SearchUsers";
 import { RiEarthLine, RiUserLine, RiLockLine } from "react-icons/ri";
 import SharePostModal from "../modals/SharePostModal";
 import SharedPostModal from "../modals/ViewPostModal";
+import ViewPost from "./ViewPost";
 
 const MainTimelineFeed = ({ userEmail }) => {
   // const router = useRouter();
@@ -139,7 +140,7 @@ const MainTimelineFeed = ({ userEmail }) => {
     }
   };
 
-  const handleLikePost = async (postId, reactionType) => {
+  const handleLikePost = async (postId, reactionType, postUserId) => {
     try {
       const postIndex = posts.findIndex((post) => post.id === postId);
       const post = posts[postIndex];
@@ -158,6 +159,27 @@ const MainTimelineFeed = ({ userEmail }) => {
           updatedPost.dislikedBy = updatedPost.dislikedBy.filter(
             (dislikedUserId) => dislikedUserId !== userId
           );
+          if (userId !== postUserId) {
+            const userRef = doc(db, "users", postUserId);
+            const userDoc = await getDoc(userRef);
+            const userdata = userDoc?.data();
+
+            const notifications = {
+              senderId: userId,
+              message: " liked your post.",
+              senderProfilePicture: currentUser?.profilePicture || null,
+              senderName: currentUser?.firstName + " " + currentUser?.lastName,
+              date: new Date(),
+              postId: postId,
+            };
+            const currentNotifications = userdata?.notifications || [];
+            const updatedNotifications = [...currentNotifications, notifications];
+    
+            updateDoc(userDoc.ref, {
+              notifications: updatedNotifications,
+            });
+          }
+
         } else {
           // If the user's ID is already present in likedBy array, remove it
           updatedPost.likedBy = updatedPost.likedBy.filter(
@@ -306,7 +328,7 @@ const MainTimelineFeed = ({ userEmail }) => {
     setSelectedPostComments([]);
   };
 
-  const handleAddComment = async (postId, commentText) => {
+  const handleAddComment = async (postId, commentText, postUserId) => {
     try {
       const post = posts.find((post) => post.id === postId);
       if (!post) {
@@ -330,15 +352,35 @@ const MainTimelineFeed = ({ userEmail }) => {
       await updateDoc(postRef, {
         comments: [...post.comments, comment],
       });
+
+      if (userId !== postUserId) {
+        const userRef = doc(db, "users", postUserId);
+        const userDoc = await getDoc(userRef);
+const userdata = userDoc?.data();
+        const notifications = {
+          senderId: userId,
+          message: " commented on your post.",
+          senderProfilePicture: currentUser?.profilePicture || null,
+          senderName: currentUser?.firstName + " " + currentUser?.lastName,
+          date: new Date(),
+          postId: postId,
+        };
+        const currentNotifications = userdata?.notifications || [];
+        const updatedNotifications = [...currentNotifications, notifications];
+
+        updateDoc(userDoc.ref, {
+          notifications: updatedNotifications,
+        });
+      }
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   };
 
   // Function to handle posting comments
-  const handlePostComment = async (postId) => {
+  const handlePostComment = async (postId, postUserId) => {
     if (comment.trim() !== "") {
-      await handleAddComment(postId, comment);
+      await handleAddComment(postId, comment, postUserId);
       setComment("");
       fetchPosts();
     }
@@ -450,7 +492,6 @@ const MainTimelineFeed = ({ userEmail }) => {
           const auth = getAuth();
           onAuthStateChanged(auth, async (user) => {
             if (user) {
-              setCurrentUser(user);
               const q = query(
                 collection(db, "chats"),
                 where("users", "array-contains", user?.email)
@@ -459,7 +500,6 @@ const MainTimelineFeed = ({ userEmail }) => {
               const chatsData = snapshot.docs.map((doc) => ({
                 ...doc.data(),
               }));
-              console.log("sss", chatsData);
               setChats(chatsData);
               const data = await getDoc(doc(db, "users", user.uid));
             }
@@ -633,81 +673,100 @@ const MainTimelineFeed = ({ userEmail }) => {
         </Dropdown>
 
         <div className="feed">
-          {posts?.map((post, index) => (
-            (post?.privacy !== "Private" &&  ((currentUser?.friends?.some((friend) => friend.id === post.userId))) || post?.privacy === "Public" || post.userId === userId) && (
-            <>
-            {console.log("2nd,", post.userId, userId)}
-            <Card key={`${post.id}-${index}`} className="mb-3">
-              <Card.Header className="post-header">
-                <Link
-                  className="user-link"
-                  href={`/pages/profile/${encodeURIComponent(post?.email)}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <div className="profile-info">
-                    <Image
-                      src={post.userProfilePicture || defaultProfilePicture}
-                      alt="Profile Picture"
-                      className="profile-pic"
-                      width={50}
-                      height={50}
-                    />
-                    <div className="post-info">
-                      <p className="poster-username">{post.username}</p>
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <p className="post-creation-time">
-                          {new Date(post.creationTime?.toDate()).toLocaleString(
-                            undefined,
-                            {
-                              month: "numeric",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}{" "}
-                          {new Date(post.creationTime?.toDate()).toLocaleString(
-                            undefined,
-                            {
-                              hour: "numeric",
-                              minute: "numeric",
-                              hour12: true,
-                            }
-                          )}
-                        </p>
-                        {post?.privacy === "Public" && (
-                          <RiEarthLine
-                            style={{ marginLeft: "5px", cursor: "default" }}
-                          />
-                        )}
-                        {post?.privacy === "Friends" && (
-                          <RiUserLine
-                            style={{ marginLeft: "5px", cursor: "default" }}
-                          />
-                        )}
-                        {post?.privacy === "Private" && (
-                          <RiLockLine
-                            style={{ marginLeft: "5px", cursor: "default" }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                <Dropdown className="post-action-dropdown">
-                  <Dropdown.Toggle className="post-options">
-                    <span style={{ fontSize: "1.5em" }}>•••</span>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {userRole.toLocaleLowerCase() === "admin" && (
-                      <Dropdown.Item
-                        onClick={() => handleDeletePost(post.id)}
-                        className="text-danger"
+          {posts?.map(
+            (post, index) =>
+              ((post?.privacy !== "Private" &&
+                currentUser?.friends?.some(
+                  (friend) => friend.id === post.userId
+                )) ||
+                post?.privacy === "Public" ||
+                post.userId === userId) && (
+                <>
+                  <Card key={`${post.id}-${index}`} className="mb-3">
+                    <Card.Header className="post-header">
+                      <Link
+                        className="user-link"
+                        href={`/pages/profile/${encodeURIComponent(
+                          post?.userId
+                        )}`}
+                        style={{ textDecoration: "none" }}
                       >
-                        <strong>Delete Post</strong>
-                      </Dropdown.Item>
-                    )}
-                    <Dropdown.Item className="text-warning">
-                      <strong>Report Post</strong>
-                    </Dropdown.Item>
+                        <div className="profile-info">
+                          <Image
+                            src={
+                              post.userProfilePicture || defaultProfilePicture
+                            }
+                            alt="Profile Picture"
+                            className="profile-pic"
+                            width={50}
+                            height={50}
+                          />
+                          <div className="post-info">
+                            <p className="poster-username">{post.username}</p>
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <p className="post-creation-time">
+                                {new Date(
+                                  post.creationTime?.toDate()
+                                ).toLocaleString(undefined, {
+                                  month: "numeric",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}{" "}
+                                {new Date(
+                                  post.creationTime?.toDate()
+                                ).toLocaleString(undefined, {
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                  hour12: true,
+                                })}
+                              </p>
+                              {post?.privacy === "Public" && (
+                                <RiEarthLine
+                                  style={{
+                                    marginLeft: "5px",
+                                    cursor: "default",
+                                  }}
+                                />
+                              )}
+                              {post?.privacy === "Friends" && (
+                                <RiUserLine
+                                  style={{
+                                    marginLeft: "5px",
+                                    cursor: "default",
+                                  }}
+                                />
+                              )}
+                              {post?.privacy === "Private" && (
+                                <RiLockLine
+                                  style={{
+                                    marginLeft: "5px",
+                                    cursor: "default",
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                      <Dropdown className="post-action-dropdown">
+                        <Dropdown.Toggle className="post-options">
+                          <span style={{ fontSize: "1.5em" }}>•••</span>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          {userRole.toLocaleLowerCase() === "admin" ||
+                            (userId === post?.userId && (
+                              <Dropdown.Item
+                                onClick={() => handleDeletePost(post.id)}
+                                className="text-danger"
+                              >
+                                <strong>Delete Post</strong>
+                              </Dropdown.Item>
+                            ))}
+                          <Dropdown.Item className="text-warning">
+                            <strong>Report Post</strong>
+                          </Dropdown.Item>
 
                           {post.userId === userId.toString() && (
                             <>
@@ -772,7 +831,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                       <div className="post-footer-icons">
                         <Button className="social-btn rounded-5">
                           <Image
-                            onClick={() => handleLikePost(post.id, "like")}
+                            onClick={() => handleLikePost(post.id, "like", post?.userId)}
                             className="social-btn-icon"
                             src={likeIcon}
                             alt="Discussion Board Icon"
@@ -784,7 +843,7 @@ const MainTimelineFeed = ({ userEmail }) => {
                             (post.dislikedBy?.length || 0)}
                           )
                           <Image
-                            onClick={() => handleLikePost(post.id, "dislike")}
+                            onClick={() => handleLikePost(post.id, "dislike", post?.userId)}
                             className="social-btn-icon"
                             src={dislikeIcon}
                             alt="Discussion Board Icon"
@@ -846,7 +905,9 @@ const MainTimelineFeed = ({ userEmail }) => {
                           />
                           <Button
                             className="rounded-4"
-                            onClick={() => handlePostComment(post.id)}
+                            onClick={() =>
+                              handlePostComment(post.id, post?.userId)
+                            }
                           >
                             Post
                           </Button>
@@ -1028,156 +1089,20 @@ const MainTimelineFeed = ({ userEmail }) => {
         </Modal.Footer>
       </Modal>
       {/* View Comments modal */}
-      <Modal
-        show={viewCommentsModalShow}
-        onHide={handleCloseViewCommentsModal}
-        className="modal"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Post and Comments</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedPost && (
-            <Card key={selectedPost.id} className="mb-3">
-              <Card.Header className="post-header">
-                <div className="profile-info">
-                  <Image
-                    src={
-                      selectedPost.userProfilePicture || defaultProfilePicture
-                    }
-                    alt="Profile Picture"
-                    className="profile-pic"
-                    width={50}
-                    height={50}
-                  />
-                  <p className="poster-username">{selectedPost.username}</p>
-                </div>
-                <Dropdown className="post-action-dropdown">
-                  <Dropdown.Toggle className="post-options">
-                    <span style={{ fontSize: "1.5em" }}>•••</span>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {userRole.toLocaleLowerCase() === "admin" && (
-                      <Dropdown.Item
-                        onClick={() => handleDeletePost(selectedPost.id)}
-                        className="text-danger"
-                      >
-                        <strong>Delete Post</strong>
-                      </Dropdown.Item>
-                    )}
-                    <Dropdown.Item className="text-warning">
-                      <strong>Report Post</strong>
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Card.Header>
-              <Card.Body className="post-body">
-                <Card.Text className="post-comment">
-                  {selectedPost.comment}
-                </Card.Text>
-                {selectedPost.image && (
-                  <div className="post-img">
-                    <Image
-                      className="post-img"
-                      src={selectedPost.image}
-                      alt="Post Image"
-                      width={200}
-                      height={200}
-                      priority
-                      style={{ filter: "brightness(90%)" }}
-                      onError={(e) => console.error("Image failed to load", e)}
-                    />
-                  </div>
-                )}
-              </Card.Body>
-              <Card.Footer className="post-footer">
-                <div className="post-footer-icons">
-                  <Button className="social-btn rounded-5" variant="btn">
-                    <Image
-                      onClick={() => handleLikePost(selectedPost.id, "like")}
-                      className="social-btn-icon"
-                      src={likeIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                    Likes (
-                    {(selectedPost.likedBy?.length || 0) -
-                      (selectedPost.dislikedBy?.length || 0)}
-                    )
-                    <Image
-                      onClick={() => handleLikePost(selectedPost.id, "dislike")}
-                      className="social-btn-icon"
-                      src={dislikeIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                  </Button>
-                  <Button className="social-btn rounded-5" variant="btn">
-                    <Image
-                      className="social-btn-icon"
-                      src={shareIcon}
-                      alt="Discussion Board Icon"
-                      width={20}
-                      height={20}
-                    />{" "}
-                    Share
-                  </Button>
-                </div>
-                {/* Add comment section */}
-                <div>
-                  <Form className="comment-prompt rounded-5">
-                    <Image
-                      src={imageUrl || defaultProfilePicture}
-                      alt="Profile Picture"
-                      className="profile-pic"
-                      width={50}
-                      height={50}
-                    />
-                    <Form.Control
-                      className="rounded-5"
-                      type="text"
-                      placeholder="Add a comment..."
-                      value={comment} // State for comment input
-                      onChange={(e) => setComment(e.target.value)}
-                    />
-                    <Button
-                      className="rounded-5"
-                      onClick={() => handlePostComment(selectedPost.id)}
-                    >
-                      Post
-                    </Button>
-                  </Form>
-                </div>
-                {/* Display comments */}
-                <div className="comment-section">
-                  <h5>Comments:</h5>
-                  {selectedPost.comments &&
-                    selectedPost.comments.map((comment, index) => (
-                      <div key={index} className="comment rounded-5">
-                        <div className="profile-info">
-                          <Image
-                            src={
-                              comment.userProfilePicture ||
-                              defaultProfilePicture
-                            }
-                            alt="Profile Picture"
-                            className="profile-pic"
-                            width={50}
-                            height={50}
-                          />
-                          <p className="poster-username">{comment.username}</p>
-                        </div>
-                        <p className="comment-text">{comment.text}</p>
-                      </div>
-                    ))}
-                </div>
-              </Card.Footer>
-            </Card>
-          )}
-        </Modal.Body>
-      </Modal>
+      {viewCommentsModalShow && showAllComments && (
+        <ViewPost
+          viewCommentsModalShow={viewCommentsModalShow}
+          handleCloseViewCommentsModal={handleCloseViewCommentsModal}
+          selectedPost={selectedPost}
+          userRole={userRole}
+          imageUrl={imageUrl}
+          setComment={setComment}
+          handlePostComment={handlePostComment}
+          comment={comment}
+          handleLikePost={handleLikePost}
+        />
+      )}
+
       <SharePostModal
         show={showShareModal}
         onHide={() => setShowShareModal(false)}
