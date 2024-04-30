@@ -5,7 +5,6 @@ import {
   useSearchParams,
   usePathname,
 } from "next/navigation";
-import { BsCheck } from "react-icons/bs";
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -17,14 +16,16 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  serverTimestamp
 } from "firebase/firestore";
 import { Row, Breadcrumb, Card, Button } from "react-bootstrap";
-import { db } from "../../../../utils/firebase";
+import { db } from "../../utils/firebase";
 import Link from "next/link";
 import Image from "next/image";
-import defaultProfilePicture from "../../../resources/images/default-profile-picture.jpeg";
+import defaultProfilePicture from "../../resources/images/default-profile-picture.jpeg";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 const FriendRequests = () => {
   const router = useRouter();
   const [userId, setUserId] = useState("");
@@ -49,7 +50,7 @@ const FriendRequests = () => {
             if (userDoc.exists()) {
               updatedFriendRequests = userDoc
                 ?.data()
-                ?.friendRequests.map((request) => {
+                ?.friendRequests?.map((request) => {
                   retrivedRequestsArray.push(request);
                   const [, requestUserId] = request.split(",");
                   return requestUserId;
@@ -78,7 +79,7 @@ const FriendRequests = () => {
     fetchUsers();
   }, []);
 
-  const handleConfirm = async (e, id, name) => {
+  const handleConfirm = async (e, id, name, profilePicture) => {
     e.preventDefault();
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
@@ -86,11 +87,17 @@ const FriendRequests = () => {
       const [, requestUserId] = request.split(",");
       return requestUserId !== id;
     });
+    handleSendEmail(e);
     setRetrivedRequests(updatedFriendRequests);
     await updateDoc(
       userDoc.ref,
       {
-        friends: arrayUnion(`${name},${id}`),
+        friends: arrayUnion({
+          name: name,
+          id: id,
+          profilePicture: profilePicture?.url || null,
+          timestamp: new Date(),
+        }),
         friendRequests: updatedFriendRequests,
       },
       { merge: true }
@@ -106,7 +113,12 @@ const FriendRequests = () => {
     await updateDoc(
       userrDoc.ref,
       {
-        friends: arrayUnion(`${user?.firstName} ${user?.lastName},${userId}`),
+        friends: arrayUnion({
+          name: user?.firstName + " " + user?.lastName,
+          id: userId,
+          profilePicture: user?.profilePicture?.url || null,
+          timestamp: new Date(),
+        }),
         friendRequestsSent: updateddFriendRequests2,
       },
       { merge: true }
@@ -137,6 +149,24 @@ const FriendRequests = () => {
       friendRequestsSent: updateddFriendRequests,
     });
     console.log("Friend request canceled successfully.");
+  };
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    const emailTo = "rinkusarkar353@gmail.com";
+    const message = `${user?.firstName} ${user?.lastName} has sent you a friend request!`;
+    const data = { message, emailTo };
+    try {
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error("Error sending email:", error, response);
+    }
   };
 
   return (
@@ -202,7 +232,8 @@ const FriendRequests = () => {
                         handleConfirm(
                           e,
                           user?.id,
-                          user?.firstName + " " + user?.lastName
+                          user?.firstName + " " + user?.lastName,
+                          user?.profilePicture
                         )
                       }
                       style={{
@@ -213,18 +244,7 @@ const FriendRequests = () => {
                     >
                       Confirm
                     </Button>
-                  ) : (
-                    <Button
-                      key={`${index}-confirm`}
-                      style={{
-                        backgroundColor: "green",
-                        color: "black",
-                        border: "none",
-                      }}
-                    >
-                      <BsCheck />
-                    </Button>
-                  );
+                  ) : null;
                 })}
               </div>
             )}

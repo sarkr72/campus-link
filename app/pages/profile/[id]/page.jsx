@@ -6,23 +6,19 @@ import reportIcon from "../../../resources/images/flag.svg";
 import messageIcon from "../../../resources/images/comment.svg";
 import styles2 from "/styles/mainTimeline.css";
 import { useParams, useSearchParams, usePathname } from "next/navigation";
-
+import MainTimeline from "../../../components/MainTimeline";
 import { Row, Breadcrumb, Card, Modal, Button } from "react-bootstrap";
-import likeIcon from "../../../resources/images/like.svg";
-import dislikeIcon from "../../../resources/images/dislike.svg";
-import commentIcon from "../../../resources/images/comment.svg";
-import shareIcon from "../../../resources/images/share.svg";
-import logoImage from "../../../resources/images/logo.png";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   createUserWithEmailAndPassword,
   getAuth,
   updateProfile,
   onAuthStateChanged,
 } from "firebase/auth";
-import { db } from "../../../../utils/firebase";
+import { db } from "../../../utils/firebase";
 import {
   collection,
   deleteDoc,
@@ -37,11 +33,13 @@ import {
   updateDoc,
   serverTimestamp,
   limit,
+  arrayUnion,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaCalendarAlt } from "react-icons/fa";
 
 function ViewProfile() {
+  const [userEmail, setUserEmail] = useState("");
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -66,6 +64,8 @@ function ViewProfile() {
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [currentUser, setCurrentUser] = useState("");
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -79,15 +79,16 @@ function ViewProfile() {
               const userDoc = await getDoc(userRef);
               const userData = userDoc?.data();
               setCurrentUser(userData);
-              setFriends(userData?.friends);
-              if (userDoc.exists()) {
-                const updatedFriendRequests = userData?.friendRequestsSent.map(
-                  (request) => {
-                    const [, requestUserId] = request.split(",");
-                    return requestUserId;
-                  }
-                );
-                setSentRequests(updatedFriendRequests || []);
+              setFollowing(userData?.following);
+              if (userData) {
+                if (userDoc.exists()) {
+                  const updatedFriendRequests =
+                    userData?.friendRequestsSent?.map((request) => {
+                      const [, requestUserId] = request.split(",");
+                      return requestUserId;
+                    });
+                  setSentRequests(updatedFriendRequests || []);
+                }
               }
             }
           });
@@ -97,6 +98,8 @@ function ViewProfile() {
 
           if (userDocSnapshot.exists()) {
             const userData = userDocSnapshot?.data();
+
+            setFollowers(userData?.followers);
             setData({
               firstName: userData?.firstName,
               lastName: userData?.lastName,
@@ -158,12 +161,26 @@ function ViewProfile() {
           });
           console.log("Friend request canceled successfully.");
         } else {
+          const notifications = {
+            senderId: userId,
+            message: " sent you a friend request.",
+            senderProfilePicture: currentUser?.profilePicture || null,
+            senderName: currentUser?.firstName + " " + currentUser?.lastName,
+            date: new Date(),
+          };
+          console.log("noti:", notifications);
+          const currentNotifications = user?.notifications || [];
+          console.log("noti:", currentNotifications);
+          const updatedNotifications = [...currentNotifications, notifications];
+
           const updatedFriendRequests = [
             ...friendRequests,
             `${currentUser?.firstName} ${currentUser?.lastName},${userId}`,
           ];
+
           await updateDoc(usersDoc.ref, {
             friendRequests: updatedFriendRequests,
+            notifications: updatedNotifications,
           });
           console.log("Friend request sent successfully.");
         }
@@ -218,14 +235,12 @@ function ViewProfile() {
 
   const handleSendRequest = async (e, receiverId, name) => {
     e.preventDefault();
-    console.log("ffff", friends);
     if (
-      friends.some((request) => {
-        const [, requestId] = request.split(",");
+      currentUser?.friends?.some((request) => {
+        const requestId = request?.id;
         return requestId === receiverId;
       })
     ) {
-      console.log("hereeee");
       handleClickOpen();
       setOpenModal(true);
     } else {
@@ -243,29 +258,135 @@ function ViewProfile() {
     }
   };
 
-  const handleConfirmation = async (e, id) => {
+  const friendProfile = async (e, id) => {
+    e.preventDefault();
+    router.push(`/pages/profile/${id}`);
+  };
+
+  const handleConfirmation = async (e) => {
     e.preventDefault();
     setOpenModal(false);
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
-    const updatedFriends = friends?.filter((friend) => {
-      const [, friendId] = friend.split(",");
+
+    const updatedFriends = userDoc?.data()?.friends?.filter((friend) => {
+      const friendId = friend?.id;
       return friendId !== id;
     });
     setFriends(updatedFriends);
     await updateDoc(userDoc.ref, {
       friends: updatedFriends,
     });
-    const userRef2 = doc(db, "users", userId);
+
+    const userRef2 = doc(db, "users", id);
     const userDoc2 = await getDoc(userRef2);
-    const friends = userDoc2?.data();
+    const friends = userDoc2?.data()?.friends;
     const updatedFriends2 = friends?.filter((friend) => {
-      const [, friendId] = friend.split(",");
+      const friendId = friend?.id;
       return friendId !== userId;
     });
-    await updateDoc(userDoc.ref, {
+    if (sentRequests?.some((item) => item === user?.id)) {
+      setSentRequests((prevSentRequests) =>
+        prevSentRequests.filter((item) => item !== user?.id)
+      );
+    }
+    await updateDoc(userDoc2.ref, {
       friends: updatedFriends2,
     });
+  };
+
+  const handleFollow = async (e, id, name) => {
+    e.preventDefault();
+    setOpenModal(false);
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    const userRef2 = doc(db, "users", id);
+    const userDoc2 = await getDoc(userRef2);
+
+    const isYourIdInFriendFollowers = following?.some(
+      (follower) => follower.id === id
+    );
+
+    if (isYourIdInFriendFollowers) {
+      const updatedFollowing = following?.filter((friend) => {
+        const friendId = friend?.id;
+        return friendId !== id;
+      });
+
+      setFollowing(updatedFollowing);
+      await updateDoc(userDoc.ref, {
+        following: updatedFollowing,
+      });
+
+      const updatedFollowers = followers?.filter((friend) => {
+        const friendId = friend?.id;
+        return friendId !== userId;
+      });
+      setFollowers(updatedFollowers);
+      await updateDoc(userDoc2.ref, {
+        followers: updatedFollowers,
+      });
+    } else {
+      const notifications = {
+        senderId: userId,
+        message: " started following you.",
+        senderProfilePicture: currentUser?.profilePicture || null,
+        senderName: currentUser?.firstName + " " + currentUser?.lastName,
+        date: new Date(),
+      };
+      const currentNotifications = user?.notifications || [];
+      const updatedNotifications = [...currentNotifications, notifications];
+
+      setFollowing((prevFollowing) => {
+        if (!Array.isArray(prevFollowing)) {
+          prevFollowing = [];
+        }
+        return [
+          ...prevFollowing,
+          {
+            name,
+            id,
+            profilePicture: user?.profilePicture?.url || null,
+            timestamp: new Date(),
+          },
+        ];
+      });
+
+      setFollowers((prevFollowing) => {
+        if (!Array.isArray(prevFollowing)) {
+          prevFollowing = [];
+        }
+        return [
+          ...prevFollowing,
+          {
+            name: currentUser?.firstName + " " + currentUser?.lastName,
+            id: userId,
+            profilePicture: currentUser?.profilePicture?.url || null,
+            timestamp: new Date(),
+          },
+        ];
+      });
+      await Promise.all([
+        updateDoc(userDoc.ref, {
+          following: arrayUnion({
+            name: name,
+            id: id,
+            profilePicture: user?.profilePicture?.url || null,
+            timestamp: new Date(),
+          }),
+          
+        }),
+        updateDoc(userDoc2.ref, {
+          followers: arrayUnion({
+            name: currentUser?.firstName + " " + currentUser?.lastName,
+            id: currentUser?.id,
+            profilePicture: currentUser?.profilePicture?.url || null,
+            timestamp: new Date(),
+          }),
+          notifications: updatedNotifications,
+        }),
+      ]);
+    }
   };
 
   return (
@@ -307,9 +428,9 @@ function ViewProfile() {
                     <li className="list-group-item">{data.role}</li>
                   )}
                   {data?.tutor && <li className="list-group-item">Tutor</li>}
-                  <p className="username">
-                    {user.email ? user.email.split("@")[0] : ""}
-                  </p>
+                  <Link href={`/pages/followers/${id}`} className="text-dark">
+                    {followers?.length || 0} followers
+                  </Link>
                 </div>
 
                 <div
@@ -317,7 +438,6 @@ function ViewProfile() {
                 >
                   {user?.id !== userId && (
                     <>
-                      {console.log("sent", sentRequests)}
                       <Button
                         onClick={(e) =>
                           handleSendRequest(
@@ -328,8 +448,8 @@ function ViewProfile() {
                         }
                         style={{ marginRight: "1rem" }}
                       >
-                        {friends.some((request) => {
-                          const [, requestId] = request.split(",");
+                        {currentUser?.friends?.some((request) => {
+                          const requestId = request?.id;
                           return requestId === user.id;
                         })
                           ? "Friends"
@@ -340,9 +460,23 @@ function ViewProfile() {
                           : "Send Request"}
                       </Button>
                       <Button
-                        onClick={() => setShowDetails(!showDetails)}
-                        className="profile-btn btn"
+                        onClick={(e) =>
+                          handleFollow(
+                            e,
+                            user?.id,
+                            user?.firstName + " " + user?.lastName
+                          )
+                        }
+                        style={{ marginRight: "1rem" }}
                       >
+                        {following?.some((follower) => {
+                          const followerId = follower?.id;
+                          return followerId === user.id;
+                        })
+                          ? "Following"
+                          : "Follow"}
+                      </Button>
+                      <Button onClick={() => setShowDetails(!showDetails)}>
                         Profile Detail
                       </Button>
                       <Modal
@@ -371,7 +505,7 @@ function ViewProfile() {
                           </Button>
                           <Button
                             variant="primary"
-                            onClick={(e) => handleConfirmation(e, user?.id)}
+                            onClick={(e) => handleConfirmation(e)}
                           >
                             Remove
                           </Button>
@@ -408,35 +542,105 @@ function ViewProfile() {
                 </div>
               )}
 
-              <Card.Footer className="card-footer">
-                <Button className="profile-btn" onClick={handleAppointment}>
-                  <FaCalendarAlt className="text-black" />
-                  Appointment
-                </Button>
-                <Button className="profile-btn">
-                  <Image
-                    className="profile-btn-icon"
-                    src={messageIcon}
-                    alt="Profile Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Message
-                </Button>
-                <Button className="profile-btn btn">
-                  <Image
-                    className="profile-btn-icon"
-                    src={reportIcon}
-                    alt="Profile Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Report
-                </Button>
+              <Card.Footer style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    alignSelf: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Button
+                    className="profile-btn"
+                    style={{ marginRight: "18px", marginBottom: "10px" }}
+                    onClick={handleAppointment}
+                  >
+                    <FaCalendarAlt className="text-black" /> Appointment
+                  </Button>
+
+                  <Button
+                    className="profile-btn"
+                    style={{ marginRight: "20px", marginBottom: "10px" }}
+                  >
+                    <Image
+                      className="profile-btn-icon"
+                      src={messageIcon}
+                      alt="Profile Icon"
+                      width={20}
+                      height={20}
+                    />{" "}
+                    Message
+                  </Button>
+                  <Button className="profile-btn btn">
+                    <Image
+                      className="profile-btn-icon"
+                      src={reportIcon}
+                      alt="Profile Icon"
+                      width={20}
+                      height={20}
+                    />{" "}
+                    Report
+                  </Button>
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #ccc",
+                    fontWeight: "bold",
+                    alignSelf: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  Friends
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    // flexDirection: "column",
+                  }}
+                >
+                  {user?.friends?.length > 0 &&
+                    user?.friends?.slice(0, 4).map((friend, index) => (
+                      <button
+                        key={index}
+                        className="btn bg-white text-black shadow d-flex flex-column align-items-center position-relative"
+                        style={{ width: "120px", marginRight: "10px" }}
+                        onClick={(e) => friendProfile(e, friend?.id)}
+                      >
+                        <div
+                          className="font-weight-bold text-center text-truncate"
+                          style={{ maxWidth: "100%", fontSize: "11px" }}
+                        >
+                          {friend?.name}
+                        </div>
+                        <div className="d-flex justify-content-center">
+                          <Image
+                            src={
+                              friend?.profilePicture
+                                ? friend.profilePicture
+                                : defaultProfilePicture
+                            }
+                            alt="Profile Picture"
+                            height={80}
+                            width={100}
+                          />
+                        </div>
+                      </button>
+                    ))}
+                </div>
+                <div style={{ alignSelf: "flex-end" }}>
+                  {" "}
+                  <Link href={`/pages/friends/${id}`} className="text-black">
+                    {" "}
+                    View All Friends
+                  </Link>
+                </div>
               </Card.Footer>
             </Card>
           </div>
-          <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
+          <div className="bottom-box">
+            <MainTimeline userEmail={data.email} />
+          </div>
         </div>
       </>
     </div>

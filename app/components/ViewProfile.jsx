@@ -5,6 +5,8 @@ import defaultProfilePicture from "../resources/images/default-profile-picture.j
 import reportIcon from "../resources/images/flag.svg";
 import messageIcon from "../resources/images/comment.svg";
 import styles2 from "/styles/mainTimeline.css";
+import MainTimeline from "./MainTimeline.jsx";
+import Link from "next/link";
 import {
   Container,
   Row,
@@ -33,7 +35,7 @@ import {
   updateProfile,
   onAuthStateChanged,
 } from "firebase/auth";
-import { db } from "../../utils/firebase";
+import { db } from "../utils/firebase";
 import {
   collection,
   deleteDoc,
@@ -51,6 +53,7 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 function ViewProfile() {
+  const [userEmail, setUserEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [user, setUser] = useState("");
@@ -81,7 +84,7 @@ function ViewProfile() {
     onAuthStateChanged(auth, async (user) => {
       if (user && user.email) {
         setUserId(user.uid);
-        const userRef = doc(db, "users", user.uid); // Assuming userId is the document ID
+        const userRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userRef);
 
         if (userDoc.exists()) {
@@ -99,12 +102,13 @@ function ViewProfile() {
             role: userData?.role,
           });
           setUser(userData);
+          setUserEmail(userData.email);
         } else {
           console.log("User document not found.");
         }
       }
     });
-  }, [userId]);
+  }, []);
 
   const handleSendEmail = async (e) => {
     e.preventDefault();
@@ -124,17 +128,23 @@ function ViewProfile() {
 
   const handleSendRequest = async (e) => {
     e.preventDefault();
-    window.location.href =`/pages/friendsRequests/${userId}`;
+    router.push(`/pages/friendsRequests`);
   };
 
-  const handleFollowers = async (e) => {
+  const friendProfile = async (e, id) => {
     e.preventDefault();
-    window.location.href = `/pages/followers/${userId}`;
+    if (id) {
+      router.push(`/pages/profile/${encodeURIComponent(id)}`);
+    }
+  };
+
+  const handleFollow = async (e) => {
+    e.preventDefault();
+      router.push(`/pages/following}`);
   };
 
   return (
     <div className="profile-container container">
-      <button onClick={handleSendEmail}> send email testing</button>
       <Row>
         <Breadcrumb className="bg-light rounded-3">
           <Breadcrumb.Item href="/pages/mainTimeline">Home</Breadcrumb.Item>
@@ -144,13 +154,12 @@ function ViewProfile() {
       </Row>
       <>
         <div className="row justify-content-center">
-          <div className="col-md-8 viewProfile-right-box">
+          <div className="col-md-8 top-box">
             <Card className="mb-4 text-center">
               <Card.Header>
                 {data?.profilePicture ? (
                   <Image
                     className="profile-pic"
-                    // style={{width: "100%"}}
                     src={data.profilePicture}
                     alt="User"
                     height={250}
@@ -174,34 +183,27 @@ function ViewProfile() {
                     <li className="list-group-item">{data.role}</li>
                   )}
                   {data?.tutor && <li className="list-group-item">Tutor</li>}
-                  <p className="username">
-                    {user.email ? user.email.split("@")[0] : ""}
-                  </p>
+                  <Link href="/pages/followers" className="text-dark">
+                    {user?.followers?.length || 0} followers
+                  </Link>
+                  <Link href="/pages/following" className="text-dark" style={{marginLeft: "10px"}}>
+                    {user?.following?.length || 0} Following
+                  </Link>
                 </div>
 
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                      <Button
-                      onClick={handleSendRequest}
-                        style={{ marginRight: "1rem" }}
-                      >
-                        View Requests
-                      </Button>
-                      
-                      <Button
-                      onClick={handleFollowers}
-                        style={{ marginRight: "1rem" }}
-                      >
-                        Followers
-                      </Button>
-                      <Button
-                        onClick={() => setShowDetails(!showDetails)}
-                        className="profile-btn btn"
-                      >
-                        Profile Detail
-                      </Button>
+                  <Button
+                    onClick={handleSendRequest}
+                    style={{ marginRight: "1rem" }}
+                  >
+                    View Requests
+                  </Button>
                   
+                  <Button onClick={() => setShowDetails(!showDetails)}>
+                    Profile Detail
+                  </Button>
                 </div>
               </Card.Header>
 
@@ -231,31 +233,96 @@ function ViewProfile() {
                 </div>
               )}
 
-              <Card.Footer className="card-footer">
-                <Button className="profile-btn">
-                  <Image
-                    className="profile-btn-icon"
-                    src={messageIcon}
-                    alt="Profile Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Message
-                </Button>
-                <Button className="profile-btn btn">
-                  <Image
-                    className="profile-btn-icon"
-                    src={reportIcon}
-                    alt="Profile Icon"
-                    width={20}
-                    height={20}
-                  />{" "}
-                  Report
-                </Button>
+              <Card.Footer style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    alignSelf: "center",
+                  }}
+                >
+                  
+                  <Button
+                    className="profile-btn"
+                    style={{ marginRight: "20px" }}
+                  >
+                    <Image
+                      className="profile-btn-icon"
+                      src={messageIcon}
+                      alt="Profile Icon"
+                      width={20}
+                      height={20}
+                    />{" "}
+                    Message
+                  </Button>
+                  <Button className="profile-btn btn">
+                    <Image
+                      className="profile-btn-icon"
+                      src={reportIcon}
+                      alt="Profile Icon"
+                      width={20}
+                      height={20}
+                    />{" "}
+                    Report
+                  </Button>
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #ccc",
+                    fontWeight: "bold",
+                    alignSelf: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  Friends
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    // flexDirection: "column",
+                  }}
+                >
+                  {user?.friends?.length > 0 &&
+                    user?.friends?.slice(0, 4).map((friend, index) => (
+                      <button
+                        key={index}
+                        className="btn bg-white text-black shadow d-flex flex-column align-items-center position-relative"
+                        style={{ width: "120px", marginRight: "10px" }}
+                        onClick={(e) => friendProfile(e, friend?.id)}
+                      >
+                        <div
+                          className="font-weight-bold text-center text-truncate"
+                          style={{ maxWidth: "100%", fontSize: "11px" }}
+                        >
+                          {friend?.name}
+                        </div>
+                        <div className="d-flex justify-content-center">
+                          <Image
+                            src={
+                              friend?.profilePicture
+                                ? friend.profilePicture
+                                : defaultProfilePicture
+                            }
+                            alt="Profile Picture"
+                            height={80}
+                            width={100}
+                            // objectFit="cover"
+                          />
+                        </div>
+                      </button>
+                    ))}
+                </div>
+                <div style={{ alignSelf: "flex-end" }}>
+                  {" "}
+                  <Link href="/pages/friends" className="text-black"> View All Friends</Link>
+                </div>
               </Card.Footer>
             </Card>
           </div>
-          <div className="col-md-16 left-box">{/*User's posts go here*/}</div>
+
+          <div className="bottom-box">
+            <MainTimeline userEmail={userEmail} />
+          </div>
         </div>
       </>
     </div>

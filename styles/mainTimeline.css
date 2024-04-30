@@ -11,7 +11,9 @@
   position: absolute;
   z-index: 9999; /* Ensure the search results appear on top of other content */
 }
-
+.card-footer {
+  align-items: unset;
+}
 .left-box {
   background: linear-gradient(to bottom, #eef5ff, #ffffff);
 }
@@ -106,15 +108,14 @@
 }
 
 .center-box {
-  flex-grow: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: center;
   justify-content: start;
-  width: 50%;
-  margin: 20px;
+  width: 65%;
+  margin: auto;
 }
 
 #createPost-btn {
@@ -137,10 +138,11 @@
 .post-header {
   display: flex;
   align-items: center;
+  flex-direction: row;
   justify-content: space-between;
   padding-bottom: 10px;
   border-bottom: 1px solid #ddd;
-  background-color: aliceblue;
+  background-color: aliceblue !important;
 }
 
 .post-body {
@@ -164,7 +166,7 @@
 
 .social-btn {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
   flex-direction: row;
   gap: 5px;
@@ -178,14 +180,14 @@
   align-items: center;
   justify-content: center;
   flex-direction: row;
-}
+} 
 
 .default-profile-pic,
 .profile-pic {
   clip-path: circle();
 }
 .post-footer {
-  background-color: aliceblue;
+  background-color: aliceblue !important;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -244,7 +246,8 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   padding: 10px;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
+  margin-top: 3px;
 }
 
 .comment-user,
@@ -286,16 +289,16 @@
 }
 
 .btn {
-  background-color: #3586ff;
-  color: white;
+  background-color: #3586ff !important;
+  color: white !important;
+  border: 1px solid black;
 }
 
 .btn:hover {
   transition: transform 0.4s ease-in-out;
   transform: scale(1.025);
-  background-color: white;
-  color: #3586ff;
-  border: 1px solid black;
+  background-color: white !important;
+  color: #3586ff !important;
 }
 
 /* Adjust styles for smaller screens */

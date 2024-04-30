@@ -17,8 +17,8 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
-import { db } from "../../utils/firebase";
-import styles from "../../styles/timeSlot.css";
+import { db } from "../utils/firebase";
+// import styles from "../../styles/timeSlot.css";
 import { toast } from "react-toastify";
 import styless from "../../styles/timeSlot.css";
 
@@ -271,7 +271,7 @@ const TimeSlotPicker = () => {
             <Button
               onClick={(e) => handleSlotSelect(e, slot)}
               className={
-                selectedTimes.includes(slot) ? "selected-button" : "undo-button"
+                selectedTimes.includes(slot) ? "bg-blue text-white" : "bg-white text-black"
               }
             >
               {slot.startTime} - {slot.endTime}
