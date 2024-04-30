@@ -6,7 +6,7 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import Image from "next/image";
 import logoImage from "./resources/images/logo.png";
 import styles from "/styles/landing.css";
-import { app } from "@/utils/firebase";
+import { app } from "@/app/utils/firebase";
 // Font Awesome icons used in features section
 import tutorIcon from "./resources/images/person-video.svg";
 import peopleIcon from "./resources/images/people-fill.svg";
@@ -18,14 +18,14 @@ import student2 from "./resources/images/student2.jpeg";
 import teacher from "./resources/images/teacher.jpeg";
 import edgar from "./resources/images/stonehenge.jpeg";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/app/utils/firebase";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
   let id = 2;
-  const auth = getAuth(app);
   return (
     <div>
- {console.log(auth)}
+      {console.log(auth)}
       {/* Landing page */}
       <section id="landing">
         <Row className="justify-content-center align-items-center">
