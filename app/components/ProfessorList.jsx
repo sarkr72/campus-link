@@ -48,6 +48,7 @@ const ProfessorPage = () => {
 
   const handleProfessorSelect = (e, professor) => {
     e.preventDefault();
+    console.log('asasas')
     setSelectedProfessor(professor);
   };
 
@@ -61,16 +62,15 @@ const ProfessorPage = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     const courses2 = Object.values(courses);
-console.log("saa", courses2, professors.professors)
     if (e.target.value) {
       const filteredProfessors = professors?.professors?.filter((professor) =>
-      professor.name.toLowerCase().includes(searchTerm) &&
-      courses2?.some((course) =>
-        course.professors?.some(
-          (professorName) => professorName.toLowerCase() === professor.name.toLowerCase()
+        professor.name.toLowerCase().includes(searchTerm) &&
+        courses2?.some((course) =>
+          course.professors?.some(
+            (professorName) => professorName.toLowerCase() === professor.name.toLowerCase()
+          )
         )
-      )
-    );
+      );
       setSearchResults(filteredProfessors);
     } else {
       setSearchResults("");
@@ -79,12 +79,12 @@ console.log("saa", courses2, professors.professors)
 
   return (
     <div className="container">
-        <div className="row justify-content-center">
-    <div className="col-12 text-center">
-      <h1 className="fw-bold">Rate My Professor</h1>
-    </div>
-  </div>
-      <h5 style={{marginBottom: "0px", marginTop: "10px"}}>Search Professor</h5>
+      <div className="row justify-content-center">
+        <div className="col-12 text-center">
+          <h1 className="fw-bold">Rate My Professor</h1>
+        </div>
+      </div>
+      <h5 style={{ marginBottom: "0px", marginTop: "10px" }}>Search Professor</h5>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <div>
           <Form.Group controlId="searchForm" style={{ marginBottom: "10px" }}>
@@ -137,10 +137,11 @@ console.log("saa", courses2, professors.professors)
                   }}
                 >
                   {selectedProfessor?.ratings &&
-                    selectedProfessor?.ratings.reduce(
+                    (selectedProfessor?.ratings.reduce(
                       (acc, rating) => acc + rating.rating,
                       0
-                    ) / selectedProfessor?.ratings?.length}
+                    ) / selectedProfessor?.ratings?.length).toFixed(1)}
+
                 </span>
                 /5
               </p>

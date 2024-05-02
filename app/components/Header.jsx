@@ -34,7 +34,7 @@ import {
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import MyAppointments from "./MyAppointments";
 import { FaBell } from "react-icons/fa";
-import Notifications from "./Notifications";
+// import Notifications from "./Notifications";
 
 function Header() {
   const router = useRouter();
@@ -325,7 +325,7 @@ function Header() {
               </Nav.Link>
             )}
 
-            <Modal show={showPanel} onHide={togglePanel}>
+            {/* <Modal show={showPanel} onHide={togglePanel}>
               <Modal.Header closeButton>
                 <Modal.Title>Notifications</Modal.Title>
               </Modal.Header>
@@ -337,7 +337,7 @@ function Header() {
                   Close
                 </Button>
               </Modal.Footer>
-            </Modal>
+            </Modal> */}
 
             {userRole &&
               (userRole.toLocaleLowerCase() === "admin" ||

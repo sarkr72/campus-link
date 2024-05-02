@@ -84,24 +84,6 @@ const SettingsPage = () => {
         >
           Profile Settings
         </Nav.Link>
-        <Nav.Link
-          style={{ transition: "background-color 0.3s", fontWeight: "600" }}
-          href="/pages/notification"
-          className="nav-link"
-          onMouseOver={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-          onMouseOut={(e) => (e.target.style.backgroundColor = "transparent")}
-        >
-          Notification Settings
-        </Nav.Link>
-        <Nav.Link
-          style={{ transition: "background-color 0.3s", fontWeight: "600" }}
-          href="/pages/preference"
-          className="nav-link"
-          onMouseOver={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-          onMouseOut={(e) => (e.target.style.backgroundColor = "transparent")}
-        >
-          Notification Preferences
-        </Nav.Link>
         <Button
           variant="outline-primary"
           onClick={handleChangePassword}
