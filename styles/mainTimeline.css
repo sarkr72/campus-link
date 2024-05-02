@@ -1,0 +1,325 @@
+.timeLine-container {
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.searchcontainer {
+  position: absolute;
+  z-index: 9999; /* Ensure the search results appear on top of other content */
+}
+.card-footer {
+  align-items: unset;
+}
+.left-box {
+  background: linear-gradient(to bottom, #eef5ff, #ffffff);
+}
+
+.right-box {
+  background: linear-gradient(to bottom, #176b87, #86b6f6, #ffffff);
+}
+/* This is the div at the top that contains the button for creating a post"*/
+.createPostPrompt {
+  gap: 20px;
+  background: aliceblue;
+  justify-content: space-between;
+  align-items: center;
+}
+/* This is for when the user clicks on "Create Post"*/
+.createPostTemplate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.createPostTemplate form {
+  width: 100%;
+}
+
+.createPostTemplate label {
+  font-weight: bold;
+}
+
+.createPostTemplate input,
+.createPostTemplate textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.createPostTemplate .modal-header,
+.createPostTemplate .modal-footer {
+  background-color: aliceblue;
+  padding: 10px;
+}
+
+.timeLine-container,
+.createPostPrompt,
+.createPostTemplate {
+  flex-direction: row;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+.post-info {
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+}
+.poster-username {
+  margin: 0px;
+}
+.post-creation-time {
+  font-size: small;
+  margin: 0px;
+}
+
+.user-link {
+  color: black;
+  text-decoration: none;
+}
+
+.left-box,
+.right-box {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: start;
+  width: 20%;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.center-box {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: start;
+  width: 65%;
+  margin: auto;
+}
+
+#createPost-btn {
+  width: 100%;
+}
+
+.feed {
+  width: 100%;
+}
+
+.feed > * {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  background-color: aliceblue !important;
+}
+
+.post-body {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 10px;
+}
+
+.post-comment {
+  text-align: justify;
+  margin-bottom: 10px;
+}
+
+.post-img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  object-fit: contain;
+}
+
+.social-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap: 5px;
+  width: 150px;
+}
+
+.profile-info,
+.prompt-info {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+} 
+
+.default-profile-pic,
+.profile-pic {
+  clip-path: circle();
+}
+.post-footer {
+  background-color: aliceblue !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.post-footer-icons {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.post-img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+.post-action-dropdown {
+  position: relative;
+}
+
+.post-action-dropdown .post-options {
+  border-radius: 50%;
+}
+
+.post-action-dropdown .dropdown-toggle::after {
+  display: none; /* Hide the default arrow */
+}
+
+.comment-section {
+  display: block;
+  gap: 15px;
+}
+
+.comment-prompt {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.comment {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 3px;
+  margin-top: 3px;
+}
+
+.comment-user,
+.comment-text {
+  margin: 0px;
+}
+.comment-user {
+  font-weight: bold;
+}
+.comment-info {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  flex-direction: column;
+}
+.comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  margin: 0px;
+  gap: 5px;
+}
+.comment-timestamp {
+  margin: 0px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.comment-likes {
+  margin: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+#comment-btn {
+  text-decoration: none;
+}
+
+.btn {
+  background-color: #3586ff !important;
+  color: white !important;
+  border: 1px solid black;
+}
+
+.btn:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: white !important;
+  color: #3586ff !important;
+}
+
+/* Adjust styles for smaller screens */
+@media (max-width: 800px) {
+  .left-box,
+  .right-box {
+    display: none;
+  }
+
+  .createPostPrompt {
+    width: 100%;
+  }
+  .center-box {
+    width: 90%;
+  }
+
+  .timeLine-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .social-btn {
+    width: 120px;
+  }
+}

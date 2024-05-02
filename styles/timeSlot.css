@@ -1,0 +1,19 @@
+.Row .selected-button {
+    background-color: #007bff;
+    color: rgb(252, 250, 250);
+  }
+
+  .Row .undo-button {
+    background-color: white;
+    color: black;
+  }
+
+.react-datepicker__month-container {
+  background-color: #95caee; 
+}
+
+.react-datepicker__day--in-range {
+  background-color: rgb(22, 178, 230);
+}
+
+

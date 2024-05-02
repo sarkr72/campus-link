@@ -1,0 +1,175 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+#landing {
+  padding: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  width: 90%;
+}
+
+.desc {
+  margin: auto;
+  width: 50%;
+}
+
+#features {
+  background-color: #b4d4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  width: 300px;
+}
+.feature-title {
+  margin-top: 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.feature-desc {
+  font-size: 15px;
+}
+
+#testimonials {
+  background-color: #b4d4ff;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.carousel-control-prev {
+  left: -10px;
+}
+
+.carousel-control-next {
+  right: -10px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: #176b87;
+  border-radius: 50%;
+  padding: 15px;
+}
+
+.testimonial-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #176b87;
+  margin-bottom: 20px;
+}
+
+.carousel-inner {
+  width: 70%;
+  margin: auto;
+}
+
+.profile-picture {
+  clip-path: circle();
+  margin-right: 10px;
+}
+
+#about {
+  padding: 50px;
+  gap: 100px;
+  width: 90%;
+  margin: auto;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 10px;
+}
+.card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card-img-top {
+  object-fit: cover;
+  height: 200px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  font-size: 1rem;
+  color: #555;
+}
+
+#redirections-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+.redirection-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.icon {
+  margin-right: 8px;
+  color: white;
+}
+
+.btn {
+  background-color: #176b87;
+  color: white;
+}
+
+.btn:hover {
+  transition: transform 0.4s ease-in-out;
+  transform: scale(1.025);
+  background-color: white;
+  color: #176b87;
+  border: 1px solid #176b87;
+}
+
+.btn-primary:hover {
+  background-color: white;
+}
