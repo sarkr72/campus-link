@@ -1,47 +1,29 @@
 "use client";
-
-// import { withRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-// import { signOut } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
-// import currentUser from "../../utils/checkSignIn";
 import React, { useState, useEffect, useRef } from "react";
 import GrowSpinner from "./Spinner";
-import { toast } from "react-toastify";
-import { useLayoutEffect } from "react";
 import Image from "next/image";
 import logoImage from "../resources/images/logo.png";
 import { db } from "../utils/firebase";
 import { Modal, Button } from "react-bootstrap";
 import { FaHome, FaTools, FaUserShield, FaComments } from "react-icons/fa";
 import {
-  collection,
-  deleteDoc,
   doc,
-  documentId,
   getDoc,
-  getDocs,
-  orderBy,
-  query,
-  where,
-  setDoc,
-  updateDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import MyAppointments from "./MyAppointments";
 import { FaBell } from "react-icons/fa";
 import Notifications from "./Notifications";
 
 function Header() {
   const router = useRouter();
   const [user, setUser] = useState("");
-  const [currnetEmail, setCurrentEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSet, setIsEmailSet] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [toggle, setToggle] = useState(false);
   const navbarRef = useRef(null);
@@ -152,7 +134,8 @@ function Header() {
             alt="Logo"
             style={{ width: "30px", height: "30px", marginRight: "10px" }}
           />
-          <Navbar.Brand href="/pages/home">Campus Link</Navbar.Brand>
+          <Navbar.Brand href={userId ? "/pages/mainTimeline" : "/pages/home"}>{userId ? "Campus Link" : "Campus Link"}</Navbar.Brand>
+
         </div>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse
