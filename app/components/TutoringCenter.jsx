@@ -45,14 +45,12 @@ const TutoringCenter = ({ id }) => {
     });
   }, []);
 
-  console.log("role: ", userRole);
-
   return (
     <Container>
           <CalendarPage onSaveSession={handleSaveSession} />
-        {userRole === "admin" && (
-            <h5>Want to create a session? <a href="/pages/createTutoringSession">Click here!</a></h5>
-        )}
+       {(userRole === "admin" || userRole === "professor") && (
+    <h5>Want to create a session? <a href="/pages/createTutoringSession">Click here!</a></h5>
+)}
     </Container>
   );
 };

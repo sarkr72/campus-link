@@ -112,13 +112,14 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  return (
-    <div style={{ minHeight: "100vh" }}>
-      <h1>Users</h1>
+return (
+  <div style={{ minHeight: "100vh" }}>
+    <h1 style={{ textAlign: "center" }}>Users</h1>
+    <div className="table-responsive">
       <table className="table table-striped table-bordered mt-4">
         <thead className="thead-dark">
           <tr>
-          <th>Role</th>
+            <th>Role</th>
             <th>Email</th>
             <th>Name</th>
             <th>Created At</th>
@@ -151,47 +152,33 @@ export default function Home() {
           ))}
         </tbody>
       </table>
-
-      {/* Confirm Delete Modal */}
-      <Modal
-        show={showConfirmModal}
-        onHide={() => setShowConfirmModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Delete</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete user with email: {deleteUserEmail}?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowConfirmModal(false)}
-          >
-            Cancel
-          </Button>
-          <Button variant="danger" onClick={handleConfirmDelete}>
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
 
-    // <main>
+    {/* Confirm Delete Modal */}
+    <Modal
+      show={showConfirmModal}
+      onHide={() => setShowConfirmModal(false)}
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Confirm Delete</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        Are you sure you want to delete user with email: {deleteUserEmail}?
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          variant="secondary"
+          onClick={() => setShowConfirmModal(false)}
+        >
+          Cancel
+        </Button>
+        <Button variant="danger" onClick={handleConfirmDelete}>
+          Delete
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  </div>
+);
 
-    //   <h1>Hello, {user.username}!</h1>
-    //   <button onClick={signOut}>Sign out</button>
-    // </main>
-  );
 }
-
-// export default withAuthenticator(Home)
-
-// {users.map((user, index) => (
-//   <tr key={index}>
-//     <td>{user.Name}</td>
-//     <td>{user.Value}</td>
-//     <td><button className="btn btn-danger" onClick={() => handleDeleteUser(index)}>Delete</button></td>
-//   </tr>
-// ))}

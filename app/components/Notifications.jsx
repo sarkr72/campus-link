@@ -264,6 +264,7 @@ const Notifications = () => {
                   <Modal
                     show={showConfirmation}
                     onHide={() => setShowConfirmation(false)}
+                     style={{ backdropOpacity: 1 }}
                   >
                     <Modal.Header closeButton>
                       <Modal.Title>Confirmation</Modal.Title>

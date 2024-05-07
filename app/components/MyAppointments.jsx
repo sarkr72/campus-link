@@ -45,7 +45,6 @@ const MyAppointments = () => {
             const appointments = userData?.appointments
               ?.map((appointment) => appointment)
               .flat();
-            console.log("aaa", userData);
             setAppointments(appointments);
           }
         }
@@ -90,7 +89,7 @@ const MyAppointments = () => {
         }
         await updateDoc(userDocRef, { appointments: appointmentsArray });
       }
-      console.log("data", selectedDate);
+      // console.log("data", selectedDate);
       if (userDocSnapshot.exists()) {
         const selectedYear = selectedDate.getFullYear();
         const selectedMonth = selectedDate.getMonth() + 1;

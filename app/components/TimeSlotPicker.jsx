@@ -152,7 +152,7 @@ const TimeSlotPicker = () => {
         ) {
           for (let k = 0; k < timeSlots.length; k++) {
             const timeSlot = timeSlots[k];
-            if (slot.startTime === timeSlot.startTime) {
+            if (slot.startTime === timeSlot.startTime && timeSlot?.isBooked === "false") {
               isDuplicate = true;
               break;
             }

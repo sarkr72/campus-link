@@ -62,7 +62,7 @@ const CalanderPage = () => {
           const professorsData = [];
           const times = [];
           querySnapshot.forEach((doc) => {
-            if (doc?.data().sessions && doc?.data().sessions?.length > 1) {
+            if (doc?.data().sessions && doc?.data().sessions?.length > 0) {
               professorsData.push(doc.data());
               const userTimeSlots1 = doc
                 ?.data()
@@ -71,6 +71,7 @@ const CalanderPage = () => {
               times.push(userTimeSlots1);
             }
           });
+          console.log("sdds", professorsData)
           // setUserTimeSlots(times);
           setProfessors(professorsData);
 
@@ -202,6 +203,7 @@ const CalanderPage = () => {
 
   const handleSlotSelect = (e, slot) => {
     e.preventDefault();
+    console.log(slot)
     if (selectedTimes?.length < 3) {
       const isSelected = selectedTimes.includes(slot);
       if (isSelected) {
@@ -217,7 +219,7 @@ const CalanderPage = () => {
   const handleSaveSession = async () => {
     if (selectedTimes && selectedTimes?.length > 0 && selectedDate) {
       const session = {
-        professor: `${user?.firstName} ${user?.lastName},${user?.email}`,
+        professor: `${professor?.firstName} ${professor?.lastName},${user?.email}`,
         subject: selectedCourse
           ? selectedCourse
           : `${userTimeSlots[0]?.subject?.key} ${userTimeSlots[0]?.subject?.CourseName}`,
@@ -277,7 +279,7 @@ const CalanderPage = () => {
           ) {
             const sessionTimeSlots = session?.timeSlots || [];
 
-            timeSlots.forEach((selectedTime) => {
+selectedTimes?.forEach((selectedTime) => {
               sessionTimeSlots.forEach((timeSlot) => {
                 if (
                   timeSlot.startTime === selectedTime.startTime &&
@@ -287,6 +289,7 @@ const CalanderPage = () => {
                 }
               });
             });
+
             sessions[i].timeSlots = sessionTimeSlots;
           }
         }
@@ -296,25 +299,14 @@ const CalanderPage = () => {
         });
       }
 
-      // Clear selected time slots and session data
-      setTimeSlots([]);
+    setTimeSlots([]);
       setSelectedTimes([]);
 
-      // Reload the page to reflect changes (not recommended, consider alternatives)
-      window.location.reload();
-
-      // Display success message
+     window.location.reload();
       setTimeout(() => {
         toast.success("You have booked the appointment successfully!");
       }, 6000);
     }
-    /*
-    catch (error) {
-      // Handle errors
-      console.error("Error saving session:", error);
-      toast.error("An error occurred while booking the appointment. Please try again.");
-    }
-    */
   };
 
 
@@ -397,8 +389,7 @@ const CalanderPage = () => {
         </div>
 
         <Row className="mb-3">
-          <Col>
-            <Form.Group>
+          <Col> <Form.Group>
               <Form.Label>Select Course:</Form.Label>
               <Form.Control
                 as="select"

@@ -6,9 +6,9 @@ import React from "react";
 
 const TutoringCenterPage = () => {
     return (
-      <>
+      <div  style={{minHeight: "100vh"}}>
       <TutoringCenter />
-      </>
+      </div>
     );
   }
   
